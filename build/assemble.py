@@ -338,9 +338,11 @@ html = html.replace(STYLE_ANCHOR,
 # sentence rather than swapped for a single substitute, so the rhythm survives:
 # a colon where a list follows, a period where two statements were joined, the
 # site's own "·" separator in the eyebrow.
+#
+# The hero eyebrow deliberately keeps its em dash (founder's call, 2026-07-29):
+# a middot got lost against the page's dot-grid background at that letter
+# spacing, and the dash carries the brand line better.
 EM_DASH_COPY = [
-    ("HUNTZ — THE MARKETPLACE FOR ACCOUNTABILITY",
-     "HUNTZ · THE MARKETPLACE FOR ACCOUNTABILITY"),
     ("Finish and you get 100% back — plus a share of the stakes forfeited by everyone who quit.",
      "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit."),
     ("One proof per session — a photo, a screenshot, a check-in.",
