@@ -22,9 +22,11 @@ VENDOR = BUILD / "vendor"
 VENDOR.mkdir(exist_ok=True)
 (VENDOR / "fonts").mkdir(exist_ok=True)
 
-# Absolute base URL used for og:image and og:url. Social previews only work
-# once the site is reachable here, so update it if the domain changes.
-SITE_URL = "https://huntz.ai"
+# Absolute base URL used for og:image and og:url. Must match the canonical
+# domain configured in Vercel — huntz.ai 308-redirects to www.huntz.ai, and a
+# share image behind a redirect is not reliably fetched by social crawlers.
+# If the apex is ever made primary instead, change this back to https://huntz.ai.
+SITE_URL = "https://www.huntz.ai"
 
 # react@18.3.1 UMD — the exact versions the design runtime pins, with the
 # integrity hashes it ships; verified on download so a bad CDN response fails
