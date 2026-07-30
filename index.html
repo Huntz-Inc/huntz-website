@@ -2325,7 +2325,10 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 </style>
 <style>
 
-body{margin:0;font-family:'Figtree',Arial,Helvetica,sans-serif;background:#F1EBE0;background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%);background-attachment:fixed;color:#16130E;overflow-x:hidden;font-family:'Figtree',Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+body{margin:0;font-family:'Figtree',Arial,Helvetica,sans-serif;background:#F1EBE0;color:#16130E;overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none;font-family:'Figtree',Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+html{overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none}
+body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%)}
+#ch-rail{overscroll-behavior-x:contain}
 a{color:#16130E}a:hover{color:#C24E1F}
 ::selection{background:#C24E1F;color:#F3EFE7}
 input::placeholder{color:#6E6759}

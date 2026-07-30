@@ -302,6 +302,38 @@ before = html
 html = html.replace("html{scroll-behavior:smooth}", "")
 assert html != before, "scroll-behavior rule not found"
 
+# (8) iOS: the page drifted sideways and juddered while scrolling on a phone.
+# Two causes, both invisible on desktop:
+#
+#   a) `background-attachment: fixed` on <body>. iOS Safari does not really
+#      implement it — it re-rasterises the gradient against the visual viewport
+#      on every momentum-scroll frame, which reads as the page wobbling. The
+#      gradient is moved to a fixed pseudo-element instead, which iOS composites
+#      properly and which looks identical on desktop.
+#   b) `overflow-x: hidden` was on <body> but not <html>, so the document
+#      element stayed a horizontal scroll container and iOS allowed sideways
+#      panning/rubber-banding. `overflow-x: clip` on both suppresses the pan
+#      without creating a scroll container (the `hidden` line stays first as a
+#      fallback for older engines).
+BODY_CSS_OLD = ("body{margin:0;font-family:'Figtree',Arial,Helvetica,sans-serif;background:#F1EBE0;"
+                "background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%);"
+                "background-attachment:fixed;color:#16130E;overflow-x:hidden;")
+assert BODY_CSS_OLD in html, "body background rule not found"
+html = html.replace(BODY_CSS_OLD,
+    "body{margin:0;font-family:'Figtree',Arial,Helvetica,sans-serif;background:#F1EBE0;"
+    "color:#16130E;overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none;")
+
+STYLE_ANCHOR = "a{color:#16130E}a:hover{color:#C24E1F}"
+assert STYLE_ANCHOR in html
+html = html.replace(STYLE_ANCHOR,
+    "html{overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none}\n"
+    # The gradient <body> used to paint with background-attachment:fixed.
+    "body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;"
+    "background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%)}\n"
+    # Keep a sideways swipe on the Hunts carousel from chaining to the page.
+    "#ch-rail{overscroll-behavior-x:contain}\n"
+    + STYLE_ANCHOR)
+
 # (7) No em dashes anywhere in the copy. Each one is repunctuated for its own
 # sentence rather than swapped for a single substitute, so the rhythm survives:
 # a colon where a list follows, a period where two statements were joined, the
