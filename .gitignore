@@ -1,0 +1,14 @@
+# Downloaded build inputs (React UMD + webfonts). Re-fetched and integrity-checked
+# on the first build; not worth committing.
+build/vendor/
+
+# Generated alongside index.html, but only used for publishing a Claude artifact
+# preview — not part of the deployed site.
+build/huntz-landing.artifact.html
+
+# The full Claude Design export, including ~29 MB of design reference
+# screenshots. Kept locally only — the two files the build actually reads are
+# committed in build/source/.
+Page Review_ Kinetic Hero Design/
+
+.DS_Store

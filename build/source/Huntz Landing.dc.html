@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<template id="__bundler_thumbnail" data-bg-color="#F3EFE7"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#F3EFE7"></rect><text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="'Figtree',Arial,Helvetica,sans-serif" font-weight="800" font-size="34" fill="#16130E">H<tspan fill="#C24E1F">.</tspan></text></svg></template>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Figtree',Arial,Helvetica,sans-serif;background:#F1EBE0;background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%);background-attachment:fixed;color:#16130E;overflow-x:hidden;font-family:'Figtree',Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#16130E}a:hover{color:#C24E1F}
+::selection{background:#C24E1F;color:#F3EFE7}
+input::placeholder{color:#948D80}
+#ch-rail::-webkit-scrollbar{height:0;width:0}
+#ch-rail>*{box-sizing:border-box}
+@keyframes hzWord{0%{opacity:0;transform:translateY(.7em) skewY(5deg)}60%{opacity:1;transform:translateY(-.06em) skewY(-1.2deg)}100%{opacity:1;transform:none}}
+@keyframes hzRise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes hzFloat{0%,100%{transform:translateY(0) rotate(-1.4deg)}50%{transform:translateY(-12px) rotate(-.5deg)}}
+@keyframes hzStamp{0%{opacity:0;transform:scale(1.5) rotate(-2deg)}60%{opacity:1;transform:scale(.96) rotate(0deg)}100%{opacity:1;transform:scale(1)}}
+@keyframes hzPulse{0%,100%{opacity:1}50%{opacity:.6}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.001s !important;animation-delay:0s !important;transition:none !important}}
+</style>
+</helmet>
+<div id="top" ref="{{ setRoot }}" style="min-height:100vh;position:relative;z-index:0">
+<div aria-hidden="true" style="position:fixed;inset:0;z-index:80;pointer-events:none;opacity:.05;mix-blend-mode:multiply;background-image:url('data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%22160%22&gt;&lt;filter id=%22n%22&gt;&lt;feTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22/&gt;&lt;/filter&gt;&lt;rect width=%22160%22 height=%22160%22 filter=%22url(%23n)%22/&gt;&lt;/svg&gt;');background-size:160px 160px"></div>
+<div id="hz-dots" aria-hidden="true" style="position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(rgba(22,19,14,.13) 1px,transparent 1px);background-size:30px 30px"></div>
+<div id="hz-lit" aria-hidden="true" style="position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .6s ease;background-image:radial-gradient(#C24E1F 1.4px,transparent 1.4px);background-size:30px 30px"></div>
+<div id="hz-glow" aria-hidden="true" style="position:fixed;left:0;top:0;width:640px;height:640px;margin:-320px 0 0 -320px;z-index:-1;pointer-events:none;opacity:0;transition:opacity .8s ease;background:radial-gradient(circle,rgba(194,78,31,.13),rgba(194,78,31,.05) 42%,rgba(194,78,31,0) 68%)"></div>
+<div id="hz-nav" style="position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:15px clamp(20px,4vw,44px);background:rgba(243,239,231,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(22,19,14,.12)">
+  <a href="#top" style="font: 800 21px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: -.02em; text-decoration: none; color: #16130E; font-family:'Figtree',Arial,Helvetica,sans-serif">HUNTZ<span style="color:#C24E1F">.</span></a>
+  <div style="display:flex;align-items:center;gap:clamp(14px,2.5vw,30px);flex-wrap:wrap;justify-content:flex-end">
+    <a href="#mechanic" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #948D80; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HOW IT WORKS</a>
+    <a href="#challenges" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #948D80; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HUNTS</a>
+    <a href="#why" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #948D80; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">FAQ</a>
+    <a href="#cta" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>
+  </div>
+</div>
+
+<section id="hz-hero" data-screen-label="Hero" style="min-height:100vh;display:flex;align-items:center;padding:120px clamp(20px,5vw,64px) 60px">
+  <div style="max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:clamp(32px,5vw,72px);align-items:center;justify-content:space-between;width:100%">
+    <div style="flex:1 1 540px;min-width:0">
+      <div style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .2em; color: #948D80; margin-bottom: 26px; animation: hzRise .7s ease .02s both; font-family:'Figtree',Arial,Helvetica,sans-serif; font-size: 15px">HUNTZ — THE MARKETPLACE FOR ACCOUNTABILITY</div>
+      <h1 style="margin:0 0 28px;font:600 clamp(46px,6.8vw,104px)/1.05 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.08s both">Put</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.16s both">your</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.24s both">money</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.32s both">where</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.40s both">your</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.48s both">goals</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.56s both;font-style:italic">are<span style="color:#C24E1F;font-style:normal">.</span></span>
+      </h1>
+      <p style="margin: 0 0 34px; max-width: 520px; font: 400 clamp(15px,1.4vw,18px)/1.6 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; animation: hzRise .7s ease .62s both; font-family:'Figtree',Arial,Helvetica,sans-serif">Stake $50–$500 of your own money on your own goal. Post proof every day. Finish and you get 100% back — plus a share of the stakes forfeited by everyone who quit.</p>
+      <div id="join" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">
+        <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
+          <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
+            <input type="email" required="" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
+            <button type="submit" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">JOIN THE WAITLIST</button>
+          </form>
+        </sc-if>
+        <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN WE LAUNCH.</div>
+        </sc-if>
+      </div>
+      <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #948D80; animation: hzRise .7s ease .84s both; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>
+    </div>
+    <div style="flex:0 1 330px;display:flex;justify-content:center;animation:hzRise .9s ease .5s both">
+      <div style="animation:hzFloat 7s ease-in-out infinite">
+        <div id="hz-phone" style="width:clamp(255px,26vw,310px);background:#16130E;border-radius:44px;padding:10px;box-shadow:0 30px 60px -20px rgba(22,19,14,.35);will-change:transform">
+          <div style="background:#F3EFE7;border-radius:35px;padding:18px 16px 14px;display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;justify-content:space-between;align-items:center;font:600 11px 'Figtree',Arial,Helvetica,sans-serif;color:#16130E">
+              <span style="font-variant-numeric:oldstyle-nums">9:41</span>
+              <span style="display:flex;align-items:center;gap:5px;font-size:9px;letter-spacing:.14em;color:#948D80"><span style="width:5px;height:5px;border-radius:50%;background:#C24E1F;display:block"></span>HUNT LIVE</span>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <div style="font: 800 21px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: -.01em; font-family:'Figtree',Arial,Helvetica,sans-serif">Post Daily</div>
+                <div style="font: 700 8.5px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #4F6A45; border: 1.5px solid #4F6A45; border-radius: 20px; padding: 4px 8px; font-family:'Figtree',Arial,Helvetica,sans-serif">ON TRACK</div>
+              </div>
+              <div style="margin-top: 3px; font: 500 10.5px 'Figtree',Arial,Helvetica,sans-serif; color: #948D80; font-family:'Figtree',Arial,Helvetica,sans-serif">Day 13 of 30 · @maracreates</div>
+            </div>
+            <div style="background:#C24E1F;border-radius:14px;padding:11px 11px 10px">
+              <div style="font: 700 13px 'Figtree',Arial,Helvetica,sans-serif; color: #F3EFE7; font-family:'Figtree',Arial,Helvetica,sans-serif">Today isn't done yet.</div>
+              <div style="margin: 3px 0 9px; font: 500 9.5px 'Figtree',Arial,Helvetica,sans-serif; color: rgba(243,239,231,.85); font-family:'Figtree',Arial,Helvetica,sans-serif">Post your day-13 proof · due 11:59 PM</div>
+              <div style="background: #F3EFE7; color: #16130E; border-radius: 10px; text-align: center; padding: 9px 8px; font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; animation: hzPulse 3.5s ease-in-out infinite; font-family:'Figtree',Arial,Helvetica,sans-serif">Submit today's proof</div>
+            </div>
+            <div style="background:#FCFBF6;border:1.5px solid rgba(22,19,14,.12);border-radius:14px;padding:11px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+                <span style="font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; font-family:'Figtree',Arial,Helvetica,sans-serif">Your streak</span>
+                <span style="font: 500 9px 'Figtree',Arial,Helvetica,sans-serif; color: #948D80; font-family:'Figtree',Arial,Helvetica,sans-serif">12 done · grace used</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:3.5px">
+                <sc-for list="{{ phoneCells }}" as="c" hint-placeholder-count="12">
+                  <sc-if value="{{ c.done }}" hint-placeholder-val="{{ true }}">
+                    <div style="aspect-ratio:13/15;border-radius:6px;background:#4F6A45;display:flex;align-items:center;justify-content:center"><span style="display:block;width:2.5px;height:45%;border-radius:2px;background:#F3EFE7"></span></div>
+                  </sc-if>
+                  <sc-if value="{{ c.grace }}" hint-placeholder-val="{{ false }}">
+                    <div style="aspect-ratio:13/15;border-radius:6px;background:#C24E1F;display:flex;align-items:center;justify-content:center"><span style="display:block;width:2.5px;height:45%;border-radius:2px;background:#F3EFE7"></span></div>
+                  </sc-if>
+                  <sc-if value="{{ c.today }}" hint-placeholder-val="{{ false }}">
+                    <div style="aspect-ratio:13/15;border-radius:6px;border:1.5px solid #C24E1F;display:flex;align-items:center;justify-content:center"><span style="display:block;width:2.5px;height:45%;border-radius:2px;background:#C24E1F"></span></div>
+                  </sc-if>
+                  <sc-if value="{{ c.ghost }}" hint-placeholder-val="{{ false }}">
+                    <div style="aspect-ratio:13/15;border-radius:6px;border:1.5px solid rgba(22,19,14,.16);display:flex;align-items:center;justify-content:center"><span style="display:block;width:2.5px;height:45%;border-radius:2px;background:rgba(22,19,14,.18)"></span></div>
+                  </sc-if>
+                  <sc-if value="{{ c.tally }}" hint-placeholder-val="{{ false }}">
+                    <div style="aspect-ratio:13/15;border-radius:6px;border:1.5px solid rgba(22,19,14,.16);display:flex;align-items:center;justify-content:center;gap:1.5px;position:relative"><span style="display:block;width:2px;height:40%;border-radius:2px;background:rgba(22,19,14,.3)"></span><span style="display:block;width:2px;height:40%;border-radius:2px;background:rgba(22,19,14,.3)"></span><span style="display:block;width:2px;height:40%;border-radius:2px;background:rgba(22,19,14,.3)"></span><span style="display:block;width:2px;height:40%;border-radius:2px;background:rgba(22,19,14,.3)"></span><span style="position:absolute;left:15%;right:15%;top:50%;height:2px;margin-top:-1px;border-radius:2px;background:rgba(22,19,14,.3);transform:rotate(-28deg)"></span></div>
+                  </sc-if>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:9px;margin-top:9px;flex-wrap:wrap;font:500 8.5px 'Figtree',Arial,Helvetica,sans-serif;color:#948D80">
+                <span style="font-family:'Figtree',Arial,Helvetica,sans-serif"><span style="display:inline-block;width:8px;height:10px;border-radius:3px;background:#4F6A45;margin-right:4px;vertical-align:-1px"></span>Done</span>
+                <span style="font-family:'Figtree',Arial,Helvetica,sans-serif"><span style="display:inline-block;width:8px;height:10px;border-radius:3px;background:#C24E1F;margin-right:4px;vertical-align:-1px"></span>Grace</span>
+                <span style="font-family:'Figtree',Arial,Helvetica,sans-serif"><span style="display:inline-block;width:8px;height:10px;border-radius:3px;border:1px solid #C24E1F;margin-right:4px;vertical-align:-1px"></span>Today</span>
+                <span style="font-family:'Figtree',Arial,Helvetica,sans-serif"><span style="display:inline-block;width:8px;height:10px;border-radius:3px;border:1px solid rgba(22,19,14,.25);margin-right:4px;vertical-align:-1px"></span>To go</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <div style="flex: 1; background: #FCFBF6; border: 1.5px solid rgba(22,19,14,.12); border-radius: 12px; padding: 8px 6px; text-align: center; font-family:'Figtree',Arial,Helvetica,sans-serif">
+                <div style="font: 700 15px 'Figtree',Arial,Helvetica,sans-serif; font-variant-numeric: tabular-nums lining-nums; font-family:'Figtree',Arial,Helvetica,sans-serif">$60</div>
+                <div style="margin-top: 2px; font: 500 8.5px 'Figtree',Arial,Helvetica,sans-serif; color: #948D80; font-family:'Figtree',Arial,Helvetica,sans-serif">your stake</div>
+              </div>
+              <div style="flex:1;background:#FCFBF6;border:1.5px solid rgba(22,19,14,.12);border-radius:12px;padding:8px 6px;text-align:center">
+                <div style="font: 700 15px 'Figtree',Arial,Helvetica,sans-serif; font-variant-numeric: tabular-nums lining-nums; color: #C24E1F; font-family:'Figtree',Arial,Helvetica,sans-serif">+$14</div>
+                <div style="margin-top: 2px; font: 500 8.5px 'Figtree',Arial,Helvetica,sans-serif; color: #948D80; font-family:'Figtree',Arial,Helvetica,sans-serif">bonus so far</div>
+              </div>
+              <div style="flex:1;background:#FCFBF6;border:1.5px solid rgba(22,19,14,.12);border-radius:12px;padding:8px 6px;text-align:center">
+                <div style="font: 700 15px 'Figtree',Arial,Helvetica,sans-serif; font-variant-numeric: tabular-nums lining-nums; font-family:'Figtree',Arial,Helvetica,sans-serif">$3.4k</div>
+                <div style="margin-top: 2px; font: 500 8.5px 'Figtree',Arial,Helvetica,sans-serif; color: #948D80; font-family:'Figtree',Arial,Helvetica,sans-serif">pool</div>
+              </div>
+            </div>
+            <div style="border-top:1.5px solid rgba(22,19,14,.1);padding-top:8px;display:flex;justify-content:space-around">
+              <div style="text-align:center"><div style="width:5px;height:5px;border-radius:50%;background:#948D80;margin:0 auto 4px"></div><div style="font: 600 8px 'Figtree',Arial,Helvetica,sans-serif; color: #948D80; font-family:'Figtree',Arial,Helvetica,sans-serif">Discover</div></div>
+              <div style="text-align:center"><div style="width:5px;height:5px;border-radius:50%;background:#16130E;margin:0 auto 4px"></div><div style="font: 700 8px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; font-family:'Figtree',Arial,Helvetica,sans-serif">My Hunts</div></div>
+              <div style="text-align:center"><div style="width:5px;height:5px;border-radius:50%;background:#948D80;margin:0 auto 4px"></div><div style="font: 600 8px 'Figtree',Arial,Helvetica,sans-serif; color: #948D80; font-family:'Figtree',Arial,Helvetica,sans-serif">Create</div></div>
+              <div style="text-align:center"><div style="width:5px;height:5px;border-radius:50%;background:#948D80;margin:0 auto 4px"></div><div style="font: 600 8px 'Figtree',Arial,Helvetica,sans-serif; color: #948D80; font-family:'Figtree',Arial,Helvetica,sans-serif">Profile</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Ticker" style="border-top:1.5px solid #16130E;border-bottom:1.5px solid #16130E;padding:18px 0;overflow:hidden">
+  <div id="tick-track" style="display:flex;width:max-content;will-change:transform">
+    <sc-for list="{{ ticker }}" as="t" hint-placeholder-count="8">
+      <div style="display:flex;align-items:center;gap:clamp(20px,3vw,38px);flex:none;margin-right:clamp(20px,3vw,38px)">
+        <span style="font: 700 clamp(16px,2vw,24px) 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; white-space: nowrap; font-family:'Figtree',Arial,Helvetica,sans-serif">{{ t }}</span>
+        <span style="width:8px;height:8px;border-radius:50%;background:#C24E1F;flex:none"></span>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<section id="mechanic" data-screen-label="Mechanic" style="position:relative;scroll-margin-top:70px;padding:clamp(64px,9vh,104px) clamp(20px,5vw,64px)">
+  <div style="max-width:1220px;margin:0 auto">
+    <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;color:#948D80;margin-bottom:14px">THE MECHANIC</div>
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:clamp(18px,4vw,52px);margin-bottom:clamp(26px,4vh,42px)">
+      <h2 style="margin:0;font:600 clamp(34px,4.4vw,60px)/1.06 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Lock in or you lose<span style="color:#C24E1F">.</span></h2>
+      <div style="display:flex;flex-direction:column;gap:11px;margin:0 0 6px">
+        <div style="display:flex;gap:5px">
+        <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+        <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+        <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+        <div data-pulse="clay" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+        <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+        <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+        <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+        </div>
+        <div style="font:500 10px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#948D80">ONE PROOF A SESSION</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:clamp(20px,3vw,44px);align-items:flex-start">
+      <div style="flex:1 1 370px;min-width:288px;display:flex;flex-direction:column;gap:clamp(10px,1.4vh,14px)">
+        <div data-plate="" style="position:relative;margin-right:clamp(0px,4vw,42px);padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,24px);border:1px solid rgba(22,19,14,.12);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 20px 34px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+          <div style="position:absolute;top:clamp(14px,1.8vw,20px);right:clamp(16px,2vw,22px);font:400 clamp(26px,3vw,38px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">01</div>
+          <div style="display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;color:currentColor;opacity:.9;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;margin-bottom:11px">STAKE</div>
+          <h3 style="margin:0 0 7px;padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Stake what hurts to lose<span style="color:inherit">.</span></h3>
+          <p style="margin:0;padding-right:46px;font:400 clamp(13.5px,1.05vw,15px)/1.6 'Figtree',Arial,Helvetica,sans-serif;color:currentColor;opacity:.92;text-wrap:pretty">$100 of your own money, locked in the pool until the hunt ends.</p>
+        </div>
+        <div data-plate="" style="position:relative;margin-left:clamp(0px,4vw,42px);padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,24px);border:1px solid rgba(22,19,14,.12);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 20px 34px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+          <div style="position:absolute;top:clamp(14px,1.8vw,20px);right:clamp(16px,2vw,22px);font:400 clamp(26px,3vw,38px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">02</div>
+          <div style="display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;color:currentColor;opacity:.9;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;margin-bottom:11px">PROVE</div>
+          <h3 style="margin:0 0 7px;padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Prove <span style="font-style:italic">every</span> session<span style="color:inherit">.</span></h3>
+          <p style="margin:0;padding-right:46px;font:400 clamp(13.5px,1.05vw,15px)/1.6 'Figtree',Arial,Helvetica,sans-serif;color:currentColor;opacity:.92;text-wrap:pretty">One proof per session — a photo, a screenshot, a check-in.</p>
+        </div>
+        <div data-plate="" style="position:relative;margin-right:clamp(0px,4vw,42px);padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,24px);border:1px solid rgba(22,19,14,.12);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 20px 34px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+          <div style="position:absolute;top:clamp(14px,1.8vw,20px);right:clamp(16px,2vw,22px);font:400 clamp(26px,3vw,38px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">03</div>
+          <div style="display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;color:currentColor;opacity:.9;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;margin-bottom:11px">FORFEIT</div>
+          <h3 style="margin:0 0 7px;padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Quitters pay<span style="color:inherit">.</span></h3>
+          <p style="margin:0;padding-right:46px;font:400 clamp(13.5px,1.05vw,15px)/1.6 'Figtree',Arial,Helvetica,sans-serif;color:currentColor;opacity:.92;text-wrap:pretty">Dev missed session 17. His $100 goes to everyone who finished.</p>
+        </div>
+        <div data-plate="" style="position:relative;margin-left:clamp(0px,4vw,42px);padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,24px);border:1px solid rgba(22,19,14,.12);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 20px 34px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+          <div style="position:absolute;top:clamp(14px,1.8vw,20px);right:clamp(16px,2vw,22px);font:400 clamp(26px,3vw,38px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">04</div>
+          <div style="display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;color:currentColor;opacity:.9;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;margin-bottom:11px">SETTLE</div>
+          <h3 style="margin:0 0 7px;padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Finish. Get <span style="font-style:italic">paid</span><span style="color:inherit">.</span></h3>
+          <p style="margin:0;padding-right:46px;font:400 clamp(13.5px,1.05vw,15px)/1.6 'Figtree',Arial,Helvetica,sans-serif;color:currentColor;opacity:.92;text-wrap:pretty">Your $100 comes back in full, plus your cut of the forfeits.</p>
+        </div>
+      </div>
+      <div id="m-stage" style="flex:1 1 340px;max-width:508px;min-width:288px;border:1px solid rgba(22,19,14,.5);border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#1C1811,#141109);color:#F3EFE7;box-shadow:0 34px 64px -38px rgba(22,19,14,.85);position:sticky;top:96px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 15px;border-bottom:1px solid rgba(243,239,231,.14);background:rgba(243,239,231,.04)">
+          <span style="font:700 10px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;white-space:nowrap">HUNT No.0412</span>
+          <span style="font:500 10px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:rgba(243,239,231,.55);white-space:nowrap">CLOSED · WEEK 6</span>
+        </div>
+        <div style="padding:14px 15px;border-bottom:1px solid rgba(243,239,231,.1)">
+          <div style="font:500 10px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:rgba(243,239,231,.55);margin-bottom:10px">WORKOUT 5× WEEKLY · 6 WEEKS · 3 HUNTERS</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div>
+              <div style="font:700 clamp(19px,2.1vw,25px) 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;color:#F3EFE7;font-variant-numeric:tabular-nums lining-nums">$300</div>
+              <div style="margin-top:4px;font:500 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:rgba(243,239,231,.55)">POOL LOCKED</div>
+            </div>
+            <div>
+              <div style="font:700 clamp(19px,2.1vw,25px) 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;color:#E4783F;font-variant-numeric:tabular-nums lining-nums">$100</div>
+              <div style="margin-top:4px;font:500 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:rgba(243,239,231,.55)">FORFEITED</div>
+            </div>
+            <div>
+              <div style="font:700 clamp(19px,2.1vw,25px) 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;color:#F3EFE7;font-variant-numeric:tabular-nums lining-nums">$0</div>
+              <div style="margin-top:4px;font:500 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:rgba(243,239,231,.55)">HUNTZ KEPT</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:14px 15px;border-bottom:1px solid rgba(243,239,231,.1)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px">
+            <span style="font:500 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:rgba(243,239,231,.55)">YOUR PROOF · 30 SESSIONS</span>
+            <span style="font:600 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:#8FA982">29 DONE · 1 GRACE</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(15,1fr);gap:3.5px;max-width:330px">
+            <sc-for list="{{ proofCells }}" as="c" hint-placeholder-count="30">
+              <sc-if value="{{ c.done }}" hint-placeholder-val="{{ true }}">
+                <div style="aspect-ratio:13/16;border:1px solid rgba(243,239,231,.18);border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative;background:rgba(143,169,130,.16)"><span style="display:block;width:1.8px;height:50%;border-radius:2px;background:#8FA982"></span></div>
+              </sc-if>
+              <sc-if value="{{ c.grace }}" hint-placeholder-val="{{ false }}">
+                <div style="aspect-ratio:13/16;border:1px solid rgba(243,239,231,.18);border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative;background:rgba(228,120,63,.2)"><span style="display:block;width:1.8px;height:50%;border-radius:2px;background:#E4783F"></span></div>
+              </sc-if>
+              <sc-if value="{{ c.full }}" hint-placeholder-val="{{ false }}">
+                <div style="aspect-ratio:13/16;border:1px solid rgba(243,239,231,.18);border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative;gap:1.4px;background:#5C7A4F;border-color:#5C7A4F"><span style="display:block;width:1.3px;height:48%;border-radius:2px;background:#F3EFE7"></span><span style="display:block;width:1.3px;height:48%;border-radius:2px;background:#F3EFE7"></span><span style="display:block;width:1.3px;height:48%;border-radius:2px;background:#F3EFE7"></span><span style="display:block;width:1.3px;height:48%;border-radius:2px;background:#F3EFE7"></span><span style="position:absolute;left:10%;right:10%;top:50%;height:1.4px;margin-top:-.7px;border-radius:2px;background:#F3EFE7;transform:rotate(-24deg)"></span></div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid rgba(243,239,231,.1)">
+          <span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:#F3EFE7">You</span>
+          <span style="font:600 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#8FA982;white-space:nowrap">FINISHED</span>
+          <span style="font:700 15px 'Figtree',Arial,Helvetica,sans-serif;font-variant-numeric:tabular-nums lining-nums;min-width:82px;text-align:right;color:#F3EFE7">$100 +$50</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid rgba(243,239,231,.1)">
+          <span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:#F3EFE7">Maya</span>
+          <span style="font:600 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#8FA982;white-space:nowrap">FINISHED</span>
+          <span style="font:700 15px 'Figtree',Arial,Helvetica,sans-serif;font-variant-numeric:tabular-nums lining-nums;min-width:82px;text-align:right;color:#F3EFE7">$100 +$50</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid rgba(243,239,231,.14)">
+          <span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:rgba(243,239,231,.55)">Dev</span>
+          <span style="font:600 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#E0705F;white-space:nowrap">MISSED 17, 19 &amp; 21</span>
+          <span style="font:700 15px 'Figtree',Arial,Helvetica,sans-serif;font-variant-numeric:tabular-nums lining-nums;min-width:82px;text-align:right;color:#E0705F">−$100</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:baseline;padding:12px 15px;background:#9C3A11;color:#F3EFE7">
+          <span style="font:700 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em">DEV'S $100 SPLIT BY THE FINISHERS</span>
+          <span style="font:600 10px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#F3EFE7">PAID IN 48H</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="challenges" data-screen-label="Upcoming Challenges" style="position:relative;padding:clamp(56px,8vh,88px) clamp(20px,5vw,64px);scroll-margin-top:70px">
+  <div style="max-width:1220px;margin:0 auto">
+    <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;color:#948D80;margin-bottom:14px">HUNTS</div>
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:clamp(18px,4vw,52px);margin-bottom:clamp(26px,4vh,40px)">
+      <h2 style="margin:0;font:600 clamp(34px,4.4vw,60px)/1.06 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Upcoming<span style="color:#C24E1F">.</span></h2>
+      <div style="display:flex;align-items:center;gap:clamp(16px,2vw,26px);flex:1 1 320px;justify-content:flex-end">
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <div style="display:flex;gap:5px">
+          <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+          <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+          <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+          <div data-pulse="clay" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+          <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+          <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+          <div data-pulse="green" style="width:clamp(20px,2vw,24px);aspect-ratio:13/16;border:1.5px solid rgba(22,19,14,.2);border-radius:5px;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .35s ease,border-color .35s ease"><span data-pstroke="" style="display:block;width:2.5px;height:50%;border-radius:2px;background:rgba(22,19,14,.18);transition:background .35s ease"></span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;min-height:44px">
+        <button type="button" id="ch-prev" aria-label="Previous challenges" onClick="{{ chPrev }}" style="opacity:0;pointer-events:none;width:44px;height:44px;border-radius:50%;border:1px solid rgba(22,19,14,.2);background:rgba(255,255,255,.55);color:#16130E;font:400 16px 'Figtree',Arial,Helvetica,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .3s ease,color .3s ease,border-color .3s ease" style-hover="background:#C24E1F;border-color:#C24E1F;color:#F3EFE7">←</button>
+        <button type="button" id="ch-next" aria-label="Next challenges" onClick="{{ chNext }}" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(22,19,14,.2);background:rgba(255,255,255,.55);color:#16130E;font:400 16px 'Figtree',Arial,Helvetica,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .3s ease,color .3s ease,border-color .3s ease" style-hover="background:#C24E1F;border-color:#C24E1F;color:#F3EFE7">→</button>
+        </div>
+      </div>
+    </div>
+    <div id="ch-rail" style="display:flex;gap:clamp(12px,1.6vw,20px);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px 0 20px;scrollbar-width:none">
+        <div data-plate="" style="scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
+              <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 01</span>
+              <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">01</span>
+            </div>
+            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Apply to jobs</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">5 JOBS / DAY</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">3 WEEKS</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div>
+          </div>
+        </div>
+        <div data-plate="" style="scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
+              <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 02</span>
+              <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">02</span>
+            </div>
+            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Post content</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">1× DAILY</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">4 WEEKS</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div>
+          </div>
+        </div>
+        <div data-plate="" style="scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
+              <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 03</span>
+              <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">03</span>
+            </div>
+            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Read books</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">5 PAGES DAILY</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">4 WEEKS</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div>
+          </div>
+        </div>
+        <div data-plate="" style="scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
+              <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 04</span>
+              <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">04</span>
+            </div>
+            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Stay fit</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">4× A WEEK</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">6 WEEKS</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div>
+          </div>
+        </div>
+        <div data-plate="" style="scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
+              <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 05</span>
+              <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">05</span>
+            </div>
+            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Live stream</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">5× A WEEK</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">3 WEEKS</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div>
+          </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<section id="why" data-screen-label="FAQ" style="padding:clamp(56px,8vh,88px) clamp(20px,5vw,64px) clamp(60px,9vh,110px);scroll-margin-top:70px">
+  <div style="max-width:1220px;margin:0 auto">
+    <div style="margin-bottom:16px"><div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;color:#948D80;font-family:'Figtree',Arial,Helvetica,sans-serif">FAQ</div></div>
+    
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:clamp(20px,4vw,56px);margin-bottom:clamp(28px,5vh,48px)">
+      <h2 style="margin:0 0 0;font:600 clamp(34px,4.6vw,64px)/1.03 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;font-family:'Playfair Display','Times New Roman',serif">Asked plainly, answered plainly<span style="color:#C24E1F">.</span></h2>
+      <p style="margin:0 0 8px;flex:0 1 auto;font:400 clamp(13.5px,1.05vw,15.5px)/1.5 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;white-space:nowrap">The five we get every day. Not here? team@huntz.ai</p>
+    </div><div style="border-bottom:1px solid #16130E">
+      <div data-card="" style="opacity:0;transform:translateY(32px);border-top:1px solid #16130E">
+        <div onClick="{{ toggle0 }}" role="button" tabIndex="0" style="cursor:pointer;display:flex;align-items:center;gap:15px;padding:clamp(20px,3.2vh,30px) 0" style-hover="color:#C24E1F">
+          <span id="faq-ar-0" style="display:inline-block;color:#C24E1F;font-size:13px;flex:none;transition:transform .4s cubic-bezier(.22,1.2,.36,1);transform:rotate(90deg)">▶</span>
+          <span style="font: 700 clamp(19px,2.3vw,30px) 'Playfair Display','Times New Roman',serif; font-family:'Playfair Display','Times New Roman',serif">Is this gambling?</span>
+        </div>
+        <div id="faq-an-0" style="display:grid;grid-template-rows:1fr;transition:grid-template-rows .5s cubic-bezier(.65,0,.18,1)"><div style="overflow:hidden"><p style="margin: 0; padding: 2px 0 clamp(24px,3.5vh,34px) 30px; max-width: 780px; font: 400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; font-family:'Figtree',Arial,Helvetica,sans-serif">No. There is no chance anywhere in Huntz. Your outcome depends entirely on your own effort: finish and your stake comes back in full. Nothing is random, no one plays against you, and Huntz takes no cut of forfeits.</p></div></div>
+      </div>
+      <div data-card="" style="opacity:0;transform:translateY(32px);border-top:1px solid #16130E">
+        <div onClick="{{ toggle1 }}" role="button" tabIndex="0" style="cursor:pointer;display:flex;align-items:center;gap:15px;padding:clamp(20px,3.2vh,30px) 0" style-hover="color:#C24E1F">
+          <span id="faq-ar-1" style="display:inline-block;color:#C24E1F;font-size:13px;flex:none;transition:transform .4s cubic-bezier(.22,1.2,.36,1);transform:rotate(0deg)">▶</span>
+          <span style="font: 700 clamp(19px,2.3vw,30px) 'Playfair Display','Times New Roman',serif; font-family:'Playfair Display','Times New Roman',serif">What happens when I finish?</span>
+        </div>
+        <div id="faq-an-1" style="display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.65,0,.18,1)"><div style="overflow:hidden"><p style="margin: 0; padding: 2px 0 clamp(24px,3.5vh,34px) 30px; max-width: 780px; font: 400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; font-family:'Figtree',Arial,Helvetica,sans-serif">Your full stake returns, plus a capped share of the stakes forfeited by those who quit — both settled to your account within 48 hours of the hunt closing.</p></div></div>
+      </div>
+      <div data-card="" style="opacity:0;transform:translateY(32px);border-top:1px solid #16130E">
+        <div onClick="{{ toggle2 }}" role="button" tabIndex="0" style="cursor:pointer;display:flex;align-items:center;gap:15px;padding:clamp(20px,3.2vh,30px) 0" style-hover="color:#C24E1F">
+          <span id="faq-ar-2" style="display:inline-block;color:#C24E1F;font-size:13px;flex:none;transition:transform .4s cubic-bezier(.22,1.2,.36,1);transform:rotate(0deg)">▶</span>
+          <span style="font: 700 clamp(19px,2.3vw,30px) 'Playfair Display','Times New Roman',serif; font-family:'Playfair Display','Times New Roman',serif">What if I miss a day?</span>
+        </div>
+        <div id="faq-an-2" style="display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.65,0,.18,1)"><div style="overflow:hidden"><p style="margin: 0; padding: 2px 0 clamp(24px,3.5vh,34px) 30px; max-width: 780px; font: 400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; font-family:'Figtree',Arial,Helvetica,sans-serif">Every hunt publishes its rules before you join — allowed misses, grace days, deadlines. Fall short of them and your stake joins the finishers' pool. No surprises, no retroactive changes.</p></div></div>
+      </div>
+      <div data-card="" style="opacity:0;transform:translateY(32px);border-top:1px solid #16130E">
+        <div onClick="{{ toggle3 }}" role="button" tabIndex="0" style="cursor:pointer;display:flex;align-items:center;gap:15px;padding:clamp(20px,3.2vh,30px) 0" style-hover="color:#C24E1F">
+          <span id="faq-ar-3" style="display:inline-block;color:#C24E1F;font-size:13px;flex:none;transition:transform .4s cubic-bezier(.22,1.2,.36,1);transform:rotate(0deg)">▶</span>
+          <span style="font: 700 clamp(19px,2.3vw,30px) 'Playfair Display','Times New Roman',serif; font-family:'Playfair Display','Times New Roman',serif">How is proof verified?</span>
+        </div>
+        <div id="faq-an-3" style="display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.65,0,.18,1)"><div style="overflow:hidden"><p style="margin: 0; padding: 2px 0 clamp(24px,3.5vh,34px) 30px; max-width: 780px; font: 400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; font-family:'Figtree',Arial,Helvetica,sans-serif">Public links, video evidence, written reflection, checked against the hunt's rules — an automated first pass, human review for anything unclear, and disputes handled by Huntz, not the host.</p></div></div>
+      </div>
+      <div data-card="" style="opacity:0;transform:translateY(32px);border-top:1px solid #16130E">
+        <div onClick="{{ toggle4 }}" role="button" tabIndex="0" style="cursor:pointer;display:flex;align-items:center;gap:15px;padding:clamp(20px,3.2vh,30px) 0" style-hover="color:#C24E1F">
+          <span id="faq-ar-4" style="display:inline-block;color:#C24E1F;font-size:13px;flex:none;transition:transform .4s cubic-bezier(.22,1.2,.36,1);transform:rotate(0deg)">▶</span>
+          <span style="font: 700 clamp(19px,2.3vw,30px) 'Playfair Display','Times New Roman',serif; font-family:'Playfair Display','Times New Roman',serif">What does Huntz charge?</span>
+        </div>
+        <div id="faq-an-4" style="display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.65,0,.18,1)"><div style="overflow:hidden"><p style="margin: 0; padding: 2px 0 clamp(24px,3.5vh,34px) 30px; max-width: 780px; font: 400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; font-family:'Figtree',Arial,Helvetica,sans-serif">10% service and verification fee when you join a hunt. Never a percentage of the pool, never a cent from forfeits. If you finish, the fee is the only thing you've spent.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Ticker 2" style="border-top:1.5px solid #16130E;border-bottom:1.5px solid #16130E;padding:18px 0;overflow:hidden">
+  <div id="tick2-track" style="display:flex;width:max-content;will-change:transform">
+    <sc-for list="{{ ticker }}" as="t" hint-placeholder-count="8">
+      <div style="display:flex;align-items:center;gap:clamp(20px,3vw,38px);flex:none;margin-right:clamp(20px,3vw,38px)">
+        <span style="font: 700 clamp(16px,2vw,24px) 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; white-space: nowrap; color: #C24E1F; font-family:'Figtree',Arial,Helvetica,sans-serif">{{ t }}</span>
+        <span style="width:8px;height:8px;border-radius:50%;background:#16130E;flex:none"></span>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<section id="cta" data-screen-label="Final CTA" style="position:relative;color:#16130E;border-top:1px solid rgba(22,19,14,.16);padding:clamp(64px,10vh,110px) clamp(20px,5vw,64px) clamp(30px,5vh,48px);scroll-margin-top:0px">
+  <div id="fin-glow" aria-hidden="true" style="position:absolute;left:50%;top:34%;width:min(900px,110vw);aspect-ratio:1;transform:translate(-50%,-50%) scale(.7);border-radius:50%;background:radial-gradient(circle,rgba(194,78,31,.09),rgba(194,78,31,0) 62%);opacity:0;pointer-events:none"></div>
+  <div style="position:relative;max-width:1220px;margin:0 auto;width:100%">
+    <div style="display:flex;flex-wrap:wrap;gap:clamp(28px,4vw,64px);align-items:flex-start;justify-content:space-between">
+      <div style="flex:1 1 480px;min-width:300px">
+        <div id="fin-eyebrow" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;color:#948D80;margin-bottom:16px;opacity:0;transform:translateY(16px)">READY WHEN YOU ARE</div>
+        <h2 style="margin:0 0 clamp(24px,4vh,34px);font:600 clamp(40px,5.6vw,78px)/1.03 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E">
+          <span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)">Hunt&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)">your&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)">goals<span style="color:#C24E1F">.</span></span>
+          <br>
+          <span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic">Stop&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic">hiding<span style="color:#C24E1F;font-style:normal">.</span></span>
+        </h2>
+        <div id="fin-form" style="opacity:0;transform:translateY(20px)">
+          <sc-if value="{{ finalIdle }}" hint-placeholder-val="{{ true }}">
+            <form onSubmit="{{ submitFinal }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
+              <input type="email" required="" placeholder="you@email.com" style="flex:1 1 220px;padding:17px 18px;border:1px solid rgba(22,19,14,.28);border-radius:14px;background:rgba(255,255,255,.6);font:500 15px 'Figtree',Arial,Helvetica,sans-serif;color:#16130E;outline:none" style-focus="border-color:#C24E1F">
+              <button type="submit" style="padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:14px;color:#F3EFE7;font:700 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;cursor:pointer;box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,transform .15s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">JOIN THE WAITLIST</button>
+            </form>
+          </sc-if>
+          <sc-if value="{{ sub2 }}" hint-placeholder-val="{{ false }}">
+            <div style="display:inline-block;border:2px solid #C24E1F;border-radius:14px;color:#C24E1F;padding:17px 24px;font:700 clamp(13px,1.4vw,17px) 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN.</div>
+          </sc-if>
+          <div style="margin-top:16px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#948D80">NO SPAM · ONE EMAIL WHEN WE LAUNCH</div>
+        </div>
+      </div>
+      <div data-plate="" style="flex:0 1 380px;min-width:280px;padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));box-shadow:0 1px 0 rgba(255,255,255,.85) inset,0 26px 44px -34px rgba(22,19,14,.6)">
+        <div style="font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:#948D80;margin-bottom:16px">WHAT HAPPENS NEXT</div>
+        <div style="display:flex;flex-direction:column">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">iOS &amp; Android app</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">COMING SOON</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">Creator-hosted hunts</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">COMING SOON</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">Private hunts with friends</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">COMING SOON</span></div>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:9px;margin-top:20px;flex-wrap:wrap">
+        <span style="font:500 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#948D80">QUESTIONS?</span>
+        <a href="mailto:team@huntz.ai" style="display:inline-block;font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#16130E;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.5);padding-bottom:2px" style-hover="color:#C24E1F">TEAM@HUNTZ.AI →</a>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:clamp(48px,9vh,104px);text-align:center;overflow:hidden">
+      <div id="fin-mark" aria-hidden="true" style="font:800 clamp(96px,19vw,290px)/.9 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.05em;color:rgba(22,19,14,.055);white-space:nowrap;user-select:none;pointer-events:none">HUNTZ<span style="color:rgba(194,78,31,.14)">.</span></div>
+      <div style="margin-top:clamp(6px,1.5vh,14px);font:500 italic clamp(15px,1.5vw,20px) 'Playfair Display','Times New Roman',serif;color:#948D80">Put your money where your goals are.</div>
+    </div>
+  </div>
+</section>
+
+<footer data-screen-label="Footer" style="border-top:1px solid rgba(22,19,14,.16);padding:clamp(34px,5vh,52px) clamp(20px,5vw,64px) 34px">
+  <div style="max-width:1220px;margin:0 auto">
+    <div style="display:flex;flex-wrap:wrap;gap:clamp(26px,4vw,64px);justify-content:space-between;margin-bottom:clamp(28px,4vh,44px)">
+      <div style="flex:1 1 260px;max-width:320px">
+        <div style="font:800 19px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;margin-bottom:12px">HUNTZ<span style="color:#C24E1F">.</span></div>
+        <p style="margin:0;font:500 italic 14.5px/1.55 'Playfair Display','Times New Roman',serif;color:#4A453C">The marketplace for accountability.</p>
+        <div style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:8px 14px;border:1px solid rgba(22,19,14,.18);border-radius:20px;font:600 10px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#4A453C">NOT A GAMBLING PLATFORM</div>
+      </div>
+          <div style="display:flex;flex-direction:column;gap:11px;min-width:132px">
+            <div style="font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:#948D80;margin-bottom:3px">PLATFORM</div>
+            <a href="#mechanic" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">How it works</a>
+            <a href="#challenges" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Upcoming hunts</a>
+            <a href="#top" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Host a hunt<span style="display:inline-block;margin-left:9px;padding:3px 8px;border-radius:20px;background:rgba(194,78,31,.12);color:#C24E1F;white-space:nowrap;font:700 8px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;vertical-align:1.5px">COMING SOON</span></a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px;min-width:132px">
+            <div style="font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:#948D80;margin-bottom:3px">COMPANY</div>
+            <a href="#top" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">About<span style="display:inline-block;margin-left:9px;padding:3px 8px;border-radius:20px;background:rgba(194,78,31,.12);color:#C24E1F;white-space:nowrap;font:700 8px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;vertical-align:1.5px">COMING SOON</span></a>
+            <a href="#top" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Blog<span style="display:inline-block;margin-left:9px;padding:3px 8px;border-radius:20px;background:rgba(194,78,31,.12);color:#C24E1F;white-space:nowrap;font:700 8px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;vertical-align:1.5px">COMING SOON</span></a>
+            <a href="#top" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Careers<span style="display:inline-block;margin-left:9px;padding:3px 8px;border-radius:20px;background:rgba(194,78,31,.12);color:#C24E1F;white-space:nowrap;font:700 8px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;vertical-align:1.5px">COMING SOON</span></a>
+            <a href="#cta" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Contact</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px;min-width:132px">
+            <div style="font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:#948D80;margin-bottom:3px">LEGAL</div>
+            <a href="#top" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Terms of service</a>
+            <a href="#top" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Privacy policy</a>
+          </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;padding-top:22px;border-top:1px solid rgba(22,19,14,.12)">
+      <span style="font:500 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.06em;color:#948D80">© 2026 Huntz · Not a bank, not a bookmaker</span>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;font:600 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em">
+        <a href="mailto:team@huntz.ai" style="display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid rgba(22,19,14,.18);border-radius:12px;background:rgba(255,255,255,.5);color:#4A453C;text-decoration:none;transition:background .3s ease,border-color .3s ease,color .3s ease" style-hover="background:#C24E1F;border-color:#C24E1F;color:#F3EFE7"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2.5" y="5" width="19" height="14" rx="2"></rect><path d="M3 6.5l9 6 9-6"></path></svg>EMAIL</a>
+        <a href="#top" style="display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid rgba(22,19,14,.18);border-radius:12px;background:rgba(255,255,255,.5);color:#4A453C;text-decoration:none;transition:background .3s ease,border-color .3s ease,color .3s ease" style-hover="background:#C24E1F;border-color:#C24E1F;color:#F3EFE7"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M4.2 8.6h3.1V20H4.2V8.6zm1.55-5a1.8 1.8 0 110 3.6 1.8 1.8 0 010-3.6zM9.6 8.6h3v1.55h.04c.42-.78 1.45-1.6 2.98-1.6 3.19 0 3.78 2.06 3.78 4.74V20h-3.1v-5.36c0-1.28-.02-2.92-1.79-2.92-1.79 0-2.06 1.38-2.06 2.82V20H9.6V8.6z"></path></svg>LINKEDIN</a>
+        <a href="#top" style="display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid rgba(22,19,14,.18);border-radius:12px;background:rgba(255,255,255,.5);color:#4A453C;text-decoration:none;transition:background .3s ease,border-color .3s ease,color .3s ease" style-hover="background:#C24E1F;border-color:#C24E1F;color:#F3EFE7"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 2h-3.1v13.1a2.6 2.6 0 11-1.9-2.5V9.4a5.7 5.7 0 104.7 5.6V8.6a6.5 6.5 0 003.8 1.2V6.7a3.6 3.6 0 01-3.5-3.6V2z"></path></svg>TIKTOK</a>
+        <a href="#top" style="display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid rgba(22,19,14,.18);border-radius:12px;background:rgba(255,255,255,.5);color:#4A453C;text-decoration:none;transition:background .3s ease,border-color .3s ease,color .3s ease" style-hover="background:#C24E1F;border-color:#C24E1F;color:#F3EFE7"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"></circle></svg>INSTAGRAM</a>
+      </div>
+    </div>
+  </div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;marqueeSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:20,&quot;max&quot;:240,&quot;step&quot;:5,&quot;unit&quot;:&quot;px/s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;phoneTilt&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+class Component extends DCLogic {
+  state = { sub1: false, sub2: false };
+  faqOpen = 0;
+  toggleFaq(i) {
+    const open = this.faqOpen === i ? -1 : i;
+    this.faqOpen = open;
+    for (let j = 0; j < 5; j++) {
+      const ar = this.$('faq-ar-' + j), an = this.$('faq-an-' + j);
+      if (ar) ar.style.transform = open === j ? 'rotate(90deg)' : 'rotate(0deg)';
+      if (an) an.style.gridTemplateRows = open === j ? '1fr' : '0fr';
+    }
+  }
+  setRoot = (el) => { if (el) this.root = el; };
+  $(id) { return this.root ? this.root.querySelector('#' + id) : null; }
+  $$(s) { return this.root ? Array.from(this.root.querySelectorAll(s)) : []; }
+  componentDidMount() {
+    this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.boost = 0; this.lastY = scrollY; this.tickX = 0;
+    this.cRX = 0; this.cRY = 0; this.tRX = 0; this.tRY = 0; this.lastP = -1;
+    requestAnimationFrame(() => this.setup());
+  }
+  componentWillUnmount() {
+    cancelAnimationFrame(this.raf);
+    if (this.onResize) removeEventListener('resize', this.onResize);
+    if (this.onScrollFn) removeEventListener('scroll', this.onScrollFn);
+  }
+  setup() {
+    const need = () => this.root && this.root.querySelector('#tick-track') && this.root.querySelector('#hz-phone') && this.root.querySelector('#tick2-track');
+    if (!need()) { this.setupTries = (this.setupTries || 0) + 1; if (this.setupTries < 600) requestAnimationFrame(() => this.setup()); return; }
+    const $ = id => this.$(id);
+    this.pulseEls = this.$$('[data-pulse]').map(el => ({ el: el, stroke: el.querySelector('[data-pstroke]'), i: Array.prototype.indexOf.call(el.parentElement.children, el) }));
+    this.pulseStep = -1;
+    this.progEls = this.$$('[data-prog]');
+    this.progFilled = -1;
+    this.finSec = document.getElementById('cta');
+    this.finWords = this.$$('[data-fw]');
+    this.finCells = this.$$('[data-fin]').map(el => ({ el: el, stroke: el.querySelector('[data-finstroke]'), i: +el.dataset.i }));
+    this.finBits = [$('fin-eyebrow'), $('fin-sub'), $('fin-form')].filter(Boolean);
+    this.finGlow = $('fin-glow');
+    this.finMark = $('fin-mark');
+    this.finPlayed = false;
+    if (this.reduced) this.playFinale(true);
+    else setTimeout(() => this.playFinale(true), 6000);
+    this.wipeEl = null;
+    const wipe = this.$$('[data-wipe]')[0];
+    if (wipe && !this.reduced) {
+      wipe.style.clipPath = 'inset(0 50% 0 50%)';
+      this.wipeEl = wipe;
+      setTimeout(() => this.openWipe(), 6000);
+    }
+    const rail = $('ch-rail');
+    if (rail) { rail.addEventListener('scroll', () => { clearTimeout(this._rt); this._rt = setTimeout(this.railState, 90); }, { passive: true }); this.railState(); }
+    this.glow = $('hz-glow'); this.lit = $('hz-lit');
+    if (!this.reduced && matchMedia('(pointer:fine)').matches) {
+      this.gx = innerWidth / 2; this.gy = innerHeight / 2; this.tgx = this.gx; this.tgy = this.gy;
+      addEventListener('pointermove', e => {
+        this.tgx = e.clientX; this.tgy = e.clientY;
+        if (!this.glowOn) { this.glowOn = true; if (this.glow) this.glow.style.opacity = '1'; if (this.lit) this.lit.style.opacity = '1'; }
+      }, { passive: true });
+      addEventListener('pointerleave', () => { this.glowOn = false; if (this.glow) this.glow.style.opacity = '0'; if (this.lit) this.lit.style.opacity = '0'; });
+    }
+    this.ticker = $('tick-track'); this.ticker2 = $('tick2-track'); this.tick2X = -1; this.phone = $('hz-phone');
+    this.measure();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => this.measure());
+    addEventListener('resize', this.onResize = () => this.measure());
+    const hero = $('hz-hero'); this.fine = matchMedia('(pointer:fine)').matches;
+    if (hero && this.fine && (this.props.phoneTilt ?? true) && !this.reduced) {
+      hero.addEventListener('mousemove', e => {
+        const r = hero.getBoundingClientRect();
+        this.tRY = ((e.clientX - r.left) / r.width - .5) * 14;
+        this.tRX = -(((e.clientY - r.top) / r.height) - .5) * 10;
+      });
+      hero.addEventListener('mouseleave', () => { this.tRX = 0; this.tRY = 0; });
+    }
+    const cards = this.$$('[data-card]');
+    if (this.reduced) { cards.forEach(c => { c.style.opacity = 1; c.style.transform = 'none'; }); }
+    else if (cards.length) {
+      const grid = cards[0].parentElement;
+      const io = new IntersectionObserver(es => {
+        if (es.some(e => e.isIntersecting)) {
+          cards.forEach((c, i) => {
+            c.style.transition = 'transform .8s cubic-bezier(.22,1.35,.36,1) ' + (i * 90) + 'ms, opacity .55s ease ' + (i * 90) + 'ms';
+            c.style.transform = 'none'; c.style.opacity = '1';
+          });
+          io.disconnect();
+        }
+      }, { threshold: .2 });
+      io.observe(grid);
+    }
+    const nums = this.$$('[data-target]'); const statsEl = $('stats');
+    const don1 = $('don-1'), don2 = $('don-2');
+    const setNums = t => {
+      nums.forEach(el => {
+        const v = (+el.dataset.target) * t; const f = el.dataset.format;
+        el.textContent = f === 'money' ? '$' + Math.round(v).toLocaleString('en-US') : f === 'pct' ? Math.round(v) + '%' : f === 'plus' ? Math.round(v).toLocaleString('en-US') + '+' : Math.round(v).toLocaleString('en-US');
+      });
+      if (don1) don1.setAttribute('stroke-dasharray', (407.1 * t) + ' 502.7');
+      if (don2) { don2.setAttribute('stroke-dasharray', (95.5 * t) + ' 502.7'); don2.setAttribute('stroke-dashoffset', String(-407.1 * t)); }
+    };
+    if (this.reduced) { setNums(1); }
+    else if (statsEl) {
+      const io2 = new IntersectionObserver(es => {
+        if (es.some(e => e.isIntersecting)) {
+          io2.disconnect();
+          const t0 = performance.now();
+          const step = now => { const t = Math.min(1, (now - t0) / 1700); setNums(1 - Math.pow(1 - t, 3)); if (t < 1) requestAnimationFrame(step); };
+          requestAnimationFrame(step);
+        }
+      }, { threshold: .3 });
+      io2.observe(statsEl);
+    }
+    if (this.reduced) return;
+    cancelAnimationFrame(this.raf);
+    this.raf = requestAnimationFrame(t => this.loop(t));
+  }
+  measure() {
+    if (this.ticker) { const k = this.ticker.children; if (k.length > 1) this.tickHalf = k[k.length / 2].offsetLeft - k[0].offsetLeft; }
+    if (this.ticker2) { const k = this.ticker2.children; if (k.length > 1) this.tick2Half = k[k.length / 2].offsetLeft - k[0].offsetLeft; }
+  }
+  loop(now) {
+    const dt = Math.min(.05, (now - (this.prev || now)) / 1000); this.prev = now;
+    const vel = Math.abs(scrollY - this.lastY); this.lastY = scrollY;
+    this.boost += (Math.min(vel * .09, 3) - this.boost) * .09;
+    if (!this.ticker || !this.ticker.isConnected) { this.ticker = this.$('tick-track'); this.tickHalf = 0; this.measure(); }
+    if (!this.phone || !this.phone.isConnected) this.phone = this.$('hz-phone');
+    if (this.ticker && this.tickHalf) {
+      this.tickX -= (this.props.marqueeSpeed ?? 80) * (1 + this.boost) * dt;
+      if (-this.tickX >= this.tickHalf) this.tickX += this.tickHalf;
+      this.ticker.style.transform = 'translate3d(' + this.tickX + 'px,0,0)';
+    }
+    if (this.ticker2 && this.tick2Half) {
+      this.tick2X += (this.props.marqueeSpeed ?? 80) * (1 + this.boost) * dt;
+      if (this.tick2X >= 0) this.tick2X -= this.tick2Half;
+      this.ticker2.style.transform = 'translate3d(' + this.tick2X + 'px,0,0)';
+    }
+    if (this.glow && this.glowOn) {
+      this.gx += (this.tgx - this.gx) * .12; this.gy += (this.tgy - this.gy) * .12;
+      this.glow.style.transform = 'translate3d(' + this.gx.toFixed(1) + 'px,' + this.gy.toFixed(1) + 'px,0)';
+      if (this.lit) {
+        const m = 'radial-gradient(circle 210px at ' + this.gx.toFixed(1) + 'px ' + this.gy.toFixed(1) + 'px, rgba(0,0,0,.9) 0%, rgba(0,0,0,.35) 46%, rgba(0,0,0,0) 72%)';
+        this.lit.style.maskImage = m; this.lit.style.webkitMaskImage = m;
+      }
+    }
+    if (this.phone) {
+      this.cRX += (this.tRX - this.cRX) * .075; this.cRY += (this.tRY - this.cRY) * .075;
+      const par = this.fine ? 0 : Math.max(-36, Math.min(36, scrollY * -.06));
+      this.phone.style.transform = 'perspective(1100px) rotateX(' + this.cRX + 'deg) rotateY(' + this.cRY + 'deg) translateY(' + par + 'px)';
+    }
+    if (this.finSec) {
+      const r = this.finSec.getBoundingClientRect();
+      if (!this.finPlayed && r.top < innerHeight * .72) this.playFinale(false);
+      if (this.finMark && r.top < innerHeight && r.bottom > 0) {
+        const t = 1 - (r.top + r.height / 2) / innerHeight;
+        this.finMark.style.transform = 'translateY(' + (t * -30).toFixed(2) + 'px)';
+      }
+    }
+    if (this.wipeEl) {
+      const r = this.wipeEl.getBoundingClientRect();
+      if (r.top < innerHeight * .85) this.openWipe();
+    }
+    if (this.pulseEls && this.pulseEls.length) {
+      const step = Math.floor(now / 560) % 9;
+      if (step !== this.pulseStep) {
+        this.pulseStep = step;
+        this.pulseEls.forEach(o => {
+          const on = o.i < step;
+          const col = o.el.dataset.pulse === 'clay' ? '#C24E1F' : '#4F6A45';
+          o.el.style.background = on ? col : 'transparent';
+          o.el.style.borderColor = on ? col : 'rgba(22,19,14,.2)';
+          if (o.stroke) o.stroke.style.background = on ? '#F3EFE7' : 'rgba(22,19,14,.15)';
+        });
+      }
+    }
+    this.raf = requestAnimationFrame(t => this.loop(t));
+  }
+  playFinale(instant) {
+    if (this.finPlayed) return;
+    this.finPlayed = true;
+    const ease = 'cubic-bezier(.16,1.1,.3,1)';
+    (this.finWords || []).forEach((w, k) => {
+      w.style.transition = 'opacity .8s ease ' + (instant ? 0 : k * .11) + 's, transform .95s ' + ease + ' ' + (instant ? 0 : k * .11) + 's';
+      w.style.opacity = 1; w.style.transform = 'translateY(0) rotate(0deg)';
+    });
+    (this.finBits || []).forEach((b, k) => {
+      const d = instant ? 0 : .5 + k * .16;
+      b.style.transition = 'opacity .7s ease ' + d + 's, transform .8s ' + ease + ' ' + d + 's';
+      b.style.opacity = 1; b.style.transform = 'translateY(0)';
+    });
+    if (this.finGlow) {
+      this.finGlow.style.transition = 'opacity 1.6s ease .25s, transform 2.6s cubic-bezier(.2,.8,.2,1) .25s';
+      this.finGlow.style.opacity = 1;
+      this.finGlow.style.transform = 'translate(-50%,-50%) scale(1)';
+    }
+    (this.finCells || []).forEach(o => {
+      const d = instant ? 0 : .35 + o.i * .035;
+      const clay = o.i === 11;
+      const c = clay ? '#C24E1F' : '#4F6A45';
+      o.el.style.transition = 'background .45s ease ' + d + 's, border-color .45s ease ' + d + 's, transform .5s cubic-bezier(.2,1.5,.4,1) ' + d + 's';
+      o.el.style.background = c; o.el.style.borderColor = c;
+      o.el.style.transform = 'scaleY(1.12)';
+    });
+  }
+  openWipe() {
+    const el = this.wipeEl;
+    if (!el) return;
+    this.wipeEl = null;
+    el.style.transition = 'clip-path 2.4s cubic-bezier(.65,0,.18,1)';
+    el.style.clipPath = 'inset(0 0 0 0)';
+  }
+  railState = () => {
+    const rail = this.$('ch-rail'), prev = this.$('ch-prev'), next = this.$('ch-next');
+    if (!rail || !prev) return;
+    const max = rail.scrollWidth - rail.clientWidth;
+    const back = rail.scrollLeft > 8;
+    prev.style.opacity = back ? '1' : '0';
+    prev.style.pointerEvents = back ? 'auto' : 'none';
+    if (next) { const end = rail.scrollLeft >= max - 8; next.style.opacity = end ? '.35' : '1'; next.style.pointerEvents = end ? 'none' : 'auto'; }
+  };
+  scrollRail = (dir) => {
+    const rail = this.$('ch-rail');
+    if (!rail) return;
+    const card = rail.firstElementChild;
+    const step = card ? card.offsetWidth + 18 : rail.clientWidth / 3;
+    rail.scrollBy({ left: dir * step, behavior: 'smooth' });
+    setTimeout(this.railState, 420);
+  };
+  submitHero = (e) => { e.preventDefault(); const i = e.target.querySelector('input'); if (i && i.value.indexOf('@') > 0) this.setState({ sub1: true }); };
+  submitFinal = (e) => { e.preventDefault(); const i = e.target.querySelector('input'); if (i && i.value.indexOf('@') > 0) this.setState({ sub2: true }); };
+  renderVals() {
+    if (!this._ticker) {
+      const phrases = ['STAKE IT', 'PROVE IT DAILY', '100% BACK IF YOU FINISH', 'QUITTERS PAY THE FINISHERS'];
+      let t = []; for (let i = 0; i < 12; i++) t = t.concat(phrases);
+      this._ticker = t;
+      this._proof = [];
+      for (let d = 1; d <= 30; d++) this._proof.push({ done: d !== 12 && d !== 30, grace: d === 12, full: d === 30 });
+      this._finale = []; for (let i = 0; i < 30; i++) this._finale.push({ i: i });
+      this._phone = [];
+      for (let d = 1; d <= 30; d++) {
+        this._phone.push({
+          done: d <= 12 && d !== 8, grace: d === 8, today: d === 13,
+          ghost: d > 13 && d < 30, tally: d === 30
+        });
+      }
+    }
+    if (!this._chNav) this._chNav = { prev: () => this.scrollRail(-1), next: () => this.scrollRail(1) };
+    if (!this._faqToggles) this._faqToggles = [0, 1, 2, 3, 4].map(i => () => this.toggleFaq(i));
+    return {
+      setRoot: this.setRoot, submitHero: this.submitHero, submitFinal: this.submitFinal,
+      sub1: this.state.sub1, sub2: this.state.sub2,
+      heroIdle: !this.state.sub1, finalIdle: !this.state.sub2,
+      ticker: this._ticker, proofCells: this._proof, phoneCells: this._phone, finaleCells: this._finale,
+      chPrev: this._chNav.prev, chNext: this._chNav.next,
+      toggle0: this._faqToggles[0], toggle1: this._faqToggles[1], toggle2: this._faqToggles[2], toggle3: this._faqToggles[3], toggle4: this._faqToggles[4]
+    };
+  }
+}
+</script>
+</body>
+</html>
