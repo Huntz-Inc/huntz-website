@@ -146,7 +146,7 @@ def _card_attrs(m):
     i = _card_i["i"]; _card_i["i"] += 1
     n = HUNT_NAMES[i]
     return ('<div data-plate="" onClick="{{ pick%d }}" onKeyDown="{{ pickkey%d }}" role="button" tabIndex="0" '
-            'aria-label="Join the waitlist — interested in %s" style="cursor:pointer;scroll-snap-align:start;' % (i, i, n))
+            'aria-label="Join the waitlist: interested in %s" style="cursor:pointer;scroll-snap-align:start;' % (i, i, n))
 html, n = re.subn(r'<div data-plate="" style="scroll-snap-align:start;', _card_attrs, html)
 assert n == 5, f"expected 5 hunt cards, patched {n}"
 
@@ -210,23 +210,23 @@ old = """  submitHero = (e) => { e.preventDefault(); const i = e.target.querySel
   submitFinal = (e) => { e.preventDefault(); const i = e.target.querySelector('input'); if (i && i.value.indexOf('@') > 0) this.setState({ sub2: true }); };"""
 assert old in html
 html = html.replace(old, """  // Waitlist backend. Paste the Mailchimp embedded-form action URL here
-  // (https://xxx.usN.list-manage.com/subscribe/post?u=...&id=...) — or any
+  // (https://xxx.usN.list-manage.com/subscribe/post?u=...&id=...), or any
   // endpoint accepting JSON POST {email, interest} (e.g. Formspree).
   // Empty = local confirmation only, no email is stored anywhere.
   WAITLIST_ENDPOINT = 'https://huntz.us18.list-manage.com/subscribe/post?u=b7144d02c740628b3280ff55f&id=3ee28a30af&f_id=000baee6f0';
-  // Mailchimp's bot-trap field from the embedded form — must be sent empty.
+  // Mailchimp's bot-trap field from the embedded form; must be sent empty.
   WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';
   emailOk(v) { return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(v); }
   submit(e, n) {
     e.preventDefault();
     const i = e.target.querySelector('input');
     const v = i ? i.value.trim() : '';
-    if (!this.emailOk(v)) { this.setState({ ['err' + n]: "That email doesn't look right — check it and try again." }); return; }
+    if (!this.emailOk(v)) { this.setState({ ['err' + n]: "That email doesn't look right. Check it and try again." }); return; }
     if (!this.WAITLIST_ENDPOINT) { this.setState({ ['sub' + n]: true, ['err' + n]: '' }); return; }
     this.setState({ ['busy' + n]: true, ['err' + n]: '' });
-    const FALLBACK = "Couldn't join right now — try again, or email team@huntz.ai.";
+    const FALLBACK = "Couldn't join right now. Try again, or email team@huntz.ai.";
     // Mailchimp sends back its own readable reason ("This email address looks
-    // fake or invalid.") prefixed with a code and sometimes wrapped in markup —
+    // fake or invalid.") prefixed with a code and sometimes wrapped in markup, so
     // show the sentence, not our generic line, when there is one.
     const clean = m => {
       if (!m) return FALLBACK;
@@ -302,6 +302,28 @@ before = html
 html = html.replace("html{scroll-behavior:smooth}", "")
 assert html != before, "scroll-behavior rule not found"
 
+# (7) No em dashes anywhere in the copy. Each one is repunctuated for its own
+# sentence rather than swapped for a single substitute, so the rhythm survives:
+# a colon where a list follows, a period where two statements were joined, the
+# site's own "·" separator in the eyebrow.
+EM_DASH_COPY = [
+    ("HUNTZ — THE MARKETPLACE FOR ACCOUNTABILITY",
+     "HUNTZ · THE MARKETPLACE FOR ACCOUNTABILITY"),
+    ("Finish and you get 100% back — plus a share of the stakes forfeited by everyone who quit.",
+     "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit."),
+    ("One proof per session — a photo, a screenshot, a check-in.",
+     "One proof per session: a photo, a screenshot, a check-in."),
+    ("plus a capped share of the stakes forfeited by those who quit — both settled to your account within 48 hours of the hunt closing.",
+     "plus a capped share of the stakes forfeited by those who quit. Both are settled to your account within 48 hours of the hunt closing."),
+    ("Every hunt publishes its rules before you join — allowed misses, grace days, deadlines.",
+     "Every hunt publishes its rules before you join: allowed misses, grace days, deadlines."),
+    ("checked against the hunt's rules — an automated first pass, human review for anything unclear,",
+     "checked against the hunt's rules: an automated first pass, human review for anything unclear,"),
+]
+for old, new in EM_DASH_COPY:
+    assert old in html, "em-dash copy not found: " + old[:60]
+    html = html.replace(old, new)
+
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
     # keep inline <script> content safe; \/ == / inside JS strings/regexes
@@ -342,17 +364,17 @@ FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox
            "%3Ctext x='50' y='56' text-anchor='middle' dominant-baseline='central' "
            "font-family='Arial,Helvetica,sans-serif' font-weight='800' font-size='58' "
            "fill='%2316130E'%3EH%3Ctspan fill='%23C24E1F'%3E.%3C/tspan%3E%3C/text%3E%3C/svg%3E")
-HEAD_META = """<title>Huntz — Put your money where your goals are.</title>
-<meta name="description" content="Stake $50–$500 of your own money on your own goal. Post proof every day. Finish and you get 100% back — plus a share of the stakes forfeited by everyone who quit.">
-<meta property="og:title" content="Huntz — Put your money where your goals are.">
-<meta property="og:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back — plus a share of the stakes forfeited by everyone who quit.">
+HEAD_META = """<title>Huntz · Put your money where your goals are.</title>
+<meta name="description" content="Stake $50–$500 of your own money on your own goal. Post proof every day. Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.">
+<meta property="og:title" content="Huntz · Put your money where your goals are.">
+<meta property="og:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back, plus a share of the stakes forfeited by everyone who quit.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{site}/">
 <meta property="og:image" content="{site}/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Huntz — Put your money where your goals are.">
+<meta name="twitter:title" content="Huntz · Put your money where your goals are.">
 <meta name="twitter:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back.">
 <meta name="twitter:image" content="{site}/og-image.png">
 <link rel="icon" href="{favicon}">""".replace("{favicon}", FAVICON).replace("{site}", SITE_URL)
