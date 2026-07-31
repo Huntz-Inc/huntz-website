@@ -1,0 +1,829 @@
+HUNTZ TERMS OF SERVICE
+
+Effective Date: July      30, 2026
+
+1. Acceptance of These Terms
+
+Welcome to     Huntz.
+
+These Terms of Service ("Terms") are a legally              binding   agreement between        you  and  Huntz, Inc.
+("Huntz," "we," "our," or "us") governing             your access to    and  use of the Huntz mobile application, the
+Huntz website located       at huntz.ai, and     any  related  products, services, content, software, and          features
+(collectively, the "Platform").
+
+By  creating   an  account, accessing      the Platform, joining     a Hunt, submitting      proof, applying     to become a
+Host, or otherwise using       the Platform, you     agree to   be bound    by  these Terms and      our Privacy    Policy,
+which   is incorporated    into  these Terms by      reference.
+
+If you  do  not agree to   these Terms, you      may   not access or use the Platform.
+
+These Terms apply       to every   user of the Platform, including        participants, Hosts, visitors, and      anyone
+interacting   with  Huntz.
+
+2. Changes to         These Terms
+
+We may     update these Terms from time to          time to  reflect changes in     our services, legal obligations,
+technology, or business practices.
+
+If we make material changes, we will provide reasonable notice through                    the Platform, by     email, or
+through   other appropriate means before the updated             Terms become effective.
+
+Unless otherwise required        by  law, continued     use of the Platform after the effective date constitutes
+acceptance of the revised       Terms.
+
+Changes will not retroactively        alter the contractual rules governing         any  Hunt that you     joined  before the
+updated   Terms became effective unless required            by  applicable law.
+
+3. What Huntz Is
+
+Huntz is an    accountability    platform that helps individuals pursue personal goals through                commitment
+contracts.
+
+Users voluntarily     commit to    completing     a goal within    a specified   time period, submit proof of their
+progress, and    may   receive the return     of their stake and    any  applicable rewards if they       successfully    satisfy
+the requirements of the Hunt.
+Each   Hunt specifies its own:
+
+     ●    duration;
+     ●    participation    requirements;
+     ●    proof requirements;
+     ●    completion     threshold;
+     ●    stake amount;
+     ●    payout structure; and
+     ●    any   additional rules disclosed       before joining.
+
+Participation    is entirely  voluntary.
+
+4. What Huntz Is Not
+
+Huntz is not:
+
+     ●    a gambling     platform;
+     ●    a prediction    market
+     ●    a sportsbook;
+     ●    a casino;
+     ●    a lottery;
+     ●    a sweepstakes;
+     ●    a prediction    market;
+     ●    an  investment platform;
+     ●    a money     transmission     service for consumers;
+     ●    financial advice;
+     ●    medical advice;
+     ●    fitness advice;
+     ●    legal advice;
+     ●    therapy;
+     ●    or a substitute for professional services.
+
+Whether you      successfully    complete a Hunt depends primarily             on  your own     actions and    compliance with
+the published     Hunt requirements.
+
+Huntz does not guarantee that you           will accomplish      your goals or receive any        payout.
+
+5. Eligibility
+
+To  use the Platform, you       must:
+
+     ●    be at least eighteen     (18) years old, or the age of legal majority           in your jurisdiction     if higher;
+     ●    have the legal capacity       to enter into   binding    contracts;
+     ●    reside in   or access the Platform from a jurisdiction           where Huntz lawfully         offers the applicable
+          services;
+     ●    comply    with   all applicable laws;
+     ●    maintain    only  one Huntz account unless expressly            authorized    by  Huntz;
+     ●    not have previously       been   permanently     removed     from the Platform.
+
+Certain   Hunts, payment methods, or Platform features may                 be unavailable in      some jurisdictions.
+
+We reserve the right to      refuse service or restrict access where required            by  law or where we determine that
+providing    the Platform would       create legal, regulatory, or operational risk.
+
+If you  misrepresent your identity, age, or location, we may               suspend    or permanently      terminate your
+account.
+
+6. Accounts
+
+You   are responsible for maintaining         the confidentiality     of your account credentials.
+
+You   agree to:
+
+     ●    provide accurate information;
+     ●    keep   your information      current;
+     ●    promptly    update any     changes;
+     ●    maintain    the security   of your account;
+     ●    immediately      notify  Huntz of unauthorized        access.
+
+You   are responsible for all activity      occurring    through    your account.
+
+You   may   not transfer, sell, rent, or share your account without our written               permission.
+
+7. Hunts
+
+A Hunt is a structured      challenge administered        through    the Platform.
+
+Before joining     a Hunt, we will disclose material information             including, where applicable:
+
+     ●    stake amount;
+     ●    applicable fees;
+     ●    duration;
+     ●    proof requirements;
+     ●    completion     requirements;
+     ●    payout methodology;
+     ●    Host identity;
+     ●    participation    limits;
+     ●    applicable deadlines.
+
+By  joining   a Hunt, you     enter into  a commitment contract with           Huntz under the rules disclosed         for that
+Hunt.
+If you  satisfy  the published    completion     requirements, you      will receive the payout described         for that Hunt.
+
+If you  do  not satisfy  those requirements, your stake will be handled             according    to the payout rules
+applicable to   that Hunt.
+
+Where no     participant successfully      completes a Hunt, Huntz may          return   forfeited  stakes or otherwise
+administer payouts in      accordance with      the published     rules for that Hunt.
+
+Participation   in  one Hunt does not create any        entitlement to    participate in   future Hunts.
+
+8. Joining                  a   Hunt
+
+Before you    join  a Hunt, Huntz will disclose the material terms applicable to               that Hunt, including, where
+applicable:
+
+     ●    the stake amount;
+     ●    the applicable join     fee;
+     ●    the duration    of the Hunt;
+     ●    the required    proof submissions;
+     ●    the completion     threshold;
+     ●    the payout methodology;
+     ●    the identity   of the Host, if applicable; and
+     ●    any  additional Hunt-specific rules.
+
+By  joining   a Hunt, you    agree to   those disclosed    terms, which     become part of these Terms for that Hunt.
+
+Once your payment has been           successfully   authorized    and   processed, your participation       is confirmed,
+subject to  the applicable cooling-off period         described    below.
+
+9. Stakes and Payments
+
+Each   Hunt requires participants to       commit a monetary        stake.
+
+The minimum and        maximum stake amounts for each             Hunt are determined       by  Huntz and     will be displayed
+before you    join.
+
+To  promote responsible participation, Huntz may             establish   limits on:
+
+     ●    individual Hunt stakes;
+     ●    the total value of active stakes;
+     ●    participation   frequency; and
+     ●    other account-based       risk controls.
+These limits may     be adjusted    periodically.
+
+Your stake is collected     when   you  join  a Hunt using    one of the payment methods made available through
+the Platform, which     may   include:
+
+    ●    ACH bank      transfer;
+    ●    debit card;
+    ●    Apple Pay;
+    ●    digital wallets;
+    ●    or other supported      payment methods offered        by  our payment processors.
+
+Your payment authorization        allows Huntz and      its payment providers to      collect your committed       stake and
+applicable fees.
+
+If your payment cannot be successfully          processed, your participation       in the Hunt may     be cancelled.
+
+10. Cooling-Off Period
+
+We believe commitment should           be intentional rather than     impulsive.
+
+Unless a Hunt specifically      provides otherwise, you       may   withdraw from a Hunt within:
+
+    ●    forty-eight (48) hours after joining; or
+    ●    any   time before the Hunt officially      begins,
+
+whichever provides the longer withdrawal period.
+
+If you  withdraw during      this period:
+
+    ●    your stake will be fully     refunded;
+    ●    your join   fee will also   be refunded; and
+    ●    your participation     will be cancelled.
+
+Once the cooling-off period       expires, your commitment becomes final, except where these Terms or
+applicable law provide otherwise.
+
+11. Proof Submission
+
+Each   Hunt requires participants to      submit proof demonstrating        completion    of the applicable daily     or
+periodic requirements.
+
+You  agree that every    proof submission      must be:
+    ●    truthful;
+    ●    created   by  you;
+    ●    generated    through    your own    genuine effort;
+    ●    submitted     within  the required    time period; and
+    ●    consistent with     the published    Hunt requirements.
+
+You  may   not submit proof that is:
+
+    ●    fabricated;
+    ●    manipulated;
+    ●    misleading;
+    ●    backdated;
+    ●    recycled    from prior Hunts;
+    ●    purchased     from another person;
+    ●    generated    by  another individual;
+    ●    or otherwise intended       to deceive Huntz or other participants.
+
+Submission     of fraudulent proof constitutes a material breach          of these Terms.
+
+12. Verification
+
+Huntz determines whether submitted            proof satisfies the applicable Hunt requirements.
+
+Verification   may   include one or more of the following:
+
+    ●    automated     review;
+    ●    artificial intelligence-assisted     review;
+    ●    manual review;
+    ●    random audits;
+    ●    requests for additional information;
+    ●    comparison      with  previous submissions;
+    ●    fraud   detection   systems; and
+    ●    other verification     methods reasonably       designed   to preserve the integrity     of the Platform.
+
+Selection   for additional verification     does not imply     wrongdoing.
+
+Failure to  cooperate with     a reasonable verification      request may    result in  the affected   submission     being
+marked    unsuccessful.
+
+13. AI-Assisted Review
+To  improve the speed, consistency, and          integrity   of verification, Huntz may       use artificial intelligence
+systems supplied      by  trusted  third-party   providers, including      Anthropic's Claude models or similar
+technologies.
+
+AI systems may       assist with:
+
+     ●    reviewing    proof submissions;
+     ●    identifying   duplicate submissions;
+     ●    detecting   manipulated     images;
+     ●    identifying   suspicious activity;
+     ●    assisting  fraud   investigations;
+     ●    content moderation; and
+     ●    improving     verification   efficiency.
+
+Artificial intelligence assists our review process but does not independently                  determine outcomes affecting
+a participant's stake, payout, or eligibility.
+
+Whenever an      AI system identifies a submission          that may   affect a participant's Hunt outcome, the
+submission    will be reviewed      by  an  authorized   member of the Huntz team before a final determination                 is
+made.
+
+14. Audits
+
+To  protect participants and      maintain   fairness, Huntz may       conduct audits before, during, or after any          Hunt.
+
+An  audit may    require you    to  provide additional information         supporting    a proof submission.
+
+Such   information    may   include:
+
+     ●    additional photographs;
+     ●    videos;
+     ●    timestamps;
+     ●    contextual information;
+     ●    or other evidence reasonably         related  to the Hunt requirements.
+
+Unless otherwise specified, requested          information     should   be provided    within   seventy-two     (72) hours.
+
+Failure to   respond   may   result in  the affected   submission     being   marked    unsuccessful.
+
+15. Fraud and Abuse
+
+The integrity    of Hunts depends on       honest participation.
+Activities prohibited      under these Terms include, but are not limited             to:
+
+     ●    submitting    false proof;
+     ●    using   multiple accounts;
+     ●    sharing   accounts;
+     ●    collusion    between    participants;
+     ●    impersonating      another individual;
+     ●    manipulating      timestamps;
+     ●    editing   evidence to    misrepresent compliance;
+     ●    attempting    to  bypass verification      systems;
+     ●    using   automation     or bots;
+     ●    exploiting    bugs or security     vulnerabilities;
+     ●    interfering   with   another participant's Hunt; or
+     ●    any  other conduct intended        to  obtain  an  unfair advantage.
+
+If Huntz reasonably       believes fraudulent activity       has occurred, we may         investigate and    take appropriate
+action, including     suspending     accounts, withholding        payouts, reversing      payouts obtained      through    fraud,
+terminating    participation, or referring      matters to    law enforcement where appropriate.
+
+16. Completion and Payouts
+
+Each   Hunt specifies its completion         threshold   before participation      begins.
+
+Participants who      satisfy  all applicable requirements become eligible for the payout described                    for that
+Hunt.
+
+Unless otherwise disclosed, payouts may              include:
+
+     ●    return  of the participant's original stake; and
+     ●    a proportional share of eligible forfeited          stakes, subject to    any   disclosed   caps or distribution     rules.
+
+Huntz never retains forfeited        participant stakes as revenue.
+
+Huntz's compensation        is limited   to the disclosed     join fee.
+
+If no  participant successfully      completes a Hunt, Huntz may            administer forfeited      stakes according      to the
+published    rules applicable to     that Hunt, including      returning    forfeited  stakes to   participants where
+provided.
+
+Payouts are generally       initiated  after:
+
+     ●    the Hunt concludes;
+     ●    applicable verification      has been    completed; and
+     ●    any  applicable dispute period        has expired.
+Processing    times may    vary  depending     upon  banking    networks and     payment providers.
+
+17. Disputes
+
+If you  believe Huntz incorrectly       evaluated   your proof submission       or Hunt outcome, you        may   submit a
+dispute through     the Platform within     the period   specified   for that Hunt.
+
+Submission     of a dispute does not guarantee reversal of the determination.
+
+During   an  active dispute, Huntz may       delay   payouts relating    to the affected   Hunt until the dispute has been
+resolved.
+
+Following    review, Huntz will notify      you   of its determination.
+
+Our decision    following    the dispute review will be final except where otherwise required               by applicable
+law.
+
+18. Cancellation, Platform Issues, and
+Hardship
+
+Huntz may     cancel a Hunt before it begins for operational, legal, technical, safety, or participation-related
+reasons.
+
+If a Hunt is cancelled     before commencement, all collected          stakes and    applicable join   fees will be
+refunded.
+
+If a Hunt cannot be fairly     administered     because of a significant Platform outage, payment failure, force
+majeure event, fraud, or other extraordinary          circumstance, Huntz may:
+
+    ●    extend    the Hunt;
+    ●    modify    deadlines;
+    ●    adjust completion      requirements where reasonably          necessary;
+    ●    cancel the Hunt; or
+    ●    issue appropriate refunds.
+
+Participants affected    by  serious illness, injury, death     of an  immediate family      member, military
+deployment, natural disaster, or other comparable hardship              may   contact Huntz.
+
+At our sole discretion, and      upon   reasonable supporting      documentation      where appropriate, we may         provide
+a full or partial refund   of the participant's stake or another equitable resolution.
+19. Fees
+
+Join Fee
+
+Huntz charges a join      fee for participation    in  each  Hunt. The applicable fee will be clearly          displayed    before
+you  confirm your participation.
+
+Unless otherwise stated       for a specific Hunt, the join      fee is calculated   as a percentage of your committed
+stake.
+
+The join   fee is Huntz's compensation        for operating    the Platform and      administering     the Hunt.
+
+After the applicable cooling-off period         expires, the join    fee is non-refundable except where required             by
+law or where Huntz cancels the Hunt.
+
+Other Fees
+
+Huntz does not charge:
+
+     ●    account maintenance fees;
+     ●    inactivity  fees; or
+     ●    hidden   platform fees.
+
+If optional expedited     payout services become available, any            applicable fees charged       by Huntz or our
+payment providers will be disclosed          before you    request the expedited       payout.
+
+Financial institutions, payment processors, card            issuers, or digital wallet providers may         separately   charge
+fees that are outside Huntz's control.
+
+Interest
+
+If applicable law permits, any       interest earned    on  custodial accounts holding        participant funds belongs to
+Huntz or the applicable financial institution         unless otherwise required        by  law.
+
+20. Payments
+
+Huntz uses one or more third-party          payment providers to       process payments, collect stakes, issue refunds,
+and  distribute payouts.
+
+By  using   payment features, you       authorize Huntz and       its payment providers to:
+     ●    charge your selected      payment method;
+     ●    debit authorized     bank   accounts;
+     ●    process refunds;
+     ●    issue payouts;
+     ●    verify  payment information;
+     ●    and  perform fraud     screening.
+
+Your use of payment services may           also  be governed     by  the applicable payment provider's own            terms and
+privacy   policy.
+
+Huntz is not a bank.
+
+Funds held    in connection     with  Hunts are not bank      deposits, are not insured      by  the Federal Deposit
+Insurance Corporation       (FDIC), and     do  not earn   interest for participants.
+
+Failed Payments
+
+If your payment cannot be completed, reversed, or otherwise fails, Huntz may:
+
+     ●    remove you     from a Hunt;
+     ●    suspend    your participation;
+     ●    cancel your entry;
+     ●    delay  payouts;
+     ●    suspend    your account; or
+     ●    pursue collection     of outstanding     amounts permitted       by law.
+
+Chargebacks
+
+Initiating  a payment dispute or chargeback          for a validly   authorized    Hunt payment without a good-faith
+legal basis constitutes a material breach         of these Terms.
+
+If a payment is reversed      after participation    or payout, Huntz may, where permitted             by  law:
+
+     ●    recover the reversed      amount;
+     ●    offset future payouts;
+     ●    suspend    your account;
+     ●    terminate your account; or
+     ●    pursue any    other remedies available under applicable law.
+
+Nothing    in this section   limits your legal rights to     dispute unauthorized       or fraudulent transactions under
+applicable law.
+
+Taxes
+You   are solely  responsible for determining         and  paying   any  taxes arising    from your participation       in Hunts
+or receipt of payouts.
+
+Where required      by  law, Huntz may      collect tax   information     or report payments to      tax  authorities.
+
+21. Hosts
+
+Certain   users may    apply   to become Hosts and        submit Hunts for publication        on  the Platform.
+
+Submitting    a Hunt does not guarantee that it will be published.
+
+Huntz reviews all proposed         Hunts before publication        and  reserves the right, in    its sole discretion, to
+approve, reject, modify, suspend, remove, delay, or require revisions to                 any  proposed     or published    Hunt.
+
+Approval of a Hunt does not constitute an            endorsement of the Host or create any           employment,
+partnership, agency, franchise, or joint venture relationship             between    Huntz and     the Host.
+
+Hosts are independent users of the Platform.
+
+Host Responsibilities
+
+Hosts agree to:
+
+     ●    accurately    describe Hunt requirements;
+     ●    establish   objective completion       standards where reasonably         possible;
+     ●    avoid   misleading    participants;
+     ●    comply    with  all applicable laws;
+     ●    respond    to reasonable requests from Huntz;
+     ●    cooperate with     investigations;
+     ●    comply    with  FTC endorsement and          advertising    requirements;
+     ●    disclose material relationships with         Huntz where required;
+     ●    avoid   deceptive marketing;
+     ●    and  comply    with   these Terms and      any  separate Host Agreement.
+
+Hosts may     not create Hunts that:
+
+     ●    encourage unlawful conduct;
+     ●    promote violence;
+     ●    encourage self-harm;
+     ●    promote dangerous activities;
+     ●    encourage harassment;
+     ●    infringe intellectual property       rights;
+     ●    facilitate scams or financial fraud;
+     ●    or otherwise violate Huntz policies.
+
+Hunt Review
+
+Huntz reserves the right to      review every     Hunt before publication.
+
+A Hunt may      be rejected   or removed     for any  reason, including     concerns relating     to:
+
+     ●    legality;
+     ●    safety;
+     ●    participant protection;
+     ●    fraud  prevention;
+     ●    quality;
+     ●    misleading    claims;
+     ●    operational feasibility;
+     ●    regulatory   compliance;
+     ●    or consistency    with  Huntz standards.
+
+Even   after approval, Huntz may        suspend   or remove any      Hunt if circumstances change.
+
+Future Community                        Hunts
+
+Huntz may     in the future allow users to      create Hunts for friends, private groups, communities, or the
+general public.
+
+Whether a Hunt is private or publicly         discoverable, Huntz retains the right to         review, approve, reject,
+suspend, modify, or remove any          Hunt or related    content before or after publication.
+
+Nothing    in these Terms guarantees that every         submitted    Hunt will become available on         the Platform.
+
+Host Compensation
+
+Approved     Hosts may     receive compensation       under a separate written      Host Agreement.
+
+Unless expressly     stated  in that agreement:
+
+     ●    Hosts are not employees of Huntz;
+     ●    Hosts are independent contractors;
+     ●    Hosts are responsible for their own         taxes;
+     ●    Hosts do   not collect participant funds;
+     ●    Hosts never hold     participant stakes;
+     ●    Hosts may     not promise payouts inconsistent with          Platform rules.
+
+Participant funds are administered        exclusively    by  Huntz and     its payment providers.
+22. Your Content
+
+You  retain  ownership     of the content you     create and   submit to    the Platform, including:
+
+     ●    photographs;
+     ●    videos;
+     ●    written  reflections;
+     ●    comments;
+     ●    profile information; and
+     ●    other materials you     upload    ("Your Content").
+
+By  submitting    Your Content, you       grant Huntz a worldwide, non-exclusive, royalty-free, transferable,
+sublicensable license to:
+
+     ●    host;
+     ●    store;
+     ●    reproduce;
+     ●    display;
+     ●    transmit;
+     ●    adapt;
+     ●    format;
+     ●    and  otherwise use Your Content solely          as reasonably     necessary   to operate, administer, verify,
+          secure, moderate, improve, and         provide the Platform.
+
+This license ends when       Your Content is deleted, except where retention             is permitted   or required   under our
+Privacy   Policy   or applicable law.
+
+Marketing
+
+Huntz will not use Your Content in          advertisements, promotional campaigns, testimonials, or marketing
+materials without your separate, express consent.
+
+If you  choose to   provide that consent, you       may   revoke it at any    time for future uses.
+
+Public Sharing
+
+The Platform may       allow you    to voluntarily   share achievements, profiles, or Hunt results publicly.
+
+You  control whether to      make such     information    public.
+
+Once content is shared      outside the Platform, Huntz cannot control or retrieve it.
+23. Intellectual Property
+
+The Platform, including       its software, technology, trademarks, branding, logos, graphics, interfaces,
+designs, databases, text, and       other proprietary     materials, are owned      by  Huntz or its licensors and       are
+protected   by  intellectual property     laws.
+
+Except as expressly      permitted    by  these Terms, you      may   not:
+
+     ●    copy;
+     ●    modify;
+     ●    distribute;
+     ●    reverse engineer;
+     ●    decompile;
+     ●    create derivative works from;
+     ●    commercially      exploit;
+     ●    or otherwise use Huntz intellectual property            without prior written     permission.
+
+Subject to   these Terms, Huntz grants you          a limited, non-exclusive, revocable, non-transferable license to
+use the Platform for its intended        personal purposes.
+
+24. Prohibited Conduct
+
+To  protect the integrity    of the Platform and      the safety   of our users, you     agree not to:
+
+     ●    submit false, fabricated, manipulated, misleading, or stolen               proof;
+     ●    impersonate another person         or misrepresent your identity, age, location, or eligibility;
+     ●    create or use multiple accounts without our authorization;
+     ●    share, sell, transfer, or allow another person         to  use your account;
+     ●    collude with    other users to    manipulate Hunt outcomes or payouts;
+     ●    interfere with    another participant's ability     to  complete a Hunt;
+     ●    use bots, scripts, automation, or other unauthorized             technology    to  access or interact with     the
+          Platform;
+     ●    attempt to   bypass, disable, or interfere with        verification, moderation, fraud        detection, or security
+          systems;
+     ●    reverse engineer, decompile, scrape, or otherwise attempt to                obtain  source code or proprietary
+          information    from the Platform;
+     ●    upload   content that infringes another person's intellectual property              or other legal rights;
+     ●    use the Platform for unlawful, fraudulent, deceptive, or abusive purposes;
+     ●    engage in    harassment, threats, discrimination, hate speech, or other harmful conduct toward                     other
+          users or Huntz personnel; or
+     ●    violate these Terms or any        additional policies published       by  Huntz.
+We may    investigate suspected      violations and    take any  action   permitted   by  law or these Terms, including
+removing    content, withholding      payouts, suspending      or terminating    accounts, and    referring   matters to  law
+enforcement where appropriate.
+
+25. Account Suspension and Termination
+
+You  may   close your account at any       time through    the Platform or by     contacting   us.
+
+Closing   your account does not cancel your obligations relating            to Hunts that you     have already    joined.
+Active Hunts will continue to       be governed     by  the Terms in   effect when    you   joined  them unless otherwise
+required   by law.
+
+Huntz may     suspend, restrict, or terminate your account immediately             if we reasonably    believe that:
+
+    ●    you   violated  these Terms;
+    ●    you   engaged    in fraud  or attempted    fraud;
+    ●    your account presents a security        risk;
+    ●    continued    access could    expose Huntz or other users to        legal or regulatory    risk;
+    ●    we are required     to do  so by  law; or
+    ●    continued    operation   of your account could       harm the integrity    of the Platform.
+
+If Huntz terminates your account without cause, we will refund               any  eligible stakes associated     with  Hunts
+that cannot reasonably      continue.
+
+Termination    does not affect rights or obligations that arose before termination.
+
+26. Electronic Communications
+
+By  creating   an account, you    consent to   receive communications from Huntz electronically.
+
+These communications may          include:
+
+    ●    account notifications;
+    ●    security   alerts;
+    ●    verification   requests;
+    ●    dispute decisions;
+    ●    payment confirmations;
+    ●    legal notices;
+    ●    policy   updates; and
+    ●    other communications relating         to your use of the Platform.
+
+Electronic communications satisfy         any  legal requirement that such       communications be in       writing.
+27. Platform Changes
+
+We continuously     improve the Platform.
+
+Accordingly, Huntz may, at any       time and  without prior notice:
+
+    ●    add, remove, or modify      Platform features;
+    ●    introduce new products or services;
+    ●    discontinue existing    features;
+    ●    change eligibility   requirements;
+    ●    modify   verification  procedures;
+    ●    update payment methods;
+    ●    improve fraud    prevention   systems; or
+    ●    make other operational or technical changes.
+
+Material changes affecting     active Hunts will be handled     in a manner that is fair to  participants and
+consistent with   applicable law.
+
+Nothing   in these Terms guarantees that any      particular feature or service will remain    available indefinitely.
+
+28. Disclaimers
+
+THE PLATFORM IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS.
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, HUNTZ DISCLAIMS ALL WARRANTIES,
+WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING ANY
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE,
+NON-INFRINGEMENT, ACCURACY, OR UNINTERRUPTED AVAILABILITY.
+
+Huntz does not guarantee:
+
+    ●    that any  Hunt will help   you  achieve your goals;
+    ●    that every  proof submission    will be accepted;
+    ●    that every  instance of fraud   will be detected;
+    ●    that the Platform will operate without interruption;
+    ●    that the Platform will always be secure or error-free; or
+    ●    that you  will receive any   particular payout.
+
+Participation  in Hunts is entirely  voluntary.
+
+You  are solely  responsible for determining     whether a Hunt is appropriate for your personal, financial,
+professional, or health   circumstances.
+Huntz does not provide medical, psychological, nutritional, financial, legal, or other professional advice.
+
+29. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, HUNTZ, ITS AFFILIATES, OFFICERS,
+DIRECTORS, EMPLOYEES, CONTRACTORS, LICENSORS, AND SERVICE PROVIDERS WILL
+NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL,
+EXEMPLARY, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF BUSINESS
+OPPORTUNITIES, LOSS OF DATA, LOSS OF GOODWILL, OR BUSINESS INTERRUPTION,
+ARISING OUT OF OR RELATING TO THE PLATFORM OR THESE TERMS.
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, HUNTZ'S TOTAL AGGREGATE LIABILITY
+ARISING OUT OF OR RELATING TO THE PLATFORM OR THESE TERMS WILL NOT EXCEED
+THE GREATER OF:
+
+(a) THE TOTAL AMOUNT OF JOIN FEES PAID BY YOU TO HUNTZ DURING THE TWELVE (12)
+MONTHS PRECEDING THE EVENT GIVING RISE TO THE CLAIM; OR
+
+(b) ONE HUNDRED UNITED STATES DOLLARS (US $100).
+
+Some jurisdictions do  not permit certain  limitations of liability. In those jurisdictions, portions of this
+section may  not apply.
+
+Nothing  in these Terms limits liability that cannot legally be excluded  under applicable law.
+
+30. Indemnification
+
+You  agree to defend, indemnify, and  hold  harmless Huntz, its affiliates, officers, directors, employees,
+contractors, licensors, and service providers from and   against any claims, liabilities, damages, judgments,
+losses, costs, expenses, or reasonable attorneys' fees arising out of or relating to:
+
+    ●   your use of the Platform;
+    ●   your participation  in any Hunt;
+    ●   Your Content;
+    ●   your violation  of these Terms;
+    ●   your violation  of applicable law; or
+    ●   your infringement of the rights of another person   or entity.
+
+31. Dispute Resolution
+
+We encourage users to   contact us first to resolve disputes informally.
+Before initiating    arbitration    or legal proceedings, you       agree to   contact Huntz at team@huntz.ai and
+provide us with     at least thirty   (30) days to    attempt to   resolve the dispute.
+
+If a dispute cannot be resolved        informally, it will be resolved        through    binding   individual arbitration
+administered     by  the American      Arbitration    Association     ("AAA") under its applicable Consumer
+Arbitration    Rules, unless applicable law requires otherwise.
+
+Arbitration    may   occur in   Oakland, California, or by        videoconference if permitted          by  the applicable
+arbitration   rules.
+
+You   and  Huntz each     waive any     right to  participate in    a class action, class arbitration, collective action,
+representative action, or private attorney          general action     to the fullest extent permitted       by  law.
+
+Nothing    in this section   prevents either party      from:
+
+     ●    bringing    an  individual claim in     small claims court where permitted            by  law;
+     ●    seeking    temporary     injunctive relief to    protect intellectual property       or confidential information; or
+     ●    pursuing    any  remedy     that applicable law prohibits from being            resolved   through    arbitration.
+
+You   may   opt out of this arbitration      provision   by  providing     written  notice to   team@huntz.ai within           thirty
+(30) days after first accepting       these Terms.
+
+32. Governing                            Law
+
+These Terms are governed          by  the laws of the State of California, without regard             to conflict-of-law
+principles.
+
+The Federal Arbitration        Act governs any      arbitration   conducted     under these Terms.
+
+33. Miscellaneous
+
+These Terms, together with         our Privacy     Policy   and  any   additional agreements expressly          incorporated     by
+reference, constitute the entire agreement between              you   and  Huntz regarding       the Platform.
+
+If any  provision    of these Terms is determined         to  be unenforceable, the remaining          provisions will remain
+in full force and    effect.
+
+Failure by   Huntz to    enforce any     provision    does not waive our right to        enforce that provision       in the future.
+
+You   may   not assign    or transfer these Terms without our prior written             consent.
+
+Huntz may      assign  these Terms in      connection    with   a merger, acquisition, financing, corporate
+reorganization, or sale of assets.
+Neither party    will be liable for delays or failures caused        by  events beyond      their reasonable control,
+including   natural disasters, acts of government, cyberattacks, internet outages, labor disputes, payment
+network    failures, or failures of third-party     service providers.
+
+Section   headings are provided       for convenience only       and  do  not affect interpretation.
+
+Any   provisions that by     their nature should     survive termination—including          payment obligations, dispute
+resolution, intellectual property      rights, indemnification, limitation        of liability, and  licenses granted     under
+these Terms—will survive termination.
+
+34. Contact Information
+
+If you  have questions regarding        these Terms or the Platform, you         may   contact us at:
+
+Huntz, Inc.
+
+269  24th  Street
+
+Oakland, California 94612
+
+United   States
+
+Email: team@huntz.ai
+

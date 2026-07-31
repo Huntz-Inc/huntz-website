@@ -131,7 +131,15 @@ for label, anchor in (("Terms of service", "#/terms"), ("Privacy policy", "#/pri
     assert old in html, label + " link not found"
     html = html.replace(old, old.replace('href="#top"', f'href="{anchor}"'))
 
+# The two documents are generated from counsel's text by build/legal_build.py;
+# the shell here only supplies chrome, routing, and the contents navigation.
 legal = (BUILD / "legal-overlay.html").read_text()
+for token, doc in (("{{TERMS}}", "legal-terms.html"), ("{{PRIVACY}}", "legal-privacy.html")):
+    src = BUILD / doc
+    if not src.exists():
+        sys.exit(f"missing {doc} — run: python3 build/legal_build.py")
+    assert token in legal, f"{token} placeholder not found"
+    legal = legal.replace(token, src.read_text())
 assert "</body>" in html
 html = html.replace("</body>", legal + "\n</body>")
 

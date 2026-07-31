@@ -1,0 +1,536 @@
+Huntz Privacy                  Policy
+
+Last Updated: July       30, 2026
+
+Welcome to     Huntz ("Huntz," "we," "our," or "us"). This Privacy             Policy  explains how we collect, use,
+disclose, store, and   protect your personal information         when   you  use the Huntz mobile application, our
+website at huntz.ai, and      any  related  services (collectively, the "Platform").
+
+By  creating  an  account or using     the Platform, you    acknowledge that you        have read   and  understood    this
+Privacy   Policy.
+
+If you  do  not agree with   this Privacy    Policy, please do    not use the Platform.
+
+1.  Who         We Are
+
+Huntz, Inc. operates the Huntz platform, which           enables users to    participate in   goal-based   challenges
+("Hunts"), submit proof of progress, interact with          other participants, and    receive payouts based       on
+successful completion      of Hunt requirements.
+
+If you  have questions regarding       this Privacy   Policy  or our privacy    practices, you   may   contact us at:
+
+Email: team@huntz.ai
+
+Mailing    Address:
+
+Huntz, Inc.
+
+269  24th  Street
+
+Oakland, California 94612
+
+United   States
+
+2.  Information                We Collect
+
+The information     we collect depends on       how you    use the Platform.
+
+Information You Provide
+
+Account Information
+When    creating   an account, we may       collect:
+
+     ●    Name
+     ●    Username
+     ●    Email address
+     ●    Password
+     ●    Date of birth
+
+We use this information       to  create and   secure your account, verify        your eligibility, and    personalize your
+experience.
+
+Identity     and Eligibility        Information
+
+To  determine whether you        are eligible to   participate in   certain   Hunts, we may      collect:
+
+     ●    State or country     of residence
+     ●    Information     necessary    to verify  your identity    where required     by  law or our fraud-prevention
+          procedures.
+
+Payment Information
+
+If you  participate in   Hunts involving      entry  fees or payouts, we collect information           necessary    to process
+payments, including:
+
+     ●    Bank   account information
+     ●    ACH authorization
+     ●    Transaction    history
+     ●    Payout information
+
+Payment processing        is performed    by  third-party   payment providers. Huntz does not store your complete
+payment card     information.
+
+Hunt Activity
+
+When    participating   in  Hunts, we collect information         relating  to your participation, including:
+
+     ●    Hunts joined
+     ●    Entry   fees
+     ●    Progress submissions
+     ●    Photos
+     ●    Videos
+     ●    Written   reflections
+     ●    Completion     history
+     ●    Verification   outcomes
+This information    allows us to   operate Hunts, determine outcomes, prevent fraud, and            improve the
+Platform.
+
+Communications
+
+We collect information     when    you  communicate with      us, including:
+
+    ●    Customer support emails
+    ●    In-app   support requests
+    ●    Dispute submissions
+    ●    Survey   responses
+    ●    Feedback
+
+Host Applications
+
+If you  apply  to become a Hunt Host, we may         collect:
+
+    ●    Application    responses
+    ●    Connected     social media accounts
+    ●    Audience information
+    ●    Other information     you  choose to   provide during    the application    process
+
+Information Collected Automatically
+
+When    you  use the Platform, we automatically       collect certain  technical information, including:
+
+    ●    Device type
+    ●    Operating    system
+    ●    Device model
+    ●    App   version
+    ●    IP address
+    ●    Device identifiers
+    ●    Crash   reports
+    ●    Browser type
+    ●    Session   information
+    ●    Usage analytics
+    ●    Features accessed
+    ●    Time spent using     the Platform
+
+We may    also  derive your approximate location       from your IP address to      determine jurisdictional eligibility
+and  improve security.
+We do   not collect precise GPS location       unless you   separately  choose to   enable a future feature requiring
+location.
+
+Information From Third Parties
+
+We may    receive information     from third-party    providers, including:
+
+Payment Providers
+
+Our payment processors may         provide:
+
+    ●    Transaction    confirmations
+    ●    Payment status
+    ●    Fraud   prevention   signals
+    ●    Verification   information
+
+Connected Social Accounts
+
+If you  choose to  connect a supported      social media account (such      as TikTok) to   verify  Hunt participation,
+we receive only    the information    you  authorize through     that platform.
+
+We do   not receive your password.
+
+We do   not post content on    your behalf without your permission.
+
+You  may   disconnect linked    accounts at any    time through    your account settings or through       the social
+platform.
+
+Service Providers
+
+We receive information      from vendors that help     us provide our services, including       analytics providers,
+cloud  hosting  providers, customer support platforms, and          security  providers.
+
+Information We Do                                   Not Collect
+
+Unless specifically    stated otherwise, Huntz does not collect:
+
+    ●    Biometric identifiers such      as facial geometry    templates, fingerprints, or voiceprints
+    ●    Precise GPS location
+    ●    Contact lists from your device
+    ●    Health   information   from Apple Health, Google Health          Connect, or similar device health       APIs
+Although    users may   voluntarily   upload   photos or videos as proof for Hunt verification, Huntz does not
+use those images to     create or store biometric identifiers.
+
+We do   not knowingly     collect personal information      from anyone under the age of 18.
+
+3. How We Use Your Information
+
+We use personal information        to operate, improve, and     secure the Platform.
+
+Specifically, we use your information        to:
+
+    ●    Create and    manage your account
+    ●    Verify   your identity   and  eligibility
+    ●    Operate Hunts
+    ●    Record    proof submissions
+    ●    Verify   Hunt completion
+    ●    Calculate payouts
+    ●    Administer dispute processes
+    ●    Process payments
+    ●    Detect fraud
+    ●    Prevent abuse
+    ●    Prevent multiple or fake accounts
+    ●    Protect Platform security
+    ●    Respond     to customer support requests
+    ●    Communicate important account updates
+    ●    Send   transaction   confirmations
+    ●    Send   proof reminders
+    ●    Send   payout notifications
+    ●    Improve Platform functionality
+    ●    Develop    new features
+    ●    Measure Platform performance
+    ●    Comply     with  legal obligations
+    ●    Enforce our Terms of Service
+
+AI-Assisted Verification
+
+To  help review proof submissions and         detect potential fraud, Huntz may        use artificial intelligence systems
+provided   by  trusted  third-party  service providers, including      Anthropic's Claude models and         similar
+technologies.
+
+AI systems may      assist in:
+
+    ●    Reviewing     proof submissions
+    ●    Detecting    suspicious activity
+    ●    Identifying   duplicate or manipulated       submissions
+    ●    Flagging    possible fraud
+    ●    Supporting    moderation     decisions
+
+Automated     systems do   not by   themselves determine Hunt outcomes.
+
+Whenever an     AI system flags a submission        that could  affect a user's stake, payout, or eligibility, the
+submission    is reviewed   by  a person   before a final decision    is made.
+
+Users may    dispute verification    decisions in   accordance with     our Terms of Service.
+
+AI Training
+
+We do   not use your proof submissions to        train publicly  available third-party    AI models.
+
+Where available, we configure AI service providers to            process submissions without using         them to
+improve or train    public foundation    models.
+
+Marketing
+
+With  your consent, we may       send  newsletters, announcements, promotional emails, and             product updates.
+
+You  may   unsubscribe at any     time using   the unsubscribe link     in our emails or through     your account
+settings.
+
+Certain  transactional communications—such            as payment confirmations, dispute notices, proof reminders,
+and  security  notifications—cannot be disabled        while you    have an   active account or active Hunt.
+
+4. Legal Bases for Processing
+
+Where applicable, we process personal information            based   on one or more of the following       legal grounds:
+
+    ●    Performance of our contract with        you
+    ●    Your consent
+    ●    Our legitimate business interests, including        fraud  prevention, security, customer support,
+         analytics, and   product improvement
+    ●    Compliance with      legal obligations
+
+5. Your Content and Public Visibility
+Your proof submissions—including            photos, videos, written      reflections, and   other verification
+materials—are private by       default.
+
+Proof submissions are visible only        to:
+
+    ●    You
+    ●    Authorized     Huntz personnel responsible for verification, moderation, fraud               prevention, or
+         customer support
+    ●    Trusted    service providers assisting      us with  verification   and  fraud  detection
+
+Other Hunt participants may        see limited   profile information     associated    with  your participation, including:
+
+    ●    Username
+    ●    Profile photo
+    ●    Hunt participation
+    ●    Completion      status
+
+Users control whether to       generate or publicly     share share-cards or similar social content.
+
+Huntz will never use your proof submissions, photos, or videos in                our own    advertising   or marketing
+without your separate, explicit consent.
+
+6. How We Share Information
+
+We do   not sell your personal information.
+
+We also   do  not share your personal information         for cross-context behavioral advertising.
+
+We share information       only  when   necessary    to operate the Platform.
+
+We may    share information      with  the following    categories of recipients:
+
+Payment Providers
+
+To  process entry    fees, payouts, refunds, chargebacks, fraud         prevention, and     payment verification.
+
+Cloud Infrastructure Providers
+
+To  host our applications, databases, backups, and          storage systems.
+
+Analytics Providers
+
+To  understand    how users interact with      the Platform and     improve our products and        services.
+Email and Communications Providers
+
+To  deliver transactional emails, account notifications, newsletters, and              push   notifications.
+
+Customer Support Providers
+
+To  manage customer support requests submitted              through   email or in-app     support.
+
+AI Service Providers
+
+We may     share proof submissions with         AI service providers solely       for verification, fraud    detection,
+moderation     assistance, and    security  purposes.
+
+These providers are contractually         restricted  from using    your information      except to   provide services on      our
+behalf.
+
+Professional Advisors
+
+Including   attorneys, accountants, auditors, insurers, and          consultants when       necessary   to  provide
+professional services or comply         with  legal obligations.
+
+Business Transfers
+
+If Huntz is involved     in a merger, acquisition, financing, reorganization, bankruptcy, or sale of assets, your
+information    may   be transferred    as part of that transaction. We will notify        users when     required   by
+applicable law.
+
+Legal Requirements
+
+We may     disclose information      if we believe disclosure is necessary        to:
+
+     ●    Comply     with  applicable law
+     ●    Respond    to  lawful requests from government authorities
+     ●    Enforce our agreements
+     ●    Protect the rights or safety     of Huntz, our users, or others
+     ●    Detect or investigate fraud      or security   incidents
+
+All third-party   service providers receiving        personal information      are required    to protect it and   use it only
+for the services they    provide to    Huntz.
+
+7. Data        Retention
+We retain    personal information       only   for as long   as necessary     to provide the Platform, comply           with   legal
+obligations, resolve disputes, prevent fraud, enforce our agreements, and                     protect our legitimate business
+interests.
+
+Our standard     retention   periods are:
+
+ Information                                    Retention Period
+
+ Account information                            For the life of your account and         up  to  30  days after account
+                                                closure, unless a longer period         is required   by  law
+
+ Payment and       transaction    records       Seven    (7) years after the applicable transaction          for tax, accounting,
+                                                and  regulatory    purposes
+
+ Proof submissions (photos,                     Six  (6) months after the applicable Hunt concludes, unless retained
+ videos, reflections, logs)                     for an  active dispute, fraud      investigation, or legal obligation
+
+
+ Dispute records                                Three (3) years after resolution
+
+ Customer support                               Two    (2) years after the last communication
+ communications
+
+ Aggregated      or de-identified               May    be retained    indefinitely   because they      no  longer identify    an
+ analytics                                      individual
+
+Deleting    your account does not automatically            remove information        we are legally     required   to  retain  or
+information     reasonably    necessary     to investigate fraud, resolve disputes, comply             with  legal obligations, or
+enforce our Terms of Service.
+
+If you  request deletion     while participating      in  an  active Hunt, we may        retain  records necessary      to  complete
+the Hunt, administer any        applicable dispute period, process payouts or refunds, and                 satisfy   our contractual
+and  legal obligations.
+
+8. Security
+
+We use administrative, technical, and           physical safeguards designed           to protect your personal information
+from unauthorized       access, disclosure, alteration, and         destruction.
+
+These safeguards include, where appropriate:
+
+     ●    Encryption     of data in   transit using    TLS
+     ●    Encryption     of sensitive information        at rest
+     ●    Role-based     access controls limiting        employee access to       information     needed    for their job
+          responsibilities
+     ●    Authentication     and  authorization    controls
+     ●    Security   monitoring    and   logging
+     ●    Regular security     reviews and     vulnerability   management
+     ●    Secure cloud     infrastructure provided      by  reputable service providers
+
+While we strive to     protect your information, no        method    of transmission     over the Internet or electronic
+storage is completely      secure. Accordingly, we cannot guarantee absolute security.
+
+If we become aware of a security          incident affecting    your personal information, we will notify           affected
+users and   applicable regulators as required        by  law.
+
+You   are responsible for maintaining        the confidentiality    of your account credentials and         should
+immediately     notify  us at team@huntz.ai if you          suspect unauthorized       access to  your account.
+
+9. Your Privacy                            Rights
+
+Depending     on  where you     live, you  may   have certain    rights regarding     your personal information.
+
+These rights may      include the ability    to:
+
+     ●    Access the personal information          we maintain     about you
+     ●    Correct inaccurate or incomplete information
+     ●    Request deletion     of your personal information, subject to          applicable legal exceptions
+     ●    Receive a portable copy       of your information       where required     by  law
+     ●    Withdraw consent where processing            is based   on  consent
+     ●    Disconnect linked      social media accounts
+     ●    Opt out of receiving      marketing    communications
+
+You   may   exercise these rights by     contacting    us at team@huntz.ai or through           any   in-app  privacy   tools we
+make available.
+
+We will respond      within  the time required     by  applicable law.
+
+We will not discriminate against you          for exercising    your privacy    rights.
+
+California            Residents
+
+If you  are a California resident, you       may   have rights under the California Consumer Privacy               Act (CCPA),
+as amended     by  the California Privacy      Rights Act (CPRA).
+
+Subject to   applicable law, California residents may          have the right to:
+
+     ●    Know the categories of personal information             we collect
+     ●    Know the purposes for which          we use personal information
+     ●    Request access to      personal information
+     ●    Request correction      of inaccurate information
+     ●    Request deletion      of personal information
+     ●    Request a portable copy        of personal information
+     ●    Use an   authorized    agent to   submit requests on       their behalf
+
+Huntz does not sell personal information.
+
+Huntz does not share personal information             for cross-context behavioral advertising.
+
+The categories of personal information           we collect are described       in Section    2 of this Privacy    Policy.
+
+The purposes for which        we use personal information          are described    in Section   3.
+
+The categories of third      parties with   whom we share information            are described    in Section   6.
+
+Where we collect sensitive personal information, such                as financial account information         needed   to  process
+entry  fees and   payouts, we use that information          solely  for the purposes necessary        to provide the Platform,
+comply    with  legal obligations, and      prevent fraud. We do       not use sensitive personal information           to infer
+characteristics about you.
+
+Other U.S. State Privacy                            Laws
+
+Residents of states with      comprehensive privacy         laws, including     Virginia, Colorado, Connecticut, Utah,
+Texas, Oregon, Montana, Delaware, Iowa, Nebraska, New Hampshire, New Jersey, Tennessee,
+Minnesota, Maryland, Kentucky, Rhode Island, Indiana, and                   other states that adopt similar laws, may
+have comparable rights to        access, correct, delete, obtain       a copy   of, or appeal decisions regarding        their
+personal information.
+
+To  submit a request or appeal a decision          regarding    a privacy   request, contact us at team@huntz.ai.
+
+International Users
+
+Huntz is available to     users in   multiple countries.
+
+By  using   the Platform, you     understand     and  agree that your personal information           may   be transferred    to,
+stored, and   processed    in  the United    States and   other countries where Huntz or its service providers
+operate.
+
+The privacy     and  data protection    laws in   those countries may       differ from those in     your country     of
+residence.
+
+Where required      by  applicable law, we will implement appropriate safeguards for international transfers of
+personal information.
+If additional country-specific privacy        rights apply   to you, we will honor those rights as required          by
+applicable law.
+
+10. Children's Privacy
+
+The Platform is intended       only  for individuals who     are at least eighteen    (18) years old.
+
+We do   not knowingly      collect personal information       from anyone under the age of 18.
+
+If we learn   that we have collected      personal information      from a person    under 18, we will take reasonable
+steps to  delete that information     and  close the associated     account.
+
+If you  believe that a minor has provided        personal information      to  Huntz, please contact us immediately          at
+team@huntz.ai.
+
+11. Cookies and Similar Technologies
+
+We use cookies and      similar technologies to      operate, secure, and     improve the Platform.
+
+On  our website, cookies may        be used   for:
+
+    ●    Authentication
+    ●    Session    management
+    ●    Security
+    ●    Website functionality
+    ●    Analytics
+
+You  can  control cookies through       your browser settings. Disabling        certain  cookies may     affect the
+functionality   of the Platform.
+
+Within   our mobile application, we may         use device identifiers and      similar technologies for:
+
+    ●    Analytics
+    ●    Performance monitoring
+    ●    Fraud    prevention
+    ●    Security
+    ●    Improving     user experience
+
+We do   not currently    use cookies or device identifiers for cross-context behavioral advertising               or
+personalized    advertising.
+
+If our practices change in     the future, we will update this Privacy        Policy   and, where required      by  law, obtain
+any  necessary   consent before using      cookies or similar technologies for advertising           purposes.
+12. Changes to                          This Privacy                       Policy
+
+We may    update this Privacy     Policy  from time to    time to  reflect changes in    our business, technology, legal
+obligations, or privacy    practices.
+
+When    we make material changes, we will update the "Last Updated" date at the top                 of this Privacy   Policy
+and  provide notice through      the Platform, by    email, or through    other appropriate communication          methods
+where required     by law.
+
+Your continued     use of the Platform after the effective date of an        updated   Privacy   Policy  constitutes your
+acceptance of the revised      Privacy  Policy, except where applicable law requires additional consent.
+
+13. Contact Us
+
+If you  have questions about this Privacy       Policy   or our privacy    practices, or if you   wish  to exercise your
+privacy  rights, please contact us:
+
+Huntz, Inc.
+
+269  24th  Street
+
+Oakland, California 94612
+
+United   States
+
+Email: team@huntz.ai
+
