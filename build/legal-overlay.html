@@ -21,7 +21,17 @@
 
 <style>
 /* Two columns of section titles are unreadable on a phone. */
-@media (max-width:640px){ [data-toc]{ columns:1 !important } }
+@media (max-width:640px){
+  [data-toc]{ columns:1 !important }
+  /* The retention table's second column gets clipped at phone widths, so each
+     row stacks: label above value, no sideways scrolling to read a policy. */
+  [data-retention]{ overflow-x:visible !important }
+  [data-retention] table{ min-width:0 !important }
+  [data-retention] thead{ display:none }
+  [data-retention] tr{ display:block; padding:14px 0; border-top:1px solid rgba(22,19,14,.14) }
+  [data-retention] th,[data-retention] td{ display:block; width:auto !important; border:0 !important; padding:0 !important }
+  [data-retention] th{ margin-bottom:5px }
+}
 [data-toc-item]:hover span:last-child{ color:#C24E1F }
 [data-toc-item]:focus-visible{ outline:2px solid #C24E1F; outline-offset:2px }
 #hz-legal a:hover{ color:#C24E1F }

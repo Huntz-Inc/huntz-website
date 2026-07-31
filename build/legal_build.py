@@ -219,7 +219,7 @@ def render(raw: str, doc_id: str):
                     f'letter-spacing:.14em;text-transform:uppercase;color:{MUTED}">Retention Period</th>'
                     f'</tr></thead>')
             out.append(
-                f'<div style="overflow-x:auto;margin:0 0 20px">'
+                f'<div data-retention style="overflow-x:auto;margin:0 0 20px">'
                 f'<table style="width:100%;min-width:440px;border-collapse:collapse">'
                 f'{head}<tbody>{rows}</tbody></table></div>')
             skip_table = True
