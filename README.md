@@ -9,10 +9,17 @@ This repo is **only** the public marketing site. The Huntz product itself lives
 in a separate private repo.
 
 ```
-index.html      the site — this is what gets served
-og-image.png    1200×630 social share card
-build/          the build pipeline (see "Rebuilding")
+index.html        the landing page
+terms.html        Terms of Service      → served at /terms
+privacy.html      Privacy Policy        → served at /privacy
+assets/fonts.css  webfonts, shared by the legal pages
+og-image.png      1200×630 social share card
+build/            the build pipeline (see "Rebuilding")
 ```
+
+`vercel.json` sets `cleanUrls`, which is what serves `terms.html` at `/terms`.
+The landing page also still answers the older `#/terms` and `#/privacy` routes
+in-page, so links shared before the real pages existed keep working.
 
 ## Deploying
 
