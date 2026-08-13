@@ -27,7 +27,8 @@ body::before{ content:''; position:fixed; inset:0; z-index:-2; pointer-events:no
 a{ color:#16130E } a:hover{ color:#C24E1F }
 ::selection{ background:#C24E1F; color:#F3EFE7 }
 a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:3px }
-@media (max-width:640px){ [data-nav-links]{ display:none } }
+/* !important: the nav carries an inline display:flex, which otherwise wins. */
+@media (max-width:640px){ [data-nav-links]{ display:none !important } }
 @media print{ header,[data-cta]{ display:none !important } body::before{ display:none } body{ background:#fff } }
 </style>
 </head>
