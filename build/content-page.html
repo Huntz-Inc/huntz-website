@@ -25,22 +25,22 @@ body::before{ content:''; position:fixed; inset:0; z-index:-2; pointer-events:no
 a{ color:#16130E } a:hover{ color:#C24E1F }
 ::selection{ background:#C24E1F; color:#F3EFE7 }
 a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:3px }
-/* !important: the nav carries an inline display:flex, which otherwise wins. */
-@media (max-width:640px){ [data-nav-links]{ display:none !important } }
-@media print{ header,[data-cta]{ display:none !important } body::before{ display:none } body{ background:#fff } }
+{{NAV_CSS}}
+@media print{ header,[data-cta],#hz-menu{ display:none !important } body::before{ display:none } body{ background:#fff } }
 </style>
 </head>
 <body>
 
 <header style="position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px clamp(20px,4vw,44px);background:rgba(243,239,231,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(22,19,14,.12)">
   <a href="/" style="font:800 20px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;text-decoration:none;color:#16130E">HUNTZ<span style="color:#C24E1F">.</span></a>
-  <nav data-nav-links style="display:flex;align-items:center;gap:clamp(14px,2.5vw,26px)">
-    <a href="/how-it-works" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#6E6759;text-decoration:none">HOW IT WORKS</a>
-    <a href="/accountability-challenges" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#6E6759;text-decoration:none">CHALLENGES</a>
-    <a href="/faq" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#6E6759;text-decoration:none">FAQ</a>
+  <nav data-hz-desknav aria-label="Primary" style="display:flex;align-items:center;gap:clamp(14px,2.5vw,26px)">
+    {{HEADER_NAV}}
   </nav>
-  <a href="/#waitlist" style="font:700 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;white-space:nowrap">JOIN THE WAITLIST</a>
+  <a data-hz-desknav href="/#waitlist" style="font:700 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;white-space:nowrap">JOIN THE WAITLIST</a>
+  {{MENU_BUTTON}}
 </header>
+
+{{DRAWER}}
 
 <main style="position:relative;max-width:820px;margin:0 auto;padding:clamp(36px,6vh,64px) clamp(20px,5vw,44px) 40px">
   <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759;margin-bottom:16px">{{EYEBROW}}</div>
@@ -54,18 +54,9 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
     <p style="margin:0 0 16px;font:400 15px/1.65 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C">Join the waitlist and we'll email you when the first Hunts open.</p>
     <a href="/#waitlist" style="display:inline-block;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none">JOIN THE WAITLIST &#8594;</a>
   </div>
-  <div style="display:flex;flex-wrap:wrap;gap:10px 22px;align-items:baseline;margin-top:26px;padding-top:22px;border-top:1px solid rgba(22,19,14,.14)">
-    <a href="/how-it-works" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759;text-decoration:none">HOW IT WORKS</a>
-    <a href="/accountability-challenges" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759;text-decoration:none">CHALLENGES</a>
-    <a href="/faq" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759;text-decoration:none">FAQ</a>
-    <a href="/about" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759;text-decoration:none">ABOUT</a>
-    <a href="/contact" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759;text-decoration:none">CONTACT</a>
-    <span style="margin-left:auto;display:flex;gap:22px">
-      <a href="/terms" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759;text-decoration:none">TERMS</a>
-      <a href="/privacy" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759;text-decoration:none">PRIVACY</a>
-    </span>
-  </div>
+  {{FOOTER_NAV}}
 </aside>
 
+{{NAV_JS}}
 </body>
 </html>

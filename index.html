@@ -25,6 +25,31 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Huntz","legalName":"Huntz, Inc.","url":"https://www.huntz.ai/","logo":"https://www.huntz.ai/icon-512.png","email":"team@huntz.ai","address":{"@type":"PostalAddress","streetAddress":"269 24th Street","addressLocality":"Oakland","addressRegion":"CA","postalCode":"94612","addressCountry":"US"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Huntz","url":"https://www.huntz.ai/"}</script>
 <script>if(/^#\/(terms|privacy)$/.test(location.hash))location.replace(location.hash.slice(2));else if(location.hash==="#challenges")location.replace("/accountability-challenges");</script>
+<style>
+/* Navigation. The drawer is the only navigation below 641px, so the desktop bar
+   and its CTA come off and the menu button comes on at exactly that width. */
+[data-hz-menu-btn]{ display:none }
+#hz-menu[hidden]{ display:none !important }
+#hz-menu{ display:block }
+@media (max-width:640px){
+  [data-hz-menu-btn]{ display:inline-flex !important }
+  [data-hz-desknav]{ display:none !important }
+}
+/* About and Contact would push the bar into a second line on small laptops. */
+@media (max-width:899px){ [data-hz-wide]{ display:none !important } }
+[data-hz-menu-btn]:focus-visible,#hz-menu a:focus-visible,#hz-menu button:focus-visible{
+  outline:2px solid #C24E1F; outline-offset:2px }
+[data-hz-navlink]:hover{ color:#16130E }
+[data-hz-drawerlink]:hover{ color:#C24E1F }
+/* Two balanced columns of comfortable tap targets instead of a ragged wrap. */
+@media (max-width:640px){
+  [data-hz-footernav]{ display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr));
+                        gap:0 18px !important; margin-left:0 !important }
+  [data-hz-footernav] > span{ display:contents }
+  [data-hz-footernav] a{ display:flex; align-items:center; min-height:44px; margin-left:0 !important }
+}
+@media (max-width:640px){#hz-nav a[href="#waitlist"]{display:none !important}}
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="/assets/app.6078d20e.js" defer></script>
 </head>
@@ -68,6 +93,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
     <a href="#hunts" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HUNTS</a>
     <a href="#why" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">FAQ</a>
     <a href="#waitlist" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>
+    <button type="button" data-hz-menu-btn aria-controls="hz-menu" aria-expanded="false" aria-label="Menu" style="align-items:center;justify-content:center;flex-direction:column;gap:5px;width:44px;height:44px;margin:-5px 0;padding:0;border:0;background:transparent;cursor:pointer;color:#16130E"><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span></button>
   </div>
 </div>
 
@@ -291,7 +317,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:baseline;padding:12px 15px;background:#9C3A11;color:#F3EFE7">
           <span style="font:700 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em">DEV'S $100 SPLIT BY THE FINISHERS</span>
-          <span style="font:600 10px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#F3EFE7">SETTLED AFTER VERIFICATION</span>
+          <span style="font:600 10px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#F3EFE7">PAID IN 48H</span>
         </div>
         <div style="padding:9px 15px 11px;font:500 9.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.02em;color:rgba(243,239,231,.6)">Example outcome. Each Hunt's rules and verification method are shown before you join.</div>
       </div>
@@ -861,12 +887,134 @@ class Component extends DCLogic {
   }
 }
 </script>
+<div id="hz-menu" hidden tabindex="-1" role="dialog" aria-modal="true" aria-label="Site menu" style="position:fixed;inset:0;z-index:90;outline:0">
+  <div data-hz-scrim style="position:absolute;inset:0;background:rgba(22,19,14,.5)"></div>
+  <nav data-hz-panel aria-label="Site" style="position:absolute;top:0;left:0;right:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#F3EFE7;border-bottom:1px solid rgba(22,19,14,.14);padding:0 clamp(20px,5vw,44px) 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;height:64px">
+      <span style="font:800 20px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;color:#16130E">HUNTZ<span style="color:#C24E1F">.</span></span>
+      <button type="button" data-hz-menu-close aria-label="Close menu" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:0;background:transparent;color:#16130E;font:400 21px/1 'Figtree',Arial,Helvetica,sans-serif;cursor:pointer">&#10005;</button>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      <a href="/" data-hz-drawerlink aria-current="page" style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:13px;border-left:3px solid #C24E1F;color:#C24E1F">HOME</a>
+      <a href="/how-it-works" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">HOW IT WORKS</a>
+      <a href="/accountability-challenges" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">CHALLENGES</a>
+      <a href="/faq" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">FAQ</a>
+      <a href="/about" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">ABOUT</a>
+      <a href="/contact" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">CONTACT</a>
+      <a href="/terms" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">TERMS</a>
+      <a href="/privacy" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">PRIVACY</a>
+    </div>
+    <a href="#waitlist" style="display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:20px;background:#C24E1F;color:#F3EFE7;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none">JOIN THE WAITLIST</a>
+  </nav>
+</div>
 <script>
 (function () {
+  var open = false, opener = null, savedY = 0, obs = null;
+  function panel() { var m = document.getElementById('hz-menu'); return m && m.querySelector('[data-hz-panel]'); }
+  function sync() {
+    var b = document.querySelectorAll('[data-hz-menu-btn]');
+    for (var i = 0; i < b.length; i++) b[i].setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function focusable() {
+    var p = panel();
+    if (!p) return [];
+    return Array.prototype.filter.call(
+      p.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])'),
+      function (el) { return el.getClientRects().length > 0; });
+  }
+  function openMenu(trigger) {
+    var m = document.getElementById('hz-menu');
+    if (!m || open) return;
+    opener = trigger || document.activeElement;
+    open = true;
+    m.hidden = false;
+    // iOS ignores overflow:hidden on a scrolled document, so the body is pinned
+    // at its current offset and released to the same offset on close.
+    savedY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = -savedY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    sync();
+    m.focus({ preventScroll: true });
+    if (window.MutationObserver) {
+      obs = new MutationObserver(sync);
+      obs.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+  function closeMenu(restoreFocus) {
+    var m = document.getElementById('hz-menu');
+    if (!m || !open) return;
+    open = false;
+    m.hidden = true;
+    if (obs) { obs.disconnect(); obs = null; }
+    document.documentElement.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedY);
+    sync();
+    if (restoreFocus !== false && opener && opener.isConnected) opener.focus({ preventScroll: true });
+    opener = null;
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var btn = t.closest('[data-hz-menu-btn]');
+    if (btn) { e.preventDefault(); open ? closeMenu() : openMenu(btn); return; }
+    if (!open) return;
+    if (t.closest('[data-hz-menu-close]') || t.closest('[data-hz-scrim]')) { e.preventDefault(); closeMenu(); return; }
+    // Selecting a destination closes the sheet; focus follows the navigation,
+    // so it is not pulled back to the button that is about to disappear.
+    if (t.closest('#hz-menu a[href]')) closeMenu(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!open) return;
+    if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); closeMenu(); return; }
+    if (e.key !== 'Tab') return;
+    var f = focusable();
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !panel().contains(document.activeElement))) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  });
+  // A phone rotated to landscape, or a window dragged wider, must not leave the
+  // sheet open over a desktop layout whose menu button is no longer rendered.
+  addEventListener('resize', function () { if (open && innerWidth > 640) closeMenu(false); });
+})();
+</script>
+<script>
+(function () {
+  // Native smooth scrolling does not run on this page at all: the design
+  // runtime's 60fps loop cancels it, which is why html{scroll-behavior:smooth}
+  // had to be removed. A hand-rolled tween is not cancelled, so the waitlist
+  // reveal animates instead of teleporting.
+  function glideTo(y) {
+    var max = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+    y = Math.max(0, Math.min(max, y));
+    var from = pageYOffset, d = y - from, t0 = 0;
+    if (Math.abs(d) < 2) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { scrollTo(0, y); return; }
+    requestAnimationFrame(function step(ts) {
+      if (!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / 420);
+      scrollTo(0, from + d * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    });
+  }
   function focusWaitlist() {
     var w = document.getElementById('waitlist');
     if (!w) return;
-    w.scrollIntoView({ block: 'center' });
+    var r = w.getBoundingClientRect();
+    glideTo(r.top + pageYOffset - Math.max(72, (innerHeight - r.height) / 2));
+    // preventScroll so the caret landing in the field does not fight the tween.
     var i = w.querySelector('input');
     if (i) i.focus({ preventScroll: true });
   }

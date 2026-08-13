@@ -105,8 +105,15 @@ if home.count('aria-label="Email address"') != 2:
     fail("/: email inputs missing aria-label")
 if "Example outcome. Each Hunt's rules and verification method are shown before you join." not in home:
     fail("/: example-outcome caption missing")
-if "48H" in home or "48 hours" in home:
-    fail("/: unsupported 48-hour settlement promise present")
+# The dark HUNT No.0412 example card carries the founder-approved "PAID IN 48H"
+# chip (restored 2026-08-13) and is captioned as an example. Exactly one, and no
+# other wording of the promise anywhere on the page.
+if home.count("PAID IN 48H") != 1:
+    fail(f"/: expected exactly 1 'PAID IN 48H' chip, found {home.count('PAID IN 48H')}")
+rest = home.replace("PAID IN 48H", "")
+for phrase in ("48H", "48h", "48 hours", "48-hour", "48 hour"):
+    if phrase in rest:
+        fail(f"/: unsupported 48-hour settlement promise {phrase!r} outside the example card")
 if "IN PRE-LAUNCH" in home:
     fail("/: removed hero pre-launch disclaimer has reappeared")
 for link in ("/how-it-works", "/accountability-challenges", "/faq", "/about", "/contact", "/terms", "/privacy"):
@@ -114,6 +121,8 @@ for link in ("/how-it-works", "/accountability-challenges", "/faq", "/about", "/
         fail(f"/: footer link to {link} missing")
 
 # Content pages: no em dashes in marketing copy (legal keeps counsel's own).
+# The contact form's success line is the founder's exact wording and is the
+# single sanctioned exception; it is asserted verbatim further down.
 for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-challenges"):
     t = (ROOT / PAGES[path]).read_text()
     body = t[t.index("<main"):]
@@ -176,6 +185,79 @@ for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-cha
 for f in ("favicon.ico", "apple-touch-icon.png", "icon-512.png", "og-image.jpg"):
     if not (ROOT / f).exists():
         fail(f"{f} missing")
+
+
+# ---- navigation, active route, footer (2026-08-13) ----
+ROUTES = ["/", "/how-it-works", "/accountability-challenges", "/faq", "/about",
+          "/contact", "/terms", "/privacy"]
+NAV_PAGES = {p: f for p, f in PAGES.items() if p not in ("/terms", "/privacy")}
+
+for path, fname in NAV_PAGES.items():
+    t = (ROOT / fname).read_text()
+    # A visitor arriving from search has no useful Back history, so every page
+    # that carries the primary nav must carry the whole route map with it.
+    if 'data-hz-menu-btn' not in t:
+        fail(f"{path}: mobile menu button missing")
+    for attr in ('aria-controls="hz-menu"', 'aria-expanded="false"', 'aria-label="Menu"'):
+        if attr not in t:
+            fail(f"{path}: menu button missing {attr}")
+    if 'id="hz-menu"' not in t or 'role="dialog"' not in t or 'aria-modal="true"' not in t:
+        fail(f"{path}: mobile menu dialog missing or not modal")
+    if "data-hz-menu-close" not in t:
+        fail(f"{path}: mobile menu has no close button")
+    for r in ROUTES:
+        if f'<a href="{r}" data-hz-drawerlink' not in t:
+            fail(f"{path}: mobile menu missing {r}")
+    if t.count("JOIN THE WAITLIST") < 1:
+        fail(f"{path}: mobile menu missing the waitlist action")
+    # Active route is baked in at build time: no JS, no flash, works with JS off.
+    marked = re.findall(r'<a href="([^"]+)"[^>]*aria-current="page"', t)
+    expected = "/" if path == "/" else path
+    if not marked:
+        fail(f"{path}: nothing marked aria-current=\"page\"")
+    if set(marked) != {expected}:
+        fail(f"{path}: aria-current marks {sorted(set(marked))}, expected only {expected!r}")
+
+# The footer route row: Home added, two even columns on phones, real hub link.
+for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-challenges"):
+    t = (ROOT / PAGES[path]).read_text()
+    row = re.search(r"<nav data-hz-footernav.*?</nav>", t, re.S)
+    if not row:
+        fail(f"{path}: footer nav missing")
+        continue
+    row = row.group(0)
+    for r in ROUTES:
+        if f'href="{r}"' not in row:
+            fail(f"{path}: footer nav missing {r}")
+
+# Legal pages keep their own minimal chrome and counsel's text, untouched.
+for path in ("/terms", "/privacy"):
+    t = (ROOT / PAGES[path]).read_text()
+    if "hz-menu" in t or "data-hz-menu-btn" in t:
+        fail(f"{path}: navigation drawer leaked into a legal page")
+    if "BACK TO HUNTZ" not in t:
+        fail(f"{path}: legal page chrome changed")
+
+# ---- waitlist: still exactly one Mailchimp integration ----
+MC_ENDPOINT = "huntz.us18.list-manage.com/subscribe/post"
+if home.count(MC_ENDPOINT) != 1:
+    fail(f"/: expected 1 Mailchimp endpoint, found {home.count(MC_ENDPOINT)}")
+n_email = home.count('type="email"')
+if n_email != 2:
+    fail(f"/: expected the 2 existing waitlist email inputs, found {n_email}")
+if "b_b7144d02c740628b3280ff55f_3ee28a30af" not in home:
+    fail("/: Mailchimp honeypot field missing")
+if "INTEREST" not in home:
+    fail("/: Mailchimp interest capture missing")
+for f in [ROOT / v for v in PAGES.values()]:
+    t = f.read_text()
+    if f.name != "index.html" and MC_ENDPOINT in t:
+        fail(f"{f.name}: a second waitlist form appeared off the home page")
+
+# ---- no credential or environment value may reach a generated page ----
+for f in [ROOT / v for v in PAGES.values()] + sorted(ROOT.glob("assets/*")):
+    if "smtppro.zoho.com" in f.read_text():
+        fail(f"{f.name}: SMTP details leaked into a client artifact")
 
 if failures:
     print(f"FAIL ({len(failures)}):")

@@ -18,6 +18,7 @@ favicon.ico, apple-touch-icon.png, icon-512.png, og-image.jpg   icons + share ca
 build/                           the build pipeline (see "Rebuilding")
 ```
 
+
 `vercel.json` sets `cleanUrls`, which is what serves `terms.html` at `/terms`.
 The landing page also still answers the older `#/terms` and `#/privacy` routes
 in-page, so links shared before the real pages existed keep working.
@@ -77,7 +78,7 @@ Privacy documents), then:
 ```bash
 python3 build/legal_build.py   # only when the legal text changed
 python3 build/assemble.py
-python3 build/check.py         # route/metadata/sitemap validation
+python3 build/check.py         # route/metadata/copy/nav validation
 ```
 
 That regenerates every page. Marketing-page copy lives in `build/pages/*.json`
@@ -101,7 +102,12 @@ Changes currently applied on top of the design:
 - Upcoming cards became explicit "I want this hunt" actions with a removable
   chip, so a curious click cannot silently record an interest.
 - Keyboard support and focus rings on the FAQ and cards; muted grey darkened
-  for contrast; the nav collapses to logo + CTA on phones.
+  for contrast.
+- Below 641px the bar is logo + menu button, and a modal sheet carries every
+  route plus the waitlist action. One route table in `build/assemble.py`
+  generates the header, the sheet and the footers, and stamps the active
+  route at build time, so there is no route list to keep in sync by hand and
+  no JavaScript is needed to show which page you are on.
 - Real email validation with busy and error states.
 - Removed `scroll-behavior: smooth`, which stopped every nav link from working:
   the page's 60 fps animation loop cancelled each in-flight smooth scroll.

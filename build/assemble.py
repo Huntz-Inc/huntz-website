@@ -402,15 +402,15 @@ html = html.replace(old, f'<a href="/contact" {LINK_STYLE}>Contact</a>')
 # (S-4) Removed 2026-08-13 (founder decision): no hero pre-launch disclaimer.
 # The waitlist CTA and the COMING SOON labels carry the pre-launch signal.
 
-# (S-5) Money copy carries no unqualified operational promise. The approved
-# Terms commit to payouts after the Hunt concludes, verification completes and
-# any dispute window passes; they name no 48-hour clock, so the example card's
-# chip is reworded to what the Terms support.
-assert html.count("PAID IN 48H") == 1
-html = html.replace("PAID IN 48H", "SETTLED AFTER VERIFICATION")
+# (S-5) The dark HUNT No.0412 example card keeps the design's own "PAID IN 48H"
+# chip (founder direction, restored 2026-08-13). The unqualified prose promise
+# that used to repeat the claim was dropped in the em-dash pass above and stays
+# dropped, so the phrase survives exactly once: on the card that is labeled as
+# an example directly underneath it.
+assert html.count("PAID IN 48H") == 1, "settlement chip not found"
 
 # The worked example is labeled as such, in the founder's exact wording.
-old = 'SETTLED AFTER VERIFICATION</span>\n        </div>'
+old = 'PAID IN 48H</span>\n        </div>'
 assert old in html, "settlement strip not found"
 html = html.replace(old, old + '\n        '
     '<div style="padding:9px 15px 11px;font:500 9.5px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;'
@@ -451,6 +451,224 @@ n = html.count('href="#challenges"')
 assert n == 3, f"expected 3 #challenges occurrences (2 links + 1 CSS selector), found {n}"
 html = html.replace('href="#challenges"', 'href="#hunts"')
 assert "#challenges" not in html
+
+# ---- 2e. site navigation (2026-08-13): one route table, three surfaces ----
+# Header bar, mobile drawer and page footers are all generated from ROUTES, so a
+# destination cannot exist in one surface and be missing from another, and the
+# active-route marking is derived rather than hand-written per page.
+INK, BODYC, MUTED, CLAY = "#16130E", "#4A453C", "#6E6759", "#C24E1F"
+CREAM = "#F3EFE7"
+SERIF = "'Playfair Display','Times New Roman',serif"
+SANS = "'Figtree',Arial,Helvetica,sans-serif"
+
+# (href, drawer/footer label, header label, in the desktop header?, only >=900px?)
+ROUTES = [
+    ("/",                          "Home",         "HOME",         False, False),
+    ("/how-it-works",              "How it works", "HOW IT WORKS", True,  False),
+    ("/accountability-challenges", "Challenges",   "CHALLENGES",   True,  False),
+    ("/faq",                       "FAQ",          "FAQ",          True,  False),
+    ("/about",                     "About",        "ABOUT",        True,  True),
+    ("/contact",                   "Contact",      "CONTACT",      True,  True),
+    ("/terms",                     "Terms",        "TERMS",        False, False),
+    ("/privacy",                   "Privacy",      "PRIVACY",      False, False),
+]
+
+# `current` is the route the page is being generated for, so the active state is
+# baked into the HTML: no flash, no JavaScript, and it survives with JS off. The
+# home page is always "/" whatever the hash, so /#waitlist is not a second page.
+def _cur(href: str, current: str) -> str:
+    return ' aria-current="page"' if href == current else ""
+
+NAV_CSS = f"""
+/* Navigation. The drawer is the only navigation below 641px, so the desktop bar
+   and its CTA come off and the menu button comes on at exactly that width. */
+[data-hz-menu-btn]{{ display:none }}
+#hz-menu[hidden]{{ display:none !important }}
+#hz-menu{{ display:block }}
+@media (max-width:640px){{
+  [data-hz-menu-btn]{{ display:inline-flex !important }}
+  [data-hz-desknav]{{ display:none !important }}
+}}
+/* About and Contact would push the bar into a second line on small laptops. */
+@media (max-width:899px){{ [data-hz-wide]{{ display:none !important }} }}
+[data-hz-menu-btn]:focus-visible,#hz-menu a:focus-visible,#hz-menu button:focus-visible{{
+  outline:2px solid {CLAY}; outline-offset:2px }}
+[data-hz-navlink]:hover{{ color:{INK} }}
+[data-hz-drawerlink]:hover{{ color:{CLAY} }}
+/* Two balanced columns of comfortable tap targets instead of a ragged wrap. */
+@media (max-width:640px){{
+  [data-hz-footernav]{{ display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr));
+                        gap:0 18px !important; margin-left:0 !important }}
+  [data-hz-footernav] > span{{ display:contents }}
+  [data-hz-footernav] a{{ display:flex; align-items:center; min-height:44px; margin-left:0 !important }}
+}}
+"""
+
+MENU_BUTTON = (
+    '<button type="button" data-hz-menu-btn aria-controls="hz-menu" aria-expanded="false" '
+    'aria-label="Menu" style="align-items:center;justify-content:center;flex-direction:column;'
+    f'gap:5px;width:44px;height:44px;margin:-5px 0;padding:0;border:0;background:transparent;cursor:pointer;color:{INK}">'
+    + '<span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span>' * 3
+    + "</button>"
+)
+
+
+def header_nav(current: str) -> str:
+    """The content-page desktop bar. Home lives on the logo, so it is not a link here."""
+    base = (f"font:600 11px {SANS};letter-spacing:.14em;text-decoration:none;"
+            "padding:7px 0;border-bottom:2px solid transparent")
+    out = []
+    for href, _label, head_label, in_head, wide in ROUTES:
+        if not in_head:
+            continue
+        on = href == current
+        style = base + (f";color:{INK};border-bottom-color:{CLAY}" if on else f";color:{MUTED}")
+        out.append(f'<a href="{href}" data-hz-navlink{" data-hz-wide" if wide else ""}'
+                   f'{_cur(href, current)} style="{style}">{head_label}</a>')
+    return "\n    ".join(out)
+
+
+def drawer(current: str, waitlist_href: str) -> str:
+    """Full-height sheet: every route plus the waitlist action, one tap each."""
+    links = []
+    for href, _label, head_label, _in_head, _wide in ROUTES:
+        on = href == current
+        style = (f"display:flex;align-items:center;min-height:52px;font:600 12.5px {SANS};"
+                 "letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);"
+                 + (f"padding-left:13px;border-left:3px solid {CLAY};color:{CLAY}"
+                    if on else f"padding-left:0;color:{INK}"))
+        links.append(f'<a href="{href}" data-hz-drawerlink{_cur(href, current)} '
+                     f'style="{style}">{head_label}</a>')
+    return f"""<div id="hz-menu" hidden tabindex="-1" role="dialog" aria-modal="true" aria-label="Site menu" style="position:fixed;inset:0;z-index:90;outline:0">
+  <div data-hz-scrim style="position:absolute;inset:0;background:rgba(22,19,14,.5)"></div>
+  <nav data-hz-panel aria-label="Site" style="position:absolute;top:0;left:0;right:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:{CREAM};border-bottom:1px solid rgba(22,19,14,.14);padding:0 clamp(20px,5vw,44px) 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;height:64px">
+      <span style="font:800 20px {SANS};letter-spacing:-.02em;color:{INK}">HUNTZ<span style="color:{CLAY}">.</span></span>
+      <button type="button" data-hz-menu-close aria-label="Close menu" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:0;background:transparent;color:{INK};font:400 21px/1 {SANS};cursor:pointer">&#10005;</button>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      {chr(10).join("      " + l for l in links).strip()}
+    </div>
+    <a href="{waitlist_href}" style="display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};letter-spacing:.12em;text-decoration:none">JOIN THE WAITLIST</a>
+  </nav>
+</div>"""
+
+
+def footer_nav(current: str) -> str:
+    """Content-page footer row: one flex line on desktop, two even columns on phones."""
+    base = f"font:600 11px {SANS};letter-spacing:.12em;text-decoration:none"
+    def link(href, label, extra=""):
+        on = href == current
+        style = base + (f";color:{CLAY}" if on else f";color:{MUTED}") + extra
+        return f'<a href="{href}"{_cur(href, current)} style="{style}">{label.upper()}</a>'
+    main = [link(h, hl) for h, _l, hl, _ih, _w in ROUTES if h not in ("/terms", "/privacy")]
+    legal = [link(h, hl) for h, _l, hl, _ih, _w in ROUTES if h in ("/terms", "/privacy")]
+    return ('<nav data-hz-footernav aria-label="Footer" style="display:flex;flex-wrap:wrap;gap:10px 22px;'
+            'align-items:baseline;margin-top:26px;padding-top:22px;border-top:1px solid rgba(22,19,14,.14)">\n    '
+            + "\n    ".join(main)
+            + '\n    <span style="margin-left:auto;display:flex;gap:22px">'
+            + "".join(legal) + "</span>\n  </nav>")
+
+
+# The controller is deliberately outside the design runtime: it delegates from
+# `document`, so it keeps working across a React re-render, and it owns nothing
+# React renders except the button's aria state, which it re-asserts if the bar
+# is ever rebuilt while the sheet is open.
+NAV_JS = """<script>
+(function () {
+  var open = false, opener = null, savedY = 0, obs = null;
+  function panel() { var m = document.getElementById('hz-menu'); return m && m.querySelector('[data-hz-panel]'); }
+  function sync() {
+    var b = document.querySelectorAll('[data-hz-menu-btn]');
+    for (var i = 0; i < b.length; i++) b[i].setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function focusable() {
+    var p = panel();
+    if (!p) return [];
+    return Array.prototype.filter.call(
+      p.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])'),
+      function (el) { return el.getClientRects().length > 0; });
+  }
+  function openMenu(trigger) {
+    var m = document.getElementById('hz-menu');
+    if (!m || open) return;
+    opener = trigger || document.activeElement;
+    open = true;
+    m.hidden = false;
+    // iOS ignores overflow:hidden on a scrolled document, so the body is pinned
+    // at its current offset and released to the same offset on close.
+    savedY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = -savedY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    sync();
+    m.focus({ preventScroll: true });
+    if (window.MutationObserver) {
+      obs = new MutationObserver(sync);
+      obs.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+  function closeMenu(restoreFocus) {
+    var m = document.getElementById('hz-menu');
+    if (!m || !open) return;
+    open = false;
+    m.hidden = true;
+    if (obs) { obs.disconnect(); obs = null; }
+    document.documentElement.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedY);
+    sync();
+    if (restoreFocus !== false && opener && opener.isConnected) opener.focus({ preventScroll: true });
+    opener = null;
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var btn = t.closest('[data-hz-menu-btn]');
+    if (btn) { e.preventDefault(); open ? closeMenu() : openMenu(btn); return; }
+    if (!open) return;
+    if (t.closest('[data-hz-menu-close]') || t.closest('[data-hz-scrim]')) { e.preventDefault(); closeMenu(); return; }
+    // Selecting a destination closes the sheet; focus follows the navigation,
+    // so it is not pulled back to the button that is about to disappear.
+    if (t.closest('#hz-menu a[href]')) closeMenu(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!open) return;
+    if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); closeMenu(); return; }
+    if (e.key !== 'Tab') return;
+    var f = focusable();
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !panel().contains(document.activeElement))) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  });
+  // A phone rotated to landscape, or a window dragged wider, must not leave the
+  // sheet open over a desktop layout whose menu button is no longer rendered.
+  addEventListener('resize', function () { if (open && innerWidth > 640) closeMenu(false); });
+})();
+</script>"""
+
+
+# (N-1) The home bar gets the menu button. It is plain markup with no runtime
+# binding, so the delegated controller in NAV_JS keeps working across a React
+# re-render, and the button is the only header control left below 641px.
+old = 'style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>'
+assert html.count(old) == 1, "nav CTA not found"
+html = html.replace(old, old + "\n    " + MENU_BUTTON)
+
+# Below 641px the bar is logo + menu button: the three section anchors were
+# already hidden by (I-4b), and the CTA moves into the sheet.
+HOME_NAV_CSS = '@media (max-width:640px){#hz-nav a[href="#waitlist"]{display:none !important}}\n'
 
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
@@ -576,7 +794,8 @@ HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</
 <link rel="stylesheet" href="{FONTS_HREF}">
 {ld(ORG_LD)}
 {ld(SITE_LD)}
-<script>if(/^#\/(terms|privacy)$/.test(location.hash))location.replace(location.hash.slice(2));else if(location.hash==="#challenges")location.replace("/accountability-challenges");</script>"""
+<script>if(/^#\/(terms|privacy)$/.test(location.hash))location.replace(location.hash.slice(2));else if(location.hash==="#challenges")location.replace("/accountability-challenges");</script>
+<style>{NAV_CSS}{HOME_NAV_CSS}</style>"""
 
 # ---- 4c. the two variants ----
 assert html.count("<!--HZ:FONTS-->") == 1 and html.count("<!--HZ:SCRIPTS-->") == 1
@@ -592,10 +811,29 @@ assert "HZ:" not in home
 # other pages do the same once the runtime has rendered the form.
 FOCUS_JS = """<script>
 (function () {
+  // Native smooth scrolling does not run on this page at all: the design
+  // runtime's 60fps loop cancels it, which is why html{scroll-behavior:smooth}
+  // had to be removed. A hand-rolled tween is not cancelled, so the waitlist
+  // reveal animates instead of teleporting.
+  function glideTo(y) {
+    var max = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+    y = Math.max(0, Math.min(max, y));
+    var from = pageYOffset, d = y - from, t0 = 0;
+    if (Math.abs(d) < 2) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { scrollTo(0, y); return; }
+    requestAnimationFrame(function step(ts) {
+      if (!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / 420);
+      scrollTo(0, from + d * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    });
+  }
   function focusWaitlist() {
     var w = document.getElementById('waitlist');
     if (!w) return;
-    w.scrollIntoView({ block: 'center' });
+    var r = w.getBoundingClientRect();
+    glideTo(r.top + pageYOffset - Math.max(72, (innerHeight - r.height) / 2));
+    // preventScroll so the caret landing in the field does not fight the tween.
     var i = w.querySelector('input');
     if (i) i.focus({ preventScroll: true });
   }
@@ -611,20 +849,22 @@ FOCUS_JS = """<script>
   }
 })();
 </script>"""
-home = home.replace("</body>", FOCUS_JS + "\n</body>")
+home = home.replace("</body>", drawer("/", "#waitlist") + "\n" + NAV_JS + "\n" + FOCUS_JS + "\n</body>")
 (ROOT / "index.html").write_text(home)
 
 art = html.replace("<!--HZ:FONTS-->", font_style)
 art = art.replace("<!--HZ:SCRIPTS-->", "")
 art = art.replace("</body>", legal + "\n</body>")
 m = re.search(r"<body>\n?(.*)\n?</body>", art, re.S)
-fragment = inline_scripts + "\n" + m.group(1)
+fragment = (inline_scripts + "\n" + m.group(1) + "\n<style>" + NAV_CSS + HOME_NAV_CSS + "</style>\n"
+            + drawer("/", "#waitlist") + "\n" + NAV_JS)
 # The artifact is one file with no /terms to navigate to, so its footer keeps
 # the in-page hash routes that the embedded overlay still serves.
 for a, b in (('href="/terms"', 'href="#/terms"'), ('href="/privacy"', 'href="#/privacy"'),
              ('href="/faq"', 'href="#why"'), ('href="/how-it-works"', 'href="#mechanic"'),
              ('href="/about"', 'href="#top"'), ('href="/contact"', 'href="mailto:team@huntz.ai"'),
-             ('href="/accountability-challenges"', 'href="#hunts"')):
+             ('href="/accountability-challenges"', 'href="#hunts"'),
+             ('href="/"', 'href="#top"')):
     fragment = fragment.replace(a, b)
 (BUILD / "huntz-landing.artifact.html").write_text(fragment)
 
@@ -657,9 +897,6 @@ for slug, doc, title, desc, other_href, other_label in LEGAL_PAGES:
 # ---- 6. content pages (About, Contact, FAQ, How it works, hub) ----
 # Copy lives in build/pages/<slug>.json as typed blocks; this renderer maps the
 # blocks onto the site's type system so pages cannot drift stylistically.
-INK, BODYC, MUTED, CLAY = "#16130E", "#4A453C", "#6E6759", "#C24E1F"
-SERIF = "'Playfair Display','Times New Roman',serif"
-SANS = "'Figtree',Arial,Helvetica,sans-serif"
 BS = {
     "h2": f"margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 {SERIF};letter-spacing:-.012em;color:{INK};text-wrap:balance",
     "h3": f"margin:26px 0 8px;font:700 13px {SANS};letter-spacing:.13em;text-transform:uppercase;color:{CLAY}",
@@ -713,6 +950,12 @@ for spec_path in sorted(PAGES_DIR.glob("*.json")):
             .replace("{{ICONS}}", ICON_LINKS)
             .replace("{{FONTS_HREF}}", FONTS_HREF)
             .replace("{{BREADCRUMB_LD}}", breadcrumb_ld(spec["h1"], slug))
+            .replace("{{NAV_CSS}}", NAV_CSS)
+            .replace("{{HEADER_NAV}}", header_nav(f"/{slug}"))
+            .replace("{{MENU_BUTTON}}", MENU_BUTTON)
+            .replace("{{DRAWER}}", drawer(f"/{slug}", "/#waitlist"))
+            .replace("{{FOOTER_NAV}}", footer_nav(f"/{slug}"))
+            .replace("{{NAV_JS}}", NAV_JS)
             .replace("{{BODY}}", body))
     assert "{{" not in page, f"unfilled placeholder in {slug}.html"
     assert "—" not in body, f"em dash in {slug} content"
