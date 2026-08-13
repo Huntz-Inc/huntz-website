@@ -123,7 +123,7 @@ for link in ("/how-it-works", "/accountability-challenges", "/faq", "/about", "/
 # Content pages: no em dashes in marketing copy (legal keeps counsel's own).
 # The contact form's success line is the founder's exact wording and is the
 # single sanctioned exception; it is asserted verbatim further down.
-CONTACT_SUCCESS = "Thanks — your message reached the Huntz team."
+CONTACT_SUCCESS = "Thanks\u2014your message reached the Huntz team."
 for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-challenges"):
     t = (ROOT / PAGES[path]).read_text()
     body = t[t.index("<main"):].replace(CONTACT_SUCCESS, "")
@@ -266,6 +266,8 @@ contact = (ROOT / "contact.html").read_text()
 for exact in (
     "Questions, partnerships, press, or interested in creating a Hunt? Send us a note.",
     CONTACT_SUCCESS,
+    "Message sent.",
+    "Send another message",
     "Something went wrong. Please email team@huntz.ai.",
     "We'll use your information only to respond to your message.",
     "Send message",
@@ -297,6 +299,27 @@ for fid in ("hzc-name", "hzc-email", "hzc-reason", "hzc-message"):
         fail(f"/contact: {fid} errors are not associated with the field")
 if 'role="status"' not in contact or 'aria-live="polite"' not in contact:
     fail("/contact: submission result is not announced")
+# Success replaces the form with its own panel rather than writing a wide
+# notification under the button; failure keeps the form and the notification.
+if 'id="hz-contact-done"' not in contact or "showSuccess()" not in contact:
+    fail("/contact: success state panel missing")
+if 'id="hz-contact-done-title" tabindex="-1"' not in contact:
+    fail("/contact: success heading cannot receive focus")
+if 'role="status"' not in contact:
+    fail("/contact: success state is not announced")
+if "doneTitle.focus()" not in contact:
+    fail("/contact: focus does not move to the success heading")
+if 'id="hzc-again"' not in contact:
+    fail("/contact: no way back to a clean form")
+# An inline display would outrank the [hidden] attribute and leave the panel
+# rendering under the form on every page load.
+if 'id="hz-contact-done" hidden role="status" style="margin' not in contact:
+    fail("/contact: success panel carries an inline display that defeats [hidden]")
+if "#hz-contact-done[hidden]{ display:none !important }" not in contact:
+    fail("/contact: success panel has no [hidden] guard")
+if "say(SUCCESS)" in contact or "say('Thanks" in contact:
+    fail("/contact: the wide success notification is back under the button")
+
 # Both terminal UI states, and the guard that stops a second send while one is
 # still in flight, must survive any future edit of the page script.
 for behaviour in ("submit.disabled = on", "if (busy) return", "form.reset()", "setBusy(false)"):

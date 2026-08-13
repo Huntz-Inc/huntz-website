@@ -10,7 +10,8 @@
   },
   {
    "type": "h2",
-   "text": "Send us a message"
+   "text": "Send us a message",
+   "id": "hz-contact-heading"
   },
   {
    "type": "form"

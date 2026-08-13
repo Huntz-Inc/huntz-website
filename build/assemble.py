@@ -926,7 +926,8 @@ def render_blocks(blocks) -> str:
         k = b["type"]
         if k in ("h2", "h3", "p", "note"):
             tag = {"h2": "h2", "h3": "h3", "p": "p", "note": "p"}[k]
-            out.append(f'<{tag} style="{BS[k]}">{render_text(b.get("text", ""))}</{tag}>')
+            attr = f' id="{b["id"]}"' if b.get("id") else ""
+            out.append(f'<{tag}{attr} style="{BS[k]}">{render_text(b.get("text", ""))}</{tag}>')
         elif k == "form":
             out.append(contact_form())
         elif k == "ul":
@@ -944,7 +945,9 @@ def render_blocks(blocks) -> str:
 
 CONTACT_INTRO = ("Questions, partnerships, press, or interested in creating a Hunt? "
                  "Send us a note.")
-CONTACT_SUCCESS = "Thanks — your message reached the Huntz team."
+CONTACT_SUCCESS_TITLE = "Message sent."
+CONTACT_SUCCESS = "Thanks\u2014your message reached the Huntz team."
+CONTACT_AGAIN = "Send another message"
 CONTACT_FAILURE = "Something went wrong. Please email team@huntz.ai."
 CONTACT_PRIVACY = "We'll use your information only to respond to your message."
 CONTACT_SUBMIT = "Send message"
@@ -975,10 +978,22 @@ FORM_CSS = f"""
 #hz-contact [data-hz-err]{{ margin:7px 0 0; font:600 12px/1.5 {SANS}; color:{CLAY} }}
 #hz-contact button[disabled]{{ opacity:.6; cursor:progress }}
 #hz-contact-status:empty{{ display:none }}
+/* Never an inline display here: it would outrank [hidden] and leave the success
+   panel rendering under the form on every page load. */
+/* The panel holds the form's height so nothing below it moves, and starts at
+   the top of that space so "Message sent." lands where the first field was
+   rather than floating in the middle of a reserved block. */
+#hz-contact-done{{ display:flex; flex-direction:column; justify-content:flex-start; align-items:flex-start;
+  min-height:clamp(170px,24vh,230px) }}
+#hz-contact-done[hidden]{{ display:none !important }}
+#hz-contact-done-title:focus-visible{{ outline:2px solid {CLAY} }}
 """
 
 
 def contact_form() -> str:
+    # The success panel is rendered here, hidden, rather than assembled in
+    # JavaScript: it stays in the page source, keeps the site's type system, and
+    # build/check.py can assert its copy the same way it asserts the form's.
     fields = []
 
     def wrap(inner, fid, label):
@@ -1016,7 +1031,12 @@ def contact_form() -> str:
   <p id="hz-contact-status" role="status" aria-live="polite" style="margin:18px 0 0;padding:13px 16px;border-left:2px solid {CLAY};background:rgba(194,78,31,.06);font:600 13.5px/1.6 {SANS};color:{INK}"></p>
   <p style="margin:16px 0 0;font:400 13px/1.6 {SANS};color:{MUTED}"><a href="/privacy" style="color:{MUTED};text-decoration:none;border-bottom:1px solid rgba(22,19,14,.2)">{CONTACT_PRIVACY}</a></p>
   <noscript><p style="{BS['p']}">This form needs JavaScript. Email team@huntz.ai instead and we will pick it up the same way.</p></noscript>
-</form>"""
+</form>
+<div id="hz-contact-done" hidden role="status" style="margin:8px 0 10px">
+  <h2 id="hz-contact-done-title" tabindex="-1" style="margin:0 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 {SERIF};letter-spacing:-.012em;color:{INK};outline-offset:4px">{CONTACT_SUCCESS_TITLE}</h2>
+  <p style="{BS['p']}">{CONTACT_SUCCESS}</p>
+  <button type="button" id="hzc-again" style="padding:0;border:0;background:none;font:600 13px {SANS};color:{CLAY};text-decoration:none;border-bottom:1px solid rgba(194,78,31,.45);cursor:pointer">{CONTACT_AGAIN}</button>
+</div>"""
 
 
 CONTACT_JS = """<script>
@@ -1026,6 +1046,10 @@ CONTACT_JS = """<script>
   var status = document.getElementById('hz-contact-status');
   var submit = document.getElementById('hzc-submit');
   var SUBMIT_LABEL = submit.textContent;
+  var heading = document.getElementById('hz-contact-heading');
+  var done = document.getElementById('hz-contact-done');
+  var doneTitle = document.getElementById('hz-contact-done-title');
+  var again = document.getElementById('hzc-again');
   var FIELDS = ['name', 'email', 'reason', 'message'];
   var busy = false;
 
@@ -1061,6 +1085,29 @@ CONTACT_JS = """<script>
     submit.textContent = on ? 'Sending' : SUBMIT_LABEL;
   }
 
+  function showSuccess() {
+    form.reset();
+    clearErrors();
+    say('');
+    if (heading) heading.hidden = true;
+    form.hidden = true;
+    done.hidden = false;
+    // Focus is what reliably announces the new state; role="status" covers
+    // readers that would otherwise miss a revealed region.
+    doneTitle.focus();
+  }
+
+  again.addEventListener('click', function () {
+    done.hidden = true;
+    if (heading) heading.hidden = false;
+    form.hidden = false;
+    form.reset();
+    clearErrors();
+    say('');
+    var first = document.getElementById('hzc-name');
+    if (first) first.focus();
+  });
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (busy) return;                       // no double send while one is in flight
@@ -1084,7 +1131,7 @@ CONTACT_JS = """<script>
       return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; });
     }).then(function (o) {
       setBusy(false);
-      if (o.r.ok && o.j.ok) { form.reset(); say(SUCCESS); return; }
+      if (o.r.ok && o.j.ok) { showSuccess(); return; }
       var err = (o.j && o.j.error) || {};
       if (err.fieldErrors && Object.keys(err.fieldErrors).length) { showErrors(err.fieldErrors); say(''); return; }
       // Values are left exactly as typed so nothing has to be retyped.
@@ -1097,9 +1144,8 @@ CONTACT_JS = """<script>
 })();
 </script>"""
 
-CONTACT_JS = (CONTACT_JS
-              .replace("SUCCESS", "'" + CONTACT_SUCCESS + "'")
-              .replace("FAILURE", "'" + CONTACT_FAILURE + "'"))
+CONTACT_JS = CONTACT_JS.replace("FAILURE", "'" + CONTACT_FAILURE + "'")
+assert "SUCCESS" not in CONTACT_JS, "success copy belongs in the markup, not the script"
 
 
 content_tpl = (BUILD / "content-page.html").read_text()
@@ -1129,7 +1175,9 @@ for spec_path in sorted(PAGES_DIR.glob("*.json")):
             .replace("{{PAGE_JS}}", CONTACT_JS + "\n" if slug == "contact" else "")
             .replace("{{BODY}}", body))
     assert "{{" not in page, f"unfilled placeholder in {slug}.html"
-    assert "—" not in body, f"em dash in {slug} content"
+    # The contact success line is the founder's exact wording and is the one
+    # sanctioned em dash; build/check.py asserts it verbatim.
+    assert "—" not in body.replace(CONTACT_SUCCESS, ""), f"em dash in {slug} content"
     (ROOT / f"{slug}.html").write_text(page)
     CONTENT_PAGES.append(slug)
 
