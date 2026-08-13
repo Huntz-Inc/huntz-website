@@ -1,0 +1,96 @@
+{
+ "blocks": [
+  {
+   "type": "p",
+   "text": "A Hunt is a goal with real commitment behind it. You stake your own money, follow rules you read before joining, and prove your progress on a schedule. Finish, and you recover your stake in full plus a share of the stakes forfeited by people who quit or fell short. Fall short yourself, and your stake goes to the finishers. Here is the full lifecycle, start to settlement."
+  },
+  {
+   "type": "h2",
+   "text": "Step one: a Hunt gets built."
+  },
+  {
+   "type": "p",
+   "text": "Every Hunt starts with someone defining a structured challenge: a creator, or Huntz itself. At launch, Huntz runs the first Hunts across five categories: fitness, reading, content creation, applying to jobs, and live streaming. Creator-hosted Hunts and private Hunts with friends are coming soon."
+  },
+  {
+   "type": "h2",
+   "text": "Step two: the complete rules go public before anyone joins."
+  },
+  {
+   "type": "p",
+   "text": "Nothing is hidden and nothing is decided later. Before a single person can join, every Hunt publishes its full rulebook:"
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Cadence: how often you check in.",
+    "Duration: how long the Hunt runs.",
+    "Proof requirements: what counts as evidence of progress.",
+    "Allowed misses and grace days.",
+    "Stake amount: what you commit to join.",
+    "Service fee: the only compensation Huntz takes.",
+    "Completion threshold: what counts as finishing."
+   ]
+  },
+  {
+   "type": "p",
+   "text": "Once published, those rules are frozen. They are never changed retroactively. The deal you read is the deal you get, and that structure is what separates an {a:/accountability-challenges|accountability challenge} from a resolution."
+  },
+  {
+   "type": "h2",
+   "text": "Step three: you join and commit your stake."
+  },
+  {
+   "type": "p",
+   "text": "Read the rules. Decide the goal matters to you. Join by committing your stake, and from that moment the published schedule is your contract. Huntz is for adults only; you must be 18 or older to participate."
+  },
+  {
+   "type": "h2",
+   "text": "Step four: you submit proof on the published schedule."
+  },
+  {
+   "type": "p",
+   "text": "Progress is not a feeling. On each scheduled check-in you submit proof that meets the requirements the Hunt published up front. Miss more than the allowed misses and grace days permit, and you fall short by the Hunt's own rules, not by anyone's opinion."
+  },
+  {
+   "type": "h2",
+   "text": "Step five: submissions are checked against the rules."
+  },
+  {
+   "type": "p",
+   "text": "Every submission is evaluated against the published rules and nothing else. Automated checks make the first pass; anything unclear goes to human review. If you dispute an outcome, Huntz reviews and decides the dispute, acting reasonably. Huntz does not claim to prove anything with absolute certainty. It judges your proof against the standard you agreed to. More detail lives in {a:/faq|the FAQ}."
+  },
+  {
+   "type": "h2",
+   "text": "Step six: finishers recover their stake, plus a share."
+  },
+  {
+   "type": "p",
+   "text": "Meet the completion threshold and you recover your stake in full, plus a share of the stakes forfeited by participants who quit or fell short. Huntz's only compensation is the service fee shown when you join. Huntz never keeps forfeited stakes; every forfeit is distributed to finishers."
+  },
+  {
+   "type": "h2",
+   "text": "No dice, no odds, no house."
+  },
+  {
+   "type": "p",
+   "text": "There is no element of chance anywhere in a Hunt. Huntz never wagers against you and holds no side of any outcome. It is not a bank, not a bookmaker, not gambling. Whether you finish comes down to one thing: your effort, measured against rules you read before you joined. The full legal picture is in {a:/terms|our terms}."
+  },
+  {
+   "type": "h2",
+   "text": "Where Huntz stands today."
+  },
+  {
+   "type": "p",
+   "text": "Huntz is pre-launch. The iOS app is in development and money movement is not live yet. The lifecycle on this page describes the planned launch model. Right now the one action available is to {a:/#join|join the waitlist}; you will hear from us when the first Hunts open."
+  },
+  {
+   "type": "note",
+   "text": "Pre-launch status, August 2026: no live payments, no app-store availability, waitlist only. Huntz, Inc., Oakland, California. Questions: team@huntz.ai."
+  }
+ ],
+ "eyebrow": "THE MECHANIC",
+ "h1": "How Huntz turns a goal into a clear challenge.",
+ "meta_description": "How a Hunt works: rules published before anyone joins, a committed stake, proof on a schedule, finishers recover their stake plus forfeit shares. Pre-launch.",
+ "title_tag": "How Huntz Works | Accountability Challenges"
+}

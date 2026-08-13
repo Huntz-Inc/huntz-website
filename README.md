@@ -9,12 +9,13 @@ This repo is **only** the public marketing site. The Huntz product itself lives
 in a separate private repo.
 
 ```
-index.html        the landing page
-terms.html        Terms of Service      → served at /terms
-privacy.html      Privacy Policy        → served at /privacy
-assets/fonts.css  webfonts, shared by the legal pages
-og-image.png      1200×630 social share card
-build/            the build pipeline (see "Rebuilding")
+index.html                       the landing page
+about.html … how-it-works.html   marketing pages     → served at /about etc.
+terms.html, privacy.html         legal pages         → /terms, /privacy
+assets/                          hashed shared assets (fonts css, app js)
+robots.txt, sitemap.xml          crawl controls
+favicon.ico, apple-touch-icon.png, icon-512.png, og-image.jpg   icons + share card
+build/                           the build pipeline (see "Rebuilding")
 ```
 
 `vercel.json` sets `cleanUrls`, which is what serves `terms.html` at `/terms`.
@@ -74,10 +75,13 @@ Edit `build/assemble.py` (or `build/legal-overlay.html` for the Terms and
 Privacy documents), then:
 
 ```bash
+python3 build/legal_build.py   # only when the legal text changed
 python3 build/assemble.py
+python3 build/check.py         # route/metadata/sitemap validation
 ```
 
-That regenerates `index.html`. **Do not hand-edit `index.html`** — it is
+That regenerates every page. Marketing-page copy lives in `build/pages/*.json`
+as typed blocks; the legal documents come from `build/source/legal/`. **Do not hand-edit `index.html`** — it is
 generated, and the next build overwrites it.
 
 The script takes the immutable Claude Design export in `build/source/` and

@@ -87,7 +87,9 @@ link_re = re.compile(
     r'<link rel="stylesheet" href="https://fonts\.googleapis\.com/css2[^"]*">'
 )
 assert link_re.search(html), "font links not found"
-html = link_re.sub(lambda m: font_style, html)
+# The home page links the fonts as a shared cached asset; the artifact keeps
+# them inline. A token marks the spot until the variants split below.
+html = link_re.sub("<!--HZ:FONTS-->", html)
 
 # ---- 2b. content edits requested 2026-07-29 (deviations from the original export) ----
 # (1) Footer "Contact" goes to email instead of the CTA section.
@@ -140,8 +142,10 @@ for token, doc in (("{{TERMS}}", "legal-terms.html"), ("{{PRIVACY}}", "legal-pri
         sys.exit(f"missing {doc} — run: python3 build/legal_build.py")
     assert token in legal, f"{token} placeholder not found"
     legal = legal.replace(token, src.read_text())
-assert "</body>" in html
-html = html.replace("</body>", legal + "\n</body>")
+# The overlay is injected into the ARTIFACT variant only, further down. The
+# home page stopped embedding both legal documents: /terms and /privacy are
+# real routes, and duplicating ~220 KB of legal text on home hurt both weight
+# and semantics (three h1-bearing documents in one page source).
 
 # ---- 2c. design improvements requested 2026-07-29 (second round) ----
 
@@ -366,6 +370,66 @@ for old, new in EM_DASH_COPY:
     assert old in html, "em-dash copy not found: " + old[:60]
     html = html.replace(old, new)
 
+# ---- 2d. SEO phase 1 content edits (2026-08-13, approved plan) ----
+
+# (S-1) Footer becomes the crawlable route map. "How it works" points at the
+# dedicated page (the home section keeps its header anchor), and the new
+# Accountability challenges and FAQ pages join the PLATFORM column.
+LINK_STYLE = ('style="display:block;font:500 14.5px \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+              'text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F"')
+old = f'<a href="#mechanic" {LINK_STYLE}>How it works</a>'
+assert old in html, "footer How it works not found"
+html = html.replace(old,
+    f'<a href="/how-it-works" {LINK_STYLE}>How it works</a>\n'
+    f'            <a href="/accountability-challenges" {LINK_STYLE}>Accountability challenges</a>\n'
+    f'            <a href="/faq" {LINK_STYLE}>FAQ</a>')
+
+# (S-2) About is a real page now; the COMING SOON pill comes off.
+old = (f'<a href="#top" {LINK_STYLE}>About<span style="display:inline-block;margin-left:9px;padding:3px 8px;'
+       'border-radius:20px;background:rgba(194,78,31,.12);color:#C24E1F;white-space:nowrap;'
+       "font:700 8px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;vertical-align:1.5px\">COMING SOON</span></a>")
+assert old in html, "footer About not found"
+html = html.replace(old, f'<a href="/about" {LINK_STYLE}>About</a>')
+
+# (S-3) Contact gets its own page; the page itself carries the mailto.
+old = f'<a href="mailto:team@huntz.ai" {LINK_STYLE}>Contact</a>'
+assert old in html, "footer Contact not found"
+html = html.replace(old, f'<a href="/contact" {LINK_STYLE}>Contact</a>')
+
+# (S-4) The pre-launch qualifier the plan requires, carrying the category
+# language, directly under the hero form.
+old = ('<div style="margin-top: 20px; font: 500 11px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .1em; '
+       'color: #6E6759; animation: hzRise .7s ease .84s both; font-family:\'Figtree\',Arial,Helvetica,sans-serif">'
+       'NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>')
+assert old in html, "hero microcopy not found"
+html = html.replace(old, old + '\n      '
+    '<div style="margin-top: 10px; max-width: 520px; font: 500 10px/1.7 \'Figtree\',Arial,Helvetica,sans-serif; '
+    'letter-spacing: .08em; color: #6E6759; animation: hzRise .7s ease .92s both">'
+    'HUNTZ IS AN ACCOUNTABILITY CHALLENGE PLATFORM IN PRE-LAUNCH. STAKES AND PAYOUTS SHOWN PREVIEW THE PLANNED EXPERIENCE.</div>')
+
+# (S-5) Trust line on the worked settlement example: the money figures are
+# illustrative and every Hunt disclosés its own rules first.
+old = 'PAID IN 48H</span>\n        </div>'
+assert old in html, "settlement strip not found"
+html = html.replace(old, old + '\n        '
+    '<div style="padding:9px 15px 11px;font:500 9px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;'
+    'letter-spacing:.08em;color:rgba(243,239,231,.55)">'
+    'ILLUSTRATIVE EXAMPLE. RULES, STAKES AND VERIFICATION METHODS VARY BY HUNT AND ARE DISCLOSED BEFORE YOU JOIN.</div>')
+
+# (S-6) The email fields relied on placeholder text alone; give them a
+# programmatic label without changing the design.
+n = html.count('<input type="email" required="" placeholder="you@email.com"')
+assert n == 2, f"expected 2 email inputs, found {n}"
+html = html.replace('<input type="email" required="" placeholder="you@email.com"',
+                    '<input type="email" required="" aria-label="Email address" placeholder="you@email.com"')
+
+# (S-7) Home keeps its five FAQ answers and links the full page.
+old = '>The five we get every day. Not here? team@huntz.ai</p>'
+assert old in html, "FAQ subtitle not found"
+html = html.replace(old,
+    '>The five we get every day. More answers on the <a href="/faq" style="color:#C24E1F">full FAQ</a>. '
+    'Not here? team@huntz.ai</p>')
+
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
     # keep inline <script> content safe; \/ == / inside JS strings/regexes
@@ -395,50 +459,129 @@ inline_scripts = (
     + js_escape(support) + "</script>"
 )
 assert '<script src="./support.js"></script>' in html
-html = html.replace('<script src="./support.js"></script>', inline_scripts)
+html = html.replace('<script src="./support.js"></script>', "<!--HZ:SCRIPTS-->")
 
-# ---- 4. standalone page ----
-# (I-1) Title, description, social-share (OG/Twitter) tags, favicon.
-# The share image is served from SITE_URL/og-image.png — previews stay blank
-# until the site actually answers on that domain.
+# One concatenated, content-hashed file for the home page: execution order
+# (React, ReactDOM, the __resources flag, the runtime) is preserved inside it.
+app_js = (
+    "/* react@18.3.1 + react-dom@18.3.1 UMD + Claude Design dc-runtime.\n"
+    "   Generated by build/assemble.py — do not edit. */\n"
+    + react + "\n;\n" + react_dom + "\n;\n"
+    + "window.__resources = {};/* single-file build: template + logic are inline, no sibling fetches */\n"
+    + support
+)
+
+# ---- 4. shared assets: hashed, immutable-cacheable ----
+import hashlib
+import json
+
+ASSETS = ROOT / "assets"
+ASSETS.mkdir(exist_ok=True)
+
+def write_hashed(stem: str, ext: str, content: str) -> str:
+    """Write assets/<stem>.<hash8>.<ext>, prune stale siblings, return the path."""
+    digest = hashlib.sha256(content.encode()).hexdigest()[:8]
+    name = f"{stem}.{digest}.{ext}"
+    for old in ASSETS.glob(f"{stem}.????????.{ext}"):
+        if old.name != name:
+            old.unlink()
+    (ASSETS / name).write_text(content)
+    return f"/assets/{name}"
+
+fonts_css_out = ("/* Playfair Display + Figtree, latin subset, embedded. Generated by "
+                 "build/assemble.py — do not edit. */\n" + "\n".join(kept) + "\n")
+FONTS_HREF = write_hashed("fonts", "css", fonts_css_out)
+APP_HREF = write_hashed("app", "js", app_js)
+# Kept for any cached copy of the earlier legal pages that still links it.
+(ASSETS / "fonts.css").write_text(fonts_css_out)
+
+# ---- 4b. head metadata, icons, structured data ----
 FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E"
            "%3Crect width='100' height='100' rx='22' fill='%23F3EFE7'/%3E"
            "%3Ctext x='50' y='56' text-anchor='middle' dominant-baseline='central' "
            "font-family='Arial,Helvetica,sans-serif' font-weight='800' font-size='58' "
            "fill='%2316130E'%3EH%3Ctspan fill='%23C24E1F'%3E.%3C/tspan%3E%3C/text%3E%3C/svg%3E")
-HEAD_META = """<title>Huntz · Put your money where your goals are.</title>
-<meta name="description" content="Stake $50–$500 of your own money on your own goal. Post proof every day. Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.">
+
+ICON_LINKS = f"""<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="{FAVICON}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">"""
+
+# Facts only: name, entity, address (already public in the legal pages), contact.
+ORG_LD = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Huntz",
+    "legalName": "Huntz, Inc.",
+    "url": SITE_URL + "/",
+    "logo": SITE_URL + "/icon-512.png",
+    "email": "team@huntz.ai",
+    "address": {"@type": "PostalAddress", "streetAddress": "269 24th Street",
+                "addressLocality": "Oakland", "addressRegion": "CA",
+                "postalCode": "94612", "addressCountry": "US"},
+}
+SITE_LD = {"@context": "https://schema.org", "@type": "WebSite",
+           "name": "Huntz", "url": SITE_URL + "/"}
+
+def ld(obj) -> str:
+    return '<script type="application/ld+json">' + json.dumps(obj, separators=(",", ":")) + "</script>"
+
+def breadcrumb_ld(title: str, slug: str) -> str:
+    return ld({"@context": "https://schema.org", "@type": "BreadcrumbList",
+               "itemListElement": [
+                   {"@type": "ListItem", "position": 1, "name": "Huntz", "item": SITE_URL + "/"},
+                   {"@type": "ListItem", "position": 2, "name": title, "item": f"{SITE_URL}/{slug}"}]})
+
+# Search metadata leads with the category (per the approved SEO plan); the
+# social card keeps the brand line, which the visible hero also carries, so
+# metadata and visible copy agree in both places.
+HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</title>
+<meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is currently in pre-launch.">
+<link rel="canonical" href="{SITE_URL}/">
+<meta property="og:site_name" content="Huntz">
 <meta property="og:title" content="Huntz · Put your money where your goals are.">
 <meta property="og:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back, plus a share of the stakes forfeited by everyone who quit.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="{site}/">
-<meta property="og:image" content="{site}/og-image.png">
+<meta property="og:url" content="{SITE_URL}/">
+<meta property="og:image" content="{SITE_URL}/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Huntz · Put your money where your goals are.">
 <meta name="twitter:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back.">
-<meta name="twitter:image" content="{site}/og-image.png">
-<link rel="icon" href="{favicon}">""".replace("{favicon}", FAVICON).replace("{site}", SITE_URL)
-html = html.replace(
-    "<head>\n<meta charset=\"utf-8\">",
-    "<head>\n<meta charset=\"utf-8\">\n" + HEAD_META,
-    1,
-)
-(ROOT / "index.html").write_text(html)
+<meta name="twitter:image" content="{SITE_URL}/og-image.jpg">
+{ICON_LINKS}
+<link rel="preload" href="{FONTS_HREF}" as="style">
+<link rel="stylesheet" href="{FONTS_HREF}">
+{ld(ORG_LD)}
+{ld(SITE_LD)}
+<script>if(/^#\/(terms|privacy)$/.test(location.hash))location.replace(location.hash.slice(2));</script>"""
 
-# ---- 4b. real pages at /terms and /privacy ----
-# The in-page #/terms route still works (and is all the single-file artifact
-# copy can do), but a legal document deserves a genuine URL: shareable,
-# indexable, printable, and readable without running any JavaScript. These are
-# separate documents that link one shared stylesheet for the webfonts, so the
-# 600 KB of font data is fetched once and cached rather than inlined per page.
-ASSETS = ROOT / "assets"
-ASSETS.mkdir(exist_ok=True)
-(ASSETS / "fonts.css").write_text(
-    "/* Playfair Display + Figtree, latin subset, embedded. Generated by "
-    "build/assemble.py — do not edit. */\n" + "\n".join(kept) + "\n")
+# ---- 4c. the two variants ----
+assert html.count("<!--HZ:FONTS-->") == 1 and html.count("<!--HZ:SCRIPTS-->") == 1
+html = html.replace("<html>", '<html lang="en">', 1)
 
+home = html.replace("<!--HZ:FONTS-->", "")
+home = home.replace("<!--HZ:SCRIPTS-->", f'<script src="{APP_HREF}" defer></script>')
+home = home.replace('<head>\n<meta charset="utf-8">',
+                    '<head>\n<meta charset="utf-8">\n' + HEAD_META, 1)
+assert "HZ:" not in home
+(ROOT / "index.html").write_text(home)
+
+art = html.replace("<!--HZ:FONTS-->", font_style)
+art = art.replace("<!--HZ:SCRIPTS-->", "")
+art = art.replace("</body>", legal + "\n</body>")
+m = re.search(r"<body>\n?(.*)\n?</body>", art, re.S)
+fragment = inline_scripts + "\n" + m.group(1)
+# The artifact is one file with no /terms to navigate to, so its footer keeps
+# the in-page hash routes that the embedded overlay still serves.
+for a, b in (('href="/terms"', 'href="#/terms"'), ('href="/privacy"', 'href="#/privacy"'),
+             ('href="/faq"', 'href="#why"'), ('href="/how-it-works"', 'href="#mechanic"'),
+             ('href="/about"', 'href="#top"'), ('href="/contact"', 'href="mailto:team@huntz.ai"'),
+             ('href="/accountability-challenges"', 'href="#challenges"')):
+    fragment = fragment.replace(a, b)
+(BUILD / "huntz-landing.artifact.html").write_text(fragment)
+
+# ---- 5. legal pages ----
 page_tpl = (BUILD / "legal-page.html").read_text()
 LEGAL_PAGES = [
     ("terms", "legal-terms.html", "Terms of Service",
@@ -455,23 +598,92 @@ for slug, doc, title, desc, other_href, other_label in LEGAL_PAGES:
             .replace("{{CANONICAL}}", f"{SITE_URL}/{slug}")
             .replace("{{SITE}}", SITE_URL)
             .replace("{{FAVICON}}", FAVICON)
+            .replace("{{ICONS}}", ICON_LINKS)
+            .replace("{{FONTS_HREF}}", FONTS_HREF)
+            .replace("{{BREADCRUMB_LD}}", breadcrumb_ld(title, slug))
             .replace("{{OTHER_HREF}}", other_href)
             .replace("{{OTHER_LABEL}}", other_label)
             .replace("{{BODY}}", (BUILD / doc).read_text()))
     assert "{{" not in page, f"unfilled placeholder in {slug}.html"
     (ROOT / f"{slug}.html").write_text(page)
-    print(f"{slug}.html  {len(page):,} bytes")
 
-# ---- 5. artifact fragment: no doctype/html/head/body (publisher wraps it) ----
-m = re.search(r"<body>\n?(.*)\n?</body>", html, re.S)
-body = m.group(1)
-# support.js boots on DOMContentLoaded, so keeping the original source order
-# (scripts, then the <x-dc> template) is all that matters here.
-fragment = inline_scripts + "\n" + body
-# The artifact is one file with no /terms to navigate to, so its footer
-# falls back to the in-page hash route that the overlay still serves.
-fragment = fragment.replace('href="/terms"', 'href="#/terms"').replace('href="/privacy"', 'href="#/privacy"')
-(BUILD / "huntz-landing.artifact.html").write_text(fragment)
+# ---- 6. content pages (About, Contact, FAQ, How it works, hub) ----
+# Copy lives in build/pages/<slug>.json as typed blocks; this renderer maps the
+# blocks onto the site's type system so pages cannot drift stylistically.
+INK, BODYC, MUTED, CLAY = "#16130E", "#4A453C", "#6E6759", "#C24E1F"
+SERIF = "'Playfair Display','Times New Roman',serif"
+SANS = "'Figtree',Arial,Helvetica,sans-serif"
+BS = {
+    "h2": f"margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 {SERIF};letter-spacing:-.012em;color:{INK};text-wrap:balance",
+    "h3": f"margin:26px 0 8px;font:700 13px {SANS};letter-spacing:.13em;text-transform:uppercase;color:{CLAY}",
+    "p": f"margin:0 0 15px;font:400 15.5px/1.75 {SANS};color:{BODYC};text-wrap:pretty",
+    "ul": f"margin:0 0 18px;padding-left:20px;display:flex;flex-direction:column;gap:7px;list-style:none",
+    "li": f"position:relative;font:400 15.5px/1.7 {SANS};color:{BODYC};text-wrap:pretty",
+    "note": (f"margin:26px 0 15px;padding:14px 18px;border-left:2px solid {CLAY};background:rgba(194,78,31,.05);"
+             f"font:600 12px/1.8 {SANS};letter-spacing:.05em;text-transform:uppercase;color:{INK}"),
+}
 
-for f in (ROOT / "index.html", BUILD / "huntz-landing.artifact.html"):
-    print(f"{f.relative_to(ROOT)}  {f.stat().st_size:,} bytes")
+LINK_RE = re.compile(r"\{a:(/[a-z#/-]*|/#[a-z-]+)\|([^}]+)\}")
+
+def render_text(s: str) -> str:
+    import html as H
+    s = H.escape(s, quote=False)
+    s = s.replace("team@huntz.ai",
+                  f'<a href="mailto:team@huntz.ai" style="color:{CLAY};text-decoration:none;'
+                  f'border-bottom:1px solid rgba(194,78,31,.4)">team@huntz.ai</a>')
+    return LINK_RE.sub(
+        rf'<a href="\1" style="color:{CLAY};text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">\2</a>', s)
+
+def render_blocks(blocks) -> str:
+    out = []
+    for b in blocks:
+        k = b["type"]
+        if k in ("h2", "h3", "p", "note"):
+            tag = {"h2": "h2", "h3": "h3", "p": "p", "note": "p"}[k]
+            out.append(f'<{tag} style="{BS[k]}">{render_text(b.get("text", ""))}</{tag}>')
+        elif k == "ul":
+            items = "".join(
+                f'<li style="{BS["li"]}"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;'
+                f'border-radius:50%;background:{CLAY};opacity:.55"></span>{render_text(i)}</li>'
+                for i in b.get("items", []))
+            out.append(f'<ul style="{BS["ul"]}">{items}</ul>')
+    return "\n".join(out)
+
+content_tpl = (BUILD / "content-page.html").read_text()
+PAGES_DIR = BUILD / "pages"
+CONTENT_PAGES = []
+for spec_path in sorted(PAGES_DIR.glob("*.json")):
+    spec = json.loads(spec_path.read_text())
+    slug = spec_path.stem
+    body = render_blocks(spec["blocks"])
+    page = (content_tpl
+            .replace("{{TITLE_TAG}}", spec["title_tag"])
+            .replace("{{TITLE}}", spec["h1"])
+            .replace("{{EYEBROW}}", spec.get("eyebrow", "HUNTZ"))
+            .replace("{{DESC}}", spec["meta_description"])
+            .replace("{{CANONICAL}}", f"{SITE_URL}/{slug}")
+            .replace("{{SITE}}", SITE_URL)
+            .replace("{{ICONS}}", ICON_LINKS)
+            .replace("{{FONTS_HREF}}", FONTS_HREF)
+            .replace("{{BREADCRUMB_LD}}", breadcrumb_ld(spec["h1"], slug))
+            .replace("{{BODY}}", body))
+    assert "{{" not in page, f"unfilled placeholder in {slug}.html"
+    assert "—" not in body, f"em dash in {slug} content"
+    (ROOT / f"{slug}.html").write_text(page)
+    CONTENT_PAGES.append(slug)
+
+# ---- 7. robots + sitemap: canonical, public, 200 pages only ----
+SITEMAP_PATHS = ["/", "/terms", "/privacy"] + [f"/{s}" for s in sorted(CONTENT_PAGES)]
+sitemap = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+for path in SITEMAP_PATHS:
+    sitemap.append(f"  <url><loc>{SITE_URL}{path}</loc></url>")
+sitemap.append("</urlset>")
+(ROOT / "sitemap.xml").write_text("\n".join(sitemap) + "\n")
+
+print(f"index.html  {(ROOT / 'index.html').stat().st_size:,} bytes")
+print(f"app js      {APP_HREF}")
+print(f"fonts css   {FONTS_HREF}")
+print(f"pages       {', '.join(['terms', 'privacy'] + CONTENT_PAGES)}")
+print(f"sitemap     {len(SITEMAP_PATHS)} urls")
+print(f"artifact    {(BUILD / 'huntz-landing.artifact.html').stat().st_size:,} bytes")
