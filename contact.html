@@ -47,7 +47,9 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
 @media (max-width:640px){
   [data-hz-footernav]{ display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr));
                         gap:0 18px !important; margin-left:0 !important }
-  [data-hz-footernav] > span{ display:contents }
+  /* The legal pair is wrapped so it can sit right on desktop; the wrapper
+     carries an inline display:flex, which only !important can unseat. */
+  [data-hz-footernav] > span{ display:contents !important }
   [data-hz-footernav] a{ display:flex; align-items:center; min-height:44px; margin-left:0 !important }
 }
 

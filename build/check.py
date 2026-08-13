@@ -230,6 +230,12 @@ for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-cha
     for r in ROUTES:
         if f'href="{r}"' not in row:
             fail(f"{path}: footer nav missing {r}")
+    # The legal pair is wrapped in a span so it can sit right on desktop. That
+    # wrapper carries an inline display:flex, so without !important it stays a
+    # single grid cell on phones and Terms/Privacy fall out of the two columns.
+    t_ = (ROOT / PAGES[path]).read_text()
+    if "[data-hz-footernav] > span{ display:contents !important }" not in t_:
+        fail(f"{path}: footer legal pair will not join the phone grid")
 
 # Legal pages keep their own minimal chrome and counsel's text, untouched.
 for path in ("/terms", "/privacy"):
