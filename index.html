@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="/assets/fonts.601bc53b.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Huntz","legalName":"Huntz, Inc.","url":"https://www.huntz.ai/","logo":"https://www.huntz.ai/icon-512.png","email":"team@huntz.ai","address":{"@type":"PostalAddress","streetAddress":"269 24th Street","addressLocality":"Oakland","addressRegion":"CA","postalCode":"94612","addressCountry":"US"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Huntz","url":"https://www.huntz.ai/"}</script>
-<script>if(/^#\/(terms|privacy)$/.test(location.hash))location.replace(location.hash.slice(2));</script>
+<script>if(/^#\/(terms|privacy)$/.test(location.hash))location.replace(location.hash.slice(2));else if(location.hash==="#challenges")location.replace("/accountability-challenges");</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="/assets/app.6078d20e.js" defer></script>
 </head>
@@ -45,7 +45,7 @@ a{color:#16130E}a:hover{color:#C24E1F}
 ::selection{background:#C24E1F;color:#F3EFE7}
 input::placeholder{color:#6E6759}
 a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px solid #C24E1F;outline-offset:3px}
-@media (max-width:640px){#hz-nav a[href="#mechanic"],#hz-nav a[href="#challenges"],#hz-nav a[href="#why"]{display:none}}
+@media (max-width:640px){#hz-nav a[href="#mechanic"],#hz-nav a[href="#hunts"],#hz-nav a[href="#why"]{display:none}}
 #ch-rail::-webkit-scrollbar{height:0;width:0}
 #ch-rail>*{box-sizing:border-box}
 @keyframes hzWord{0%{opacity:0;transform:translateY(.7em) skewY(5deg)}60%{opacity:1;transform:translateY(-.06em) skewY(-1.2deg)}100%{opacity:1;transform:none}}
@@ -65,9 +65,9 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
   <a href="#top" style="font: 800 21px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: -.02em; text-decoration: none; color: #16130E; font-family:'Figtree',Arial,Helvetica,sans-serif">HUNTZ<span style="color:#C24E1F">.</span></a>
   <div style="display:flex;align-items:center;gap:clamp(14px,2.5vw,30px);flex-wrap:wrap;justify-content:flex-end">
     <a href="#mechanic" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HOW IT WORKS</a>
-    <a href="#challenges" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HUNTS</a>
+    <a href="#hunts" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HUNTS</a>
     <a href="#why" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">FAQ</a>
-    <a href="#cta" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>
+    <a href="#waitlist" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>
   </div>
 </div>
 
@@ -85,7 +85,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
         <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.56s both;font-style:italic">are<span style="color:#C24E1F;font-style:normal">.</span></span>
       </h1>
       <p style="margin: 0 0 34px; max-width: 520px; font: 400 clamp(15px,1.4vw,18px)/1.6 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; animation: hzRise .7s ease .62s both; font-family:'Figtree',Arial,Helvetica,sans-serif">Stake $50–$500 of your own money on your own goal. Post proof every day. Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.</p>
-      <div id="join" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">
+      <div id="waitlist" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">
         <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
           <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
             <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
@@ -299,7 +299,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
   </div>
 </section>
 
-<section id="challenges" data-screen-label="Upcoming Challenges" style="position:relative;padding:clamp(56px,8vh,88px) clamp(20px,5vw,64px);scroll-margin-top:70px">
+<section id="hunts" data-screen-label="Upcoming Challenges" style="position:relative;padding:clamp(56px,8vh,88px) clamp(20px,5vw,64px);scroll-margin-top:70px">
   <div style="max-width:1220px;margin:0 auto">
     <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;color:#6E6759;margin-bottom:14px">HUNTS</div>
     <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:clamp(18px,4vw,52px);margin-bottom:clamp(26px,4vh,40px)">
@@ -514,7 +514,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
             <a href="/how-it-works" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">How it works</a>
             <a href="/accountability-challenges" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Accountability challenges</a>
             <a href="/faq" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">FAQ</a>
-            <a href="#challenges" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Upcoming hunts</a>
+            <a href="#hunts" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Upcoming hunts</a>
             <a href="#top" style="display:block;font:500 14.5px 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F">Host a hunt<span style="display:inline-block;margin-left:9px;padding:3px 8px;border-radius:20px;background:rgba(194,78,31,.12);color:#C24E1F;white-space:nowrap;font:700 8px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;vertical-align:1.5px">COMING SOON</span></a>
           </div>
           <div style="display:flex;flex-direction:column;gap:11px;min-width:132px">
@@ -860,6 +860,27 @@ class Component extends DCLogic {
     };
   }
 }
+</script>
+<script>
+(function () {
+  function focusWaitlist() {
+    var w = document.getElementById('waitlist');
+    if (!w) return;
+    w.scrollIntoView({ block: 'center' });
+    var i = w.querySelector('input');
+    if (i) i.focus({ preventScroll: true });
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href="#waitlist"]');
+    if (!a) return;
+    e.preventDefault();
+    history.replaceState(null, '', '#waitlist');
+    focusWaitlist();
+  });
+  if (location.hash === '#waitlist') {
+    window.addEventListener('load', function () { setTimeout(focusWaitlist, 350); });
+  }
+})();
 </script>
 </body>
 </html>

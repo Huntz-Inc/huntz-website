@@ -431,6 +431,27 @@ html = html.replace(old,
     '>The five we get every day. More answers on the <a href="/faq" style="color:#C24E1F">full FAQ</a>. '
     'Not here? team@huntz.ai</p>')
 
+# (S-9) Waitlist anchor and Hunts-section anchor (2026-08-13 correction pass).
+# The hero form container becomes #waitlist so every JOIN THE WAITLIST button
+# can target and focus one form, on-page and cross-page. The Upcoming section
+# is renamed #hunts so the #challenges hash can be reserved as a legacy
+# redirect to the /accountability-challenges hub.
+assert html.count('id="join"') == 1
+html = html.replace('id="join"', 'id="waitlist"')
+assert '"#join"' not in html
+
+assert html.count('<a href="#cta"') == 1  # the nav JOIN THE WAITLIST button
+html = html.replace('<a href="#cta"', '<a href="#waitlist"')
+
+assert html.count('id="challenges"') == 1
+html = html.replace('id="challenges"', 'id="hunts"')
+# Three occurrences: the nav HUNTS link, the footer Upcoming hunts link, and
+# the mobile-nav CSS selector from (I-4b), which must track the rename.
+n = html.count('href="#challenges"')
+assert n == 3, f"expected 3 #challenges occurrences (2 links + 1 CSS selector), found {n}"
+html = html.replace('href="#challenges"', 'href="#hunts"')
+assert "#challenges" not in html
+
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
     # keep inline <script> content safe; \/ == / inside JS strings/regexes
@@ -555,7 +576,7 @@ HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</
 <link rel="stylesheet" href="{FONTS_HREF}">
 {ld(ORG_LD)}
 {ld(SITE_LD)}
-<script>if(/^#\/(terms|privacy)$/.test(location.hash))location.replace(location.hash.slice(2));</script>"""
+<script>if(/^#\/(terms|privacy)$/.test(location.hash))location.replace(location.hash.slice(2));else if(location.hash==="#challenges")location.replace("/accountability-challenges");</script>"""
 
 # ---- 4c. the two variants ----
 assert html.count("<!--HZ:FONTS-->") == 1 and html.count("<!--HZ:SCRIPTS-->") == 1
@@ -566,6 +587,31 @@ home = home.replace("<!--HZ:SCRIPTS-->", f'<script src="{APP_HREF}" defer></scri
 home = home.replace('<head>\n<meta charset="utf-8">',
                     '<head>\n<meta charset="utf-8">\n' + HEAD_META, 1)
 assert "HZ:" not in home
+# Every JOIN THE WAITLIST button targets the one existing form: on-page clicks
+# scroll to it and put the caret in the email field; /#waitlist arrivals from
+# other pages do the same once the runtime has rendered the form.
+FOCUS_JS = """<script>
+(function () {
+  function focusWaitlist() {
+    var w = document.getElementById('waitlist');
+    if (!w) return;
+    w.scrollIntoView({ block: 'center' });
+    var i = w.querySelector('input');
+    if (i) i.focus({ preventScroll: true });
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href=\"#waitlist\"]');
+    if (!a) return;
+    e.preventDefault();
+    history.replaceState(null, '', '#waitlist');
+    focusWaitlist();
+  });
+  if (location.hash === '#waitlist') {
+    window.addEventListener('load', function () { setTimeout(focusWaitlist, 350); });
+  }
+})();
+</script>"""
+home = home.replace("</body>", FOCUS_JS + "\n</body>")
 (ROOT / "index.html").write_text(home)
 
 art = html.replace("<!--HZ:FONTS-->", font_style)
@@ -578,7 +624,7 @@ fragment = inline_scripts + "\n" + m.group(1)
 for a, b in (('href="/terms"', 'href="#/terms"'), ('href="/privacy"', 'href="#/privacy"'),
              ('href="/faq"', 'href="#why"'), ('href="/how-it-works"', 'href="#mechanic"'),
              ('href="/about"', 'href="#top"'), ('href="/contact"', 'href="mailto:team@huntz.ai"'),
-             ('href="/accountability-challenges"', 'href="#challenges"')):
+             ('href="/accountability-challenges"', 'href="#hunts"')):
     fragment = fragment.replace(a, b)
 (BUILD / "huntz-landing.artifact.html").write_text(fragment)
 

@@ -143,6 +143,35 @@ else:
         if path not in PAGES:
             fail(f"sitemap contains unknown path {path}")
 
+# 2026-08-13 correction-pass regressions
+outputs = [ROOT / f for f in PAGES.values()] + [ROOT / "build/huntz-landing.artifact.html"]
+for f in outputs:
+    txt = f.read_text()
+    if 'href="#challenges"' in txt or 'href="/#challenges"' in txt:
+        fail(f"{f.name}: legacy #challenges link present")
+    if '"#join"' in txt or '"/#join"' in txt:
+        fail(f"{f.name}: stale #join anchor present")
+if 'id="waitlist"' not in home:
+    fail("/: #waitlist form anchor missing")
+if 'location.replace("/accountability-challenges")' not in home:
+    fail("/: legacy #challenges hash redirect missing")
+if "focusWaitlist" not in home:
+    fail("/: waitlist focus behavior missing")
+faq_html = (ROOT / "faq.html").read_text()
+if "Who creates Hunts at launch?" not in faq_html or "works directly with selected creators" not in faq_html:
+    fail("/faq: launch-model Q&A missing")
+if "Huntz publishes the Hunts" in faq_html:
+    fail("/faq: contradictory launch-model claim present")
+for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-challenges"):
+    body = (ROOT / PAGES[path]).read_text()
+    body = body[body.index("<main"):]
+    for marker in ("Status as of", "August 2026", "pre-launch", "Pre-launch", "iOS app is in development"):
+        if marker in body:
+            fail(f"{path}: status-strip language {marker!r} still in body")
+    full = (ROOT / PAGES[path]).read_text()
+    if "Join the waitlist and we'll email you when the first Hunts open." not in full:
+        fail(f"{path}: corrected CTA sentence missing")
+
 # icons and share images
 for f in ("favicon.ico", "apple-touch-icon.png", "icon-512.png", "og-image.jpg"):
     if not (ROOT / f).exists():
