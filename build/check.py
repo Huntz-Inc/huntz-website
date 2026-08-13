@@ -123,9 +123,10 @@ for link in ("/how-it-works", "/accountability-challenges", "/faq", "/about", "/
 # Content pages: no em dashes in marketing copy (legal keeps counsel's own).
 # The contact form's success line is the founder's exact wording and is the
 # single sanctioned exception; it is asserted verbatim further down.
+CONTACT_SUCCESS = "Thanks — your message reached the Huntz team."
 for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-challenges"):
     t = (ROOT / PAGES[path]).read_text()
-    body = t[t.index("<main"):]
+    body = t[t.index("<main"):].replace(CONTACT_SUCCESS, "")
     if "—" in body:
         fail(f"{path}: em dash in marketing copy")
 
@@ -254,10 +255,68 @@ for f in [ROOT / v for v in PAGES.values()]:
     if f.name != "index.html" and MC_ENDPOINT in t:
         fail(f"{f.name}: a second waitlist form appeared off the home page")
 
+# ---- contact form ----
+contact = (ROOT / "contact.html").read_text()
+for exact in (
+    "Questions, partnerships, press, or interested in creating a Hunt? Send us a note.",
+    CONTACT_SUCCESS,
+    "Something went wrong. Please email team@huntz.ai.",
+    "We'll use your information only to respond to your message.",
+    "Send message",
+    "I want to create a Hunt", "Partnership", "Press", "General question", "Website issue",
+):
+    if exact not in contact:
+        fail(f"/contact: exact copy missing: {exact!r}")
+if ">team@huntz.ai</a>. We read everything.</p>" not in contact:
+    fail("/contact: 'Email: team@huntz.ai. We read everything.' missing or address not linked")
+if "We read everything;" in contact:
+    fail("/contact: superseded delayed-reply sentence still present")
+src = json.loads((ROOT / "build/pages/contact.json").read_text())
+if not any(b.get("text") == "Email: team@huntz.ai. We read everything." for b in src["blocks"]):
+    fail("/contact: source copy is not the founder's exact sentence")
+if 'href="/privacy"' not in contact:
+    fail("/contact: privacy line is not linked to /privacy")
+if 'id="hzc-company"' not in contact:
+    fail("/contact: honeypot field missing")
+if "/api/contact" not in contact or "/api/contact-token" not in contact:
+    fail("/contact: form does not post to the same-origin endpoint")
+if re.search(r'<form[^>]*action="mailto:', contact):
+    fail("/contact: form uses mailto: as its action")
+if "tel" in re.findall(r'<input[^>]*type="([a-z]+)"', contact):
+    fail("/contact: form asks for a phone number")
+for fid in ("hzc-name", "hzc-email", "hzc-reason", "hzc-message"):
+    if f'<label for="{fid}"' not in contact:
+        fail(f"/contact: {fid} has no visible label")
+    if f'aria-describedby="{fid}-err"' not in contact:
+        fail(f"/contact: {fid} errors are not associated with the field")
+if 'role="status"' not in contact or 'aria-live="polite"' not in contact:
+    fail("/contact: submission result is not announced")
+# Both terminal UI states, and the guard that stops a second send while one is
+# still in flight, must survive any future edit of the page script.
+for behaviour in ("submit.disabled = on", "if (busy) return", "form.reset()", "setBusy(false)"):
+    if behaviour not in contact:
+        fail(f"/contact: submit-state behaviour missing: {behaviour!r}")
+if "novalidate" not in contact:
+    fail("/contact: form does not defer to its own accessible validation")
+
 # ---- no credential or environment value may reach a generated page ----
+API = ROOT / "api"
+SECRET_NAMES = ("HUNTZ_SMTP_PASSWORD", "HUNTZ_CONTACT_TOKEN_SECRET")
 for f in [ROOT / v for v in PAGES.values()] + sorted(ROOT.glob("assets/*")):
-    if "smtppro.zoho.com" in f.read_text():
+    t = f.read_text()
+    for n in SECRET_NAMES:
+        if n in t:
+            fail(f"{f.name}: environment variable {n} referenced in a client artifact")
+    if "smtppro.zoho.com" in t or "AUTH LOGIN" in t:
         fail(f"{f.name}: SMTP details leaked into a client artifact")
+if API.exists():
+    for f in sorted(API.rglob("*.js")):
+        t = f.read_text()
+        for n in SECRET_NAMES:
+            # Names are fine; a literal default value next to one is not.
+            m = re.search(re.escape(n) + r"\s*(?:\|\||=)\s*['\"]([^'\"]+)['\"]", t)
+            if m:
+                fail(f"api/{f.name}: {n} has a hard-coded value")
 
 if failures:
     print(f"FAIL ({len(failures)}):")

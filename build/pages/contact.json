@@ -10,6 +10,13 @@
   },
   {
    "type": "h2",
+   "text": "Send us a message"
+  },
+  {
+   "type": "form"
+  },
+  {
+   "type": "h2",
    "text": "What to send where"
   },
   {

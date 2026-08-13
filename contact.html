@@ -51,6 +51,24 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
   [data-hz-footernav] a{ display:flex; align-items:center; min-height:44px; margin-left:0 !important }
 }
 
+
+#hz-contact label{ display:block; font:600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing:.14em; text-transform:uppercase;
+  color:#6E6759; margin-bottom:7px }
+#hz-contact input,#hz-contact select,#hz-contact textarea{ width:100%; box-sizing:border-box; min-height:48px;
+  padding:12px 14px; border:1px solid rgba(22,19,14,.22); border-radius:0; background:rgba(255,255,255,.72);
+  color:#16130E; font:400 15.5px/1.5 'Figtree',Arial,Helvetica,sans-serif; -webkit-appearance:none; appearance:none }
+#hz-contact textarea{ min-height:150px; resize:vertical }
+#hz-contact select{ background-image:linear-gradient(45deg,transparent 50%,#6E6759 50%),
+  linear-gradient(135deg,#6E6759 50%,transparent 50%);
+  background-position:calc(100% - 20px) 21px,calc(100% - 14px) 21px; background-size:6px 6px,6px 6px;
+  background-repeat:no-repeat; padding-right:42px }
+#hz-contact input:focus-visible,#hz-contact select:focus-visible,#hz-contact textarea:focus-visible{
+  outline:2px solid #C24E1F; outline-offset:1px }
+#hz-contact [aria-invalid="true"]{ border-color:#C24E1F; background:rgba(194,78,31,.05) }
+#hz-contact [data-hz-err]{ margin:7px 0 0; font:600 12px/1.5 'Figtree',Arial,Helvetica,sans-serif; color:#C24E1F }
+#hz-contact button[disabled]{ opacity:.6; cursor:progress }
+#hz-contact-status:empty{ display:none }
+
 @media print{ header,[data-cta],#hz-menu{ display:none !important } body::before{ display:none } body{ background:#fff } }
 </style>
 </head>
@@ -94,6 +112,16 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
   <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759;margin-bottom:16px">CONTACT</div>
   <h1 style="margin:0 0 22px;font:600 clamp(32px,4.6vw,54px)/1.05 'Playfair Display','Times New Roman',serif;letter-spacing:-.014em;color:#16130E;text-wrap:balance">Talk to a human.</h1>
 <p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">Huntz is small enough that your email reaches the people building it. Whatever the question, one address covers it: <a href="mailto:team@huntz.ai" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">team@huntz.ai</a> is read by the team, not a ticket queue.</p>
+<h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">Send us a message</h2>
+<form id="hz-contact" novalidate style="margin:8px 0 10px">
+  <p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">Questions, partnerships, press, or interested in creating a Hunt? Send us a note.</p>
+  <div style="margin-bottom:20px"><label for="hzc-name">Name</label><input id="hzc-name" name="name" type="text" required maxlength="100" autocomplete="name" aria-describedby="hzc-name-err"><p id="hzc-name-err" data-hz-err hidden></p></div><div style="margin-bottom:20px"><label for="hzc-email">Email</label><input id="hzc-email" name="email" type="email" required maxlength="254" autocomplete="email" inputmode="email" aria-describedby="hzc-email-err"><p id="hzc-email-err" data-hz-err hidden></p></div><div style="margin-bottom:20px"><label for="hzc-reason">Reason</label><select id="hzc-reason" name="reason" required aria-describedby="hzc-reason-err"><option value="">Choose one</option><option value="create-a-hunt">I want to create a Hunt</option><option value="partnership">Partnership</option><option value="press">Press</option><option value="general-question">General question</option><option value="website-issue">Website issue</option></select><p id="hzc-reason-err" data-hz-err hidden></p></div><div style="margin-bottom:20px"><label for="hzc-message">Message</label><textarea id="hzc-message" name="message" required maxlength="5000" rows="7" aria-describedby="hzc-message-err"></textarea><p id="hzc-message-err" data-hz-err hidden></p></div>
+  <div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap"><label for="hzc-company">Company</label><input id="hzc-company" name="company" type="text" tabindex="-1" autocomplete="off"></div>
+  <button type="submit" id="hzc-submit" style="font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#F3EFE7;background:#C24E1F;border:1px solid #C24E1F;padding:15px 26px;cursor:pointer">Send message</button>
+  <p id="hz-contact-status" role="status" aria-live="polite" style="margin:18px 0 0;padding:13px 16px;border-left:2px solid #C24E1F;background:rgba(194,78,31,.06);font:600 13.5px/1.6 'Figtree',Arial,Helvetica,sans-serif;color:#16130E"></p>
+  <p style="margin:16px 0 0;font:400 13px/1.6 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759"><a href="/privacy" style="color:#6E6759;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.2)">We'll use your information only to respond to your message.</a></p>
+  <noscript><p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">This form needs JavaScript. Email team@huntz.ai instead and we will pick it up the same way.</p></noscript>
+</form>
 <h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">What to send where</h2>
 <ul style="margin:0 0 18px;padding-left:20px;display:flex;flex-direction:column;gap:7px;list-style:none"><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Questions about how Hunts work: read <a href="/how-it-works" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">how Huntz works</a> and <a href="/faq" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">the FAQ</a> first, then email anything they left open.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Privacy requests: rights and processes are described in the <a href="/privacy" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">privacy policy</a>; email us to exercise them.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Press, partnerships, and creators who want to run challenges: say who you are and what you have in mind.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Problems with the waitlist or this website: tell us what broke and on what device.</li></ul>
 <h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">Where we are</h2>
@@ -118,6 +146,123 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
   </nav>
 </aside>
 
+<script>
+(function () {
+  var form = document.getElementById('hz-contact');
+  if (!form) return;
+  var status = document.getElementById('hz-contact-status');
+  var submit = document.getElementById('hzc-submit');
+  var SUBMIT_LABEL = submit.textContent;
+  var FIELDS = ['name', 'email', 'reason', 'message'];
+  var token = null, tokenPending = null, busy = false;
+  var MIN_AGE_MS = 3000;   // mirrors api/_lib/token.js; the server is authoritative
+
+  // Fetched on first interaction rather than on load, so a visitor who only
+  // reads the page never mints one, and the minimum-completion-time floor is
+  // measured from the moment they actually started filling the form in.
+  function getToken() {
+    if (token) return Promise.resolve(token);
+    if (tokenPending) return tokenPending;
+    tokenPending = fetch('/api/contact-token', { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { token = j && j.token; tokenPending = null; return token; })
+      .catch(function () { tokenPending = null; return null; });
+    return tokenPending;
+  }
+  form.addEventListener('focusin', getToken, { once: true });
+
+  function setError(name, msg) {
+    var input = document.getElementById('hzc-' + name);
+    var slot = document.getElementById('hzc-' + name + '-err');
+    if (!input || !slot) return;
+    if (msg) { input.setAttribute('aria-invalid', 'true'); slot.textContent = msg; slot.hidden = false; }
+    else { input.removeAttribute('aria-invalid'); slot.textContent = ''; slot.hidden = true; }
+  }
+  function clearErrors() { FIELDS.forEach(function (f) { setError(f, null); }); }
+  function say(msg) { status.textContent = msg; }
+
+  var EMAIL = /^[^\s@,;<>()\[\]\\"]+@[^\s@,;<>()\[\]\\".]+\.[^\s@,;<>()\[\]\\"]{2,}$/;
+  function localCheck(v) {
+    var e = {};
+    if (!v.name) e.name = 'Tell us your name.';
+    if (!v.email) e.email = 'We need an email address to reply to.';
+    else if (!EMAIL.test(v.email)) e.email = 'That email address does not look right.';
+    if (!v.reason) e.reason = 'Pick a reason.';
+    if (!v.message) e.message = 'Add a message.';
+    return e;
+  }
+  function showErrors(e) {
+    clearErrors();
+    FIELDS.forEach(function (f) { if (e[f]) setError(f, e[f]); });
+    var first = FIELDS.filter(function (f) { return e[f]; })[0];
+    if (first) { var el = document.getElementById('hzc-' + first); if (el) el.focus(); }
+  }
+  function setBusy(on) {
+    busy = on;
+    submit.disabled = on;
+    submit.textContent = on ? 'Sending' : SUBMIT_LABEL;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (busy) return;                       // no double send while one is in flight
+    var v = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      reason: form.reason.value,
+      message: form.message.value.trim(),
+      company: form.company.value
+    };
+    var local = localCheck(v);
+    if (Object.keys(local).length) { say(''); showErrors(local); return; }
+    clearErrors();
+    say('');
+    setBusy(true);
+    function post() {
+      return getToken().then(function (t) {
+        v.token = t || '';
+        return fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(v)
+        });
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; });
+      });
+    }
+
+    // A token the server will not take - one left to expire in an open tab, or
+    // one barely a second old - is re-armed once rather than shown to the
+    // visitor as a dead end. The wait is the same cost the floor already
+    // imposes, so nothing is weakened by paying it here.
+    post().then(function (o) {
+      if (o.r.status !== 403) return o;
+      token = null;
+      return getToken().then(function () {
+        return new Promise(function (done) { setTimeout(done, MIN_AGE_MS + 400); });
+      }).then(post);
+    }).then(function (o) {
+      setBusy(false);
+      if (o.r.ok && o.j.ok) {
+        // A used token does not carry a second message. Replacing it now rather
+        // than at the next submit means a visitor writing again never waits.
+        token = null;
+        getToken();
+        form.reset();
+        say('Thanks — your message reached the Huntz team.');
+        return;
+      }
+      var err = (o.j && o.j.error) || {};
+      if (err.fieldErrors && Object.keys(err.fieldErrors).length) { showErrors(err.fieldErrors); say(''); return; }
+      // Values are left exactly as typed so nothing has to be retyped.
+      say(err.code === 'rate_limited' ? err.message : 'Something went wrong. Please email team@huntz.ai.');
+    }).catch(function () {
+      setBusy(false);
+      say('Something went wrong. Please email team@huntz.ai.');
+    });
+  });
+})();
+</script>
 <script>
 (function () {
   var open = false, opener = null, savedY = 0, obs = null;

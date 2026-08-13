@@ -15,9 +15,14 @@ terms.html, privacy.html         legal pages         → /terms, /privacy
 assets/                          hashed shared assets (fonts css, app js)
 robots.txt, sitemap.xml          crawl controls
 favicon.ico, apple-touch-icon.png, icon-512.png, og-image.jpg   icons + share card
+api/                             the contact endpoint (see "The contact form")
+test/                            its tests: node --test "test/*.test.js"
 build/                           the build pipeline (see "Rebuilding")
 ```
 
+`.vercelignore` keeps `build/` and `test/` out of the deployment, so no build
+script or test file is fetchable from the live site. Deleting it changes nothing
+about how the site renders; it only makes those paths public again.
 
 `vercel.json` sets `cleanUrls`, which is what serves `terms.html` at `/terms`.
 The landing page also still answers the older `#/terms` and `#/privacy` routes
@@ -70,6 +75,101 @@ Behaviour worth knowing:
   is best set up *after* sending-domain authentication so it comes from
   `@huntz.ai` rather than via Mailchimp's domain.
 
+## The contact form
+
+`/contact` carries a real form that delivers to `team@huntz.ai` through the
+existing Zoho mailbox. There is no third-party form service, no database, and
+nothing new to install: `api/contact.js` and `api/contact-token.js` are
+zero-config Vercel Functions, and everything they import lives under
+`api/_lib/`, whose leading underscore keeps those files out of routing while
+still bundling them.
+
+**The visitor never controls where mail goes or who it appears to be from.**
+The recipient, the envelope sender and the `From` header are constants in
+`api/_lib/config.js`. The submitted address appears in exactly one place, the
+`Reply-To` header, and only after passing an anchored ASCII-only pattern, so
+neither a newline nor a second address can be spliced in. The message body is
+base64, whose alphabet cannot produce a bare newline or a line-leading period,
+which is what stops a crafted message from injecting SMTP commands.
+
+### Environment variables
+
+Set both in Vercel under **Settings → Environment Variables**, for Production,
+Preview and Development. Neither can reach the browser: this project's framework
+preset is *Other*, so Vercel creates no client-exposed prefixed variables, and
+the HTML is generated ahead of time by `build/` rather than at deploy time, so
+there is no substitution step that could inline one.
+
+| Variable | Secret? | Value |
+|---|---|---|
+| `HUNTZ_SMTP_PASSWORD` | **yes** | the Zoho app-specific password (below) |
+| `HUNTZ_CONTACT_TOKEN_SECRET` | **yes** | any random string, 32+ characters. `openssl rand -base64 32` |
+| `HUNTZ_SMTP_HOST` | no | optional. Defaults to `smtppro.zoho.com` (paid custom-domain mailboxes). A **free** Zoho mailbox is on `smtp.zoho.com` |
+| `HUNTZ_SMTP_PORT` | no | optional. Defaults to `465` (implicit TLS) |
+| `HUNTZ_SMTP_USER` | no | optional. Defaults to `team@huntz.ai` |
+
+Missing or short secrets fail closed: the endpoint answers `503 unconfigured`
+and the form says it is unavailable, rather than accepting a message it cannot
+deliver.
+
+### Zoho setup
+
+1. Sign in at <https://accounts.zoho.com> as `team@huntz.ai`.
+2. **Security → App passwords → Generate New Password**, name it `huntz-website`.
+3. Copy the 12-character passcode immediately — Zoho shows it once — and paste
+   it straight into Vercel as `HUNTZ_SMTP_PASSWORD`. It should not be pasted
+   into chat, committed, or written into any file in this repo.
+4. Redeploy the branch so the function picks the variables up.
+
+Two things to confirm before expecting mail to arrive:
+
+- **SMTP access needs a paid Zoho plan.** Zoho's Mail Free tier excludes
+  IMAP/POP, and SMTP appears to go with them; paid access starts at Mail Lite.
+  If `team@huntz.ai` is on the free tier, the endpoint will answer
+  `502 delivery_failed` with `stage: "auth"` in the server log.
+- **`From` must be the authenticated mailbox.** Zoho refuses a mismatch with
+  `553 Relaying disallowed`. Sending as an alias means adding it in Zoho first.
+
+### Abuse controls
+
+In the code: a honeypot field; a server-signed token that the form has to fetch
+before it can submit, with a three-second minimum completion time and a
+thirty-minute expiry; strict per-field limits; and a per-instance burst brake.
+
+**None of that is a rate limit**, and the burst brake in particular is not one:
+Vercel scales to many concurrent instances, nothing pins a caller to one, and
+every deploy resets them. Zoho throttles a mailbox at roughly 50-500 external
+messages an hour, so an unthrottled endpoint can exhaust the team's own sending
+quota, not just fill the inbox.
+
+The durable control is a Vercel WAF rate-limit rule, free on Hobby (one rule per
+project). It is dashboard- or CLI-configured, not expressible in `vercel.json`.
+Add it under **Firewall → Custom Rules**, or:
+
+```bash
+vercel firewall rules add --name contact-throttle --condition path:pre:/api/ --action rate_limit --rate 10 --window 60 --key ip
+```
+
+Match on the `/api/` **prefix**, not on `/api/contact` alone — otherwise the
+token endpoint is left uncapped. Vercel's own guidance is to deploy a new rule
+with the `log` action first, watch ten minutes of traffic, then switch it to
+`deny`.
+
+One governance note, unrelated to abuse: Vercel's Hobby plan is
+non-commercial-use only, and a marketing site for a product is commercial usage
+under their terms. Worth resolving before launch.
+
+### Testing it
+
+`node --test "test/*.test.js"` covers validation, header injection, the
+honeypot, token forgery and expiry, throttling, delivery failure, and the SMTP
+conversation itself against a scripted server that answers the way Zoho does.
+No test sends real mail.
+
+To drive the form locally, point `api/_lib/handle.js`'s `send` at a stub — the
+delivery adapter is injected, not imported at the call site — or set the two
+environment variables and let it talk to Zoho for real.
+
 ## Rebuilding
 
 Edit `build/assemble.py` (or `build/legal-overlay.html` for the Terms and
@@ -78,7 +178,8 @@ Privacy documents), then:
 ```bash
 python3 build/legal_build.py   # only when the legal text changed
 python3 build/assemble.py
-python3 build/check.py         # route/metadata/copy/nav validation
+python3 build/check.py         # route/metadata/copy/nav/form validation
+node --test "test/*.test.js"   # the contact endpoint
 ```
 
 That regenerates every page. Marketing-page copy lives in `build/pages/*.json`

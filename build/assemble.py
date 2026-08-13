@@ -925,6 +925,8 @@ def render_blocks(blocks) -> str:
         if k in ("h2", "h3", "p", "note"):
             tag = {"h2": "h2", "h3": "h3", "p": "p", "note": "p"}[k]
             out.append(f'<{tag} style="{BS[k]}">{render_text(b.get("text", ""))}</{tag}>')
+        elif k == "form":
+            out.append(contact_form())
         elif k == "ul":
             items = "".join(
                 f'<li style="{BS["li"]}"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;'
@@ -932,6 +934,211 @@ def render_blocks(blocks) -> str:
                 for i in b.get("items", []))
             out.append(f'<ul style="{BS["ul"]}">{items}</ul>')
     return "\n".join(out)
+
+# ---- 6b. the contact form (2026-08-13) ----
+# Markup and behaviour for /contact. The endpoint that receives it lives in
+# api/; the copy below is the founder's exact wording and is asserted by
+# build/check.py so a later edit cannot quietly reword it.
+
+CONTACT_INTRO = ("Questions, partnerships, press, or interested in creating a Hunt? "
+                 "Send us a note.")
+CONTACT_SUCCESS = "Thanks — your message reached the Huntz team."
+CONTACT_FAILURE = "Something went wrong. Please email team@huntz.ai."
+CONTACT_PRIVACY = "We'll use your information only to respond to your message."
+CONTACT_SUBMIT = "Send message"
+# value -> visible label. The server holds the same list and builds the email
+# Subject from it, so no visitor text ever reaches a mail header.
+CONTACT_REASONS = [
+    ("create-a-hunt", "I want to create a Hunt"),
+    ("partnership", "Partnership"),
+    ("press", "Press"),
+    ("general-question", "General question"),
+    ("website-issue", "Website issue"),
+]
+
+FORM_CSS = f"""
+#hz-contact label{{ display:block; font:600 11px {SANS}; letter-spacing:.14em; text-transform:uppercase;
+  color:{MUTED}; margin-bottom:7px }}
+#hz-contact input,#hz-contact select,#hz-contact textarea{{ width:100%; box-sizing:border-box; min-height:48px;
+  padding:12px 14px; border:1px solid rgba(22,19,14,.22); border-radius:0; background:rgba(255,255,255,.72);
+  color:{INK}; font:400 15.5px/1.5 {SANS}; -webkit-appearance:none; appearance:none }}
+#hz-contact textarea{{ min-height:150px; resize:vertical }}
+#hz-contact select{{ background-image:linear-gradient(45deg,transparent 50%,{MUTED} 50%),
+  linear-gradient(135deg,{MUTED} 50%,transparent 50%);
+  background-position:calc(100% - 20px) 21px,calc(100% - 14px) 21px; background-size:6px 6px,6px 6px;
+  background-repeat:no-repeat; padding-right:42px }}
+#hz-contact input:focus-visible,#hz-contact select:focus-visible,#hz-contact textarea:focus-visible{{
+  outline:2px solid {CLAY}; outline-offset:1px }}
+#hz-contact [aria-invalid="true"]{{ border-color:{CLAY}; background:rgba(194,78,31,.05) }}
+#hz-contact [data-hz-err]{{ margin:7px 0 0; font:600 12px/1.5 {SANS}; color:{CLAY} }}
+#hz-contact button[disabled]{{ opacity:.6; cursor:progress }}
+#hz-contact-status:empty{{ display:none }}
+"""
+
+
+def contact_form() -> str:
+    fields = []
+
+    def wrap(inner, fid, label):
+        return (f'<div style="margin-bottom:20px">'
+                f'<label for="{fid}">{label}</label>{inner}'
+                f'<p id="{fid}-err" data-hz-err hidden></p></div>')
+
+    fields.append(wrap(
+        f'<input id="hzc-name" name="name" type="text" required maxlength="100" autocomplete="name" '
+        f'aria-describedby="hzc-name-err">', "hzc-name", "Name"))
+    fields.append(wrap(
+        f'<input id="hzc-email" name="email" type="email" required maxlength="254" autocomplete="email" '
+        f'inputmode="email" aria-describedby="hzc-email-err">', "hzc-email", "Email"))
+    options = '<option value="">Choose one</option>' + "".join(
+        f'<option value="{v}">{l}</option>' for v, l in CONTACT_REASONS)
+    fields.append(wrap(
+        f'<select id="hzc-reason" name="reason" required aria-describedby="hzc-reason-err">{options}</select>',
+        "hzc-reason", "Reason"))
+    fields.append(wrap(
+        f'<textarea id="hzc-message" name="message" required maxlength="5000" rows="7" '
+        f'aria-describedby="hzc-message-err"></textarea>', "hzc-message", "Message"))
+
+    # Off-screen rather than display:none, which some form-fillers skip.
+    honeypot = ('<div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;'
+                'clip:rect(0 0 0 0);white-space:nowrap">'
+                '<label for="hzc-company">Company</label>'
+                '<input id="hzc-company" name="company" type="text" tabindex="-1" autocomplete="off">'
+                '</div>')
+
+    return f"""<form id="hz-contact" novalidate style="margin:8px 0 10px">
+  <p style="{BS['p']}">{CONTACT_INTRO}</p>
+  {"".join(fields)}
+  {honeypot}
+  <button type="submit" id="hzc-submit" style="font:700 12px {SANS};letter-spacing:.12em;text-transform:uppercase;color:{CREAM};background:{CLAY};border:1px solid {CLAY};padding:15px 26px;cursor:pointer">{CONTACT_SUBMIT}</button>
+  <p id="hz-contact-status" role="status" aria-live="polite" style="margin:18px 0 0;padding:13px 16px;border-left:2px solid {CLAY};background:rgba(194,78,31,.06);font:600 13.5px/1.6 {SANS};color:{INK}"></p>
+  <p style="margin:16px 0 0;font:400 13px/1.6 {SANS};color:{MUTED}"><a href="/privacy" style="color:{MUTED};text-decoration:none;border-bottom:1px solid rgba(22,19,14,.2)">{CONTACT_PRIVACY}</a></p>
+  <noscript><p style="{BS['p']}">This form needs JavaScript. Email team@huntz.ai instead and we will pick it up the same way.</p></noscript>
+</form>"""
+
+
+CONTACT_JS = """<script>
+(function () {
+  var form = document.getElementById('hz-contact');
+  if (!form) return;
+  var status = document.getElementById('hz-contact-status');
+  var submit = document.getElementById('hzc-submit');
+  var SUBMIT_LABEL = submit.textContent;
+  var FIELDS = ['name', 'email', 'reason', 'message'];
+  var token = null, tokenPending = null, busy = false;
+  var MIN_AGE_MS = 3000;   // mirrors api/_lib/token.js; the server is authoritative
+
+  // Fetched on first interaction rather than on load, so a visitor who only
+  // reads the page never mints one, and the minimum-completion-time floor is
+  // measured from the moment they actually started filling the form in.
+  function getToken() {
+    if (token) return Promise.resolve(token);
+    if (tokenPending) return tokenPending;
+    tokenPending = fetch('/api/contact-token', { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { token = j && j.token; tokenPending = null; return token; })
+      .catch(function () { tokenPending = null; return null; });
+    return tokenPending;
+  }
+  form.addEventListener('focusin', getToken, { once: true });
+
+  function setError(name, msg) {
+    var input = document.getElementById('hzc-' + name);
+    var slot = document.getElementById('hzc-' + name + '-err');
+    if (!input || !slot) return;
+    if (msg) { input.setAttribute('aria-invalid', 'true'); slot.textContent = msg; slot.hidden = false; }
+    else { input.removeAttribute('aria-invalid'); slot.textContent = ''; slot.hidden = true; }
+  }
+  function clearErrors() { FIELDS.forEach(function (f) { setError(f, null); }); }
+  function say(msg) { status.textContent = msg; }
+
+  var EMAIL = /^[^\\s@,;<>()\\[\\]\\\\"]+@[^\\s@,;<>()\\[\\]\\\\".]+\\.[^\\s@,;<>()\\[\\]\\\\"]{2,}$/;
+  function localCheck(v) {
+    var e = {};
+    if (!v.name) e.name = 'Tell us your name.';
+    if (!v.email) e.email = 'We need an email address to reply to.';
+    else if (!EMAIL.test(v.email)) e.email = 'That email address does not look right.';
+    if (!v.reason) e.reason = 'Pick a reason.';
+    if (!v.message) e.message = 'Add a message.';
+    return e;
+  }
+  function showErrors(e) {
+    clearErrors();
+    FIELDS.forEach(function (f) { if (e[f]) setError(f, e[f]); });
+    var first = FIELDS.filter(function (f) { return e[f]; })[0];
+    if (first) { var el = document.getElementById('hzc-' + first); if (el) el.focus(); }
+  }
+  function setBusy(on) {
+    busy = on;
+    submit.disabled = on;
+    submit.textContent = on ? 'Sending' : SUBMIT_LABEL;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (busy) return;                       // no double send while one is in flight
+    var v = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      reason: form.reason.value,
+      message: form.message.value.trim(),
+      company: form.company.value
+    };
+    var local = localCheck(v);
+    if (Object.keys(local).length) { say(''); showErrors(local); return; }
+    clearErrors();
+    say('');
+    setBusy(true);
+    function post() {
+      return getToken().then(function (t) {
+        v.token = t || '';
+        return fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(v)
+        });
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; });
+      });
+    }
+
+    // A token the server will not take - one left to expire in an open tab, or
+    // one barely a second old - is re-armed once rather than shown to the
+    // visitor as a dead end. The wait is the same cost the floor already
+    // imposes, so nothing is weakened by paying it here.
+    post().then(function (o) {
+      if (o.r.status !== 403) return o;
+      token = null;
+      return getToken().then(function () {
+        return new Promise(function (done) { setTimeout(done, MIN_AGE_MS + 400); });
+      }).then(post);
+    }).then(function (o) {
+      setBusy(false);
+      if (o.r.ok && o.j.ok) {
+        // A used token does not carry a second message. Replacing it now rather
+        // than at the next submit means a visitor writing again never waits.
+        token = null;
+        getToken();
+        form.reset();
+        say(SUCCESS);
+        return;
+      }
+      var err = (o.j && o.j.error) || {};
+      if (err.fieldErrors && Object.keys(err.fieldErrors).length) { showErrors(err.fieldErrors); say(''); return; }
+      // Values are left exactly as typed so nothing has to be retyped.
+      say(err.code === 'rate_limited' ? err.message : FAILURE);
+    }).catch(function () {
+      setBusy(false);
+      say(FAILURE);
+    });
+  });
+})();
+</script>"""
+
+CONTACT_JS = (CONTACT_JS
+              .replace("SUCCESS", "'" + CONTACT_SUCCESS + "'")
+              .replace("FAILURE", "'" + CONTACT_FAILURE + "'"))
+
 
 content_tpl = (BUILD / "content-page.html").read_text()
 PAGES_DIR = BUILD / "pages"
@@ -956,6 +1163,8 @@ for spec_path in sorted(PAGES_DIR.glob("*.json")):
             .replace("{{DRAWER}}", drawer(f"/{slug}", "/#waitlist"))
             .replace("{{FOOTER_NAV}}", footer_nav(f"/{slug}"))
             .replace("{{NAV_JS}}", NAV_JS)
+            .replace("{{PAGE_CSS}}", FORM_CSS + "\n" if slug == "contact" else "")
+            .replace("{{PAGE_JS}}", CONTACT_JS + "\n" if slug == "contact" else "")
             .replace("{{BODY}}", body))
     assert "{{" not in page, f"unfilled placeholder in {slug}.html"
     assert "—" not in body, f"em dash in {slug} content"
