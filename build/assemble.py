@@ -1027,22 +1027,7 @@ CONTACT_JS = """<script>
   var submit = document.getElementById('hzc-submit');
   var SUBMIT_LABEL = submit.textContent;
   var FIELDS = ['name', 'email', 'reason', 'message'];
-  var token = null, tokenPending = null, busy = false;
-  var MIN_AGE_MS = 3000;   // mirrors api/_lib/token.js; the server is authoritative
-
-  // Fetched on first interaction rather than on load, so a visitor who only
-  // reads the page never mints one, and the minimum-completion-time floor is
-  // measured from the moment they actually started filling the form in.
-  function getToken() {
-    if (token) return Promise.resolve(token);
-    if (tokenPending) return tokenPending;
-    tokenPending = fetch('/api/contact-token', { headers: { 'Accept': 'application/json' } })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) { token = j && j.token; tokenPending = null; return token; })
-      .catch(function () { tokenPending = null; return null; });
-    return tokenPending;
-  }
-  form.addEventListener('focusin', getToken, { once: true });
+  var busy = false;
 
   function setError(name, msg) {
     var input = document.getElementById('hzc-' + name);
@@ -1054,7 +1039,7 @@ CONTACT_JS = """<script>
   function clearErrors() { FIELDS.forEach(function (f) { setError(f, null); }); }
   function say(msg) { status.textContent = msg; }
 
-  var EMAIL = /^[^\\s@,;<>()\\[\\]\\\\"]+@[^\\s@,;<>()\\[\\]\\\\".]+\\.[^\\s@,;<>()\\[\\]\\\\"]{2,}$/;
+  var EMAIL = /^[^\s@,;<>()\[\]\\"]+@[^\s@,;<>()\[\]\\".]+\.[^\s@,;<>()\[\]\\"]{2,}$/;
   function localCheck(v) {
     var e = {};
     if (!v.name) e.name = 'Tell us your name.';
@@ -1091,44 +1076,19 @@ CONTACT_JS = """<script>
     clearErrors();
     say('');
     setBusy(true);
-    function post() {
-      return getToken().then(function (t) {
-        v.token = t || '';
-        return fetch('/api/contact', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(v)
-        });
-      }).then(function (r) {
-        return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; });
-      });
-    }
-
-    // A token the server will not take - one left to expire in an open tab, or
-    // one barely a second old - is re-armed once rather than shown to the
-    // visitor as a dead end. The wait is the same cost the floor already
-    // imposes, so nothing is weakened by paying it here.
-    post().then(function (o) {
-      if (o.r.status !== 403) return o;
-      token = null;
-      return getToken().then(function () {
-        return new Promise(function (done) { setTimeout(done, MIN_AGE_MS + 400); });
-      }).then(post);
+    fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(v)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; });
     }).then(function (o) {
       setBusy(false);
-      if (o.r.ok && o.j.ok) {
-        // A used token does not carry a second message. Replacing it now rather
-        // than at the next submit means a visitor writing again never waits.
-        token = null;
-        getToken();
-        form.reset();
-        say(SUCCESS);
-        return;
-      }
+      if (o.r.ok && o.j.ok) { form.reset(); say(SUCCESS); return; }
       var err = (o.j && o.j.error) || {};
       if (err.fieldErrors && Object.keys(err.fieldErrors).length) { showErrors(err.fieldErrors); say(''); return; }
       // Values are left exactly as typed so nothing has to be retyped.
-      say(err.code === 'rate_limited' ? err.message : FAILURE);
+      say(FAILURE);
     }).catch(function () {
       setBusy(false);
       say(FAILURE);

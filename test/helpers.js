@@ -1,76 +1,31 @@
 'use strict';
-// Shared fixtures for the contact-endpoint tests.
+// Fixtures for the contact-endpoint tests.
 //
-// Nothing in here is a credential. The values below are obviously-fake test
-// constants; the real ones live only in Vercel's environment settings.
+// Nothing here is a credential; the values are obviously-fake test constants,
+// and the real ones live only in Vercel's environment settings.
 
 const http = require('node:http');
 const net = require('node:net');
+const nodemailer = require('nodemailer');
 const { once } = require('node:events');
 
-const TEST_SECRET = 'test-token-secret-not-used-anywhere-real';
 const TEST_PASSWORD = 'test-password-placeholder';
 
-const CONFIG = {
-  recipient: 'team@huntz.ai',
-  envelopeFrom: 'team@huntz.ai',
-  fromHeader: '"Huntz contact form" <team@huntz.ai>',
-  host: 'smtp.invalid',
-  port: 465,
-  user: 'team@huntz.ai',
-  pass: TEST_PASSWORD,
-  tokenSecret: TEST_SECRET,
-  ehloName: 'huntz.ai',
-  socketTimeoutMs: 2000,
-};
-
-const missing = require('../api/_lib/config').missing;
-
-/** Boots the real handler on an ephemeral port with a stubbed delivery adapter. */
-async function startServer({ config = CONFIG, now = () => Date.now(), send } = {}) {
-  const { handle } = require('../api/_lib/handle');
-  const sent = [];
-  const adapter = send || (async (cfg, message) => { sent.push({ cfg, message }); return { accepted: true }; });
-  const server = http.createServer((req, res) => {
-    handle(req, res, { config, missing, send: adapter, now }).catch(() => {
-      res.statusCode = 500; res.end('{}');
-    });
-  });
-  server.listen(0, '127.0.0.1');
-  await once(server, 'listening');
-  const base = 'http://127.0.0.1:' + server.address().port;
-  return {
-    base,
-    sent,
-    close: () => new Promise((r) => server.close(r)),
-    post: async (body, headers = {}) => {
-      const res = await fetch(base + '/api/contact', {
-        method: 'POST',
-        headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
-        body: typeof body === 'string' ? body : JSON.stringify(body),
-      });
-      let json = null;
-      try { json = await res.json(); } catch { json = null; }
-      return { status: res.status, json, headers: res.headers };
-    },
-  };
-}
-
 /**
- * A scripted SMTP server over plain TCP. Replies are deliberately split across
- * writes and include multi-line 250 blocks, so the client's reply reader is
- * tested against the shape Zoho actually sends rather than a tidy one.
+ * A scripted SMTP server. It advertises exactly what Zoho advertises - AUTH and
+ * SIZE, and nothing else, so no PIPELINING, no 8BITMIME, no SMTPUTF8 - and it
+ * splits its greeting across two writes, so the client is tested against the
+ * shape a real conversation has rather than a tidy one.
  */
 async function startSmtpServer({ failAt = null, code = 550 } = {}) {
   const transcript = [];
-  let dataMode = false;
-  let body = '';
 
   const server = net.createServer((sock) => {
     sock.setEncoding('utf8');
     let buf = '';
+    let dataMode = false;
+    let body = '';
     const reply = (s) => sock.write(s);
-    // Split the greeting mid-line to prove the reader buffers across reads.
     sock.write('220 mx.zohomail.com SMTP Server');
     setTimeout(() => sock.write(' ready\r\n'), 5);
 
@@ -93,11 +48,9 @@ async function startSmtpServer({ failAt = null, code = 550 } = {}) {
         transcript.push({ cmd: line });
         const verb = line.split(' ')[0].toUpperCase();
         if (verb === 'EHLO') {
-          if (failAt === 'ehlo') { reply(code + ' no\r\n'); continue; }
-          // Multi-line, continuation-then-final, exactly as Zoho answers.
           reply('250-mx.zohomail.com Hello\r\n250-AUTH LOGIN PLAIN\r\n250 SIZE 53477376\r\n');
         } else if (verb === 'AUTH') {
-          reply('334 VXNlcm5hbWU6\r\n');
+          reply(failAt === 'auth' ? '535 Authentication Failed\r\n' : '235 Authentication Successful\r\n');
         } else if (verb === 'MAIL') {
           reply(failAt === 'mail_from' ? code + ' no\r\n' : '250 2.1.0 Ok\r\n');
         } else if (verb === 'RCPT') {
@@ -108,10 +61,7 @@ async function startSmtpServer({ failAt = null, code = 550 } = {}) {
         } else if (verb === 'QUIT') {
           reply('221 closing\r\n'); sock.end();
         } else {
-          // The two base64 AUTH continuation lines land here.
-          const seen = transcript.filter((t) => /^[A-Za-z0-9+/=]+$/.test(t.cmd)).length;
-          if (seen === 1) reply('334 UGFzc3dvcmQ6\r\n');
-          else reply(failAt === 'auth' ? '535 Authentication Failed\r\n' : '235 Authentication Successful\r\n');
+          reply('250 ok\r\n');
         }
       }
     });
@@ -119,11 +69,56 @@ async function startSmtpServer({ failAt = null, code = 550 } = {}) {
   });
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
+
   return {
     port: server.address().port,
     transcript,
+    /** The message the server actually received, as it arrived on the wire. */
+    received: () => (transcript.find((t) => t.cmd === 'BODY') || {}).body || '',
+    commands: () => transcript.map((t) => t.cmd),
     close: () => new Promise((r) => server.close(r)),
   };
 }
 
-module.exports = { CONFIG, TEST_SECRET, TEST_PASSWORD, startServer, startSmtpServer };
+/**
+ * Boots the real endpoint on an ephemeral port, delivering through nodemailer
+ * to the scripted server above - so the tests exercise the real transport,
+ * not a stub of it.
+ */
+async function startServer({ smtpPort = null, noTransport = false } = {}) {
+  const contact = require('../api/contact');
+  // No port means the test never gets as far as delivery, so nodemailer's own
+  // jsonTransport stands in: it composes a message and connects to nothing.
+  const t = noTransport ? null : (smtpPort
+    ? nodemailer.createTransport({
+        host: '127.0.0.1', port: smtpPort, secure: false, ignoreTLS: true,
+        auth: { user: 'team@huntz.ai', pass: TEST_PASSWORD }, name: 'huntz.ai',
+      })
+    : nodemailer.createTransport({ jsonTransport: true }));
+
+  const server = http.createServer((req, res) => {
+    contact.handle(req, res, t ? { transport: t } : {}).catch(() => {
+      res.statusCode = 500; res.end('{}');
+    });
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const base = 'http://127.0.0.1:' + server.address().port;
+
+  return {
+    base,
+    close: async () => { if (t) t.close(); await new Promise((r) => server.close(r)); },
+    post: async (body, headers = {}) => {
+      const res = await fetch(base + '/api/contact', {
+        method: 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
+        body: typeof body === 'string' ? body : JSON.stringify(body),
+      });
+      let json = null;
+      try { json = await res.json(); } catch { json = null; }
+      return { status: res.status, json, headers: res.headers };
+    },
+  };
+}
+
+module.exports = { startServer, startSmtpServer, TEST_PASSWORD };

@@ -284,7 +284,7 @@ if 'href="/privacy"' not in contact:
     fail("/contact: privacy line is not linked to /privacy")
 if 'id="hzc-company"' not in contact:
     fail("/contact: honeypot field missing")
-if "/api/contact" not in contact or "/api/contact-token" not in contact:
+if "/api/contact" not in contact:
     fail("/contact: form does not post to the same-origin endpoint")
 if re.search(r'<form[^>]*action="mailto:', contact):
     fail("/contact: form uses mailto: as its action")
@@ -307,7 +307,7 @@ if "novalidate" not in contact:
 
 # ---- no credential or environment value may reach a generated page ----
 API = ROOT / "api"
-SECRET_NAMES = ("HUNTZ_SMTP_PASSWORD", "HUNTZ_CONTACT_TOKEN_SECRET")
+SECRET_NAMES = ("HUNTZ_SMTP_PASSWORD",)
 for f in [ROOT / v for v in PAGES.values()] + sorted(ROOT.glob("assets/*")):
     t = f.read_text()
     for n in SECRET_NAMES:
@@ -316,7 +316,10 @@ for f in [ROOT / v for v in PAGES.values()] + sorted(ROOT.glob("assets/*")):
     if "smtppro.zoho.com" in t or "AUTH LOGIN" in t:
         fail(f"{f.name}: SMTP details leaked into a client artifact")
 if API.exists():
-    for f in sorted(API.rglob("*.js")):
+    js = sorted(API.rglob("*.js"))
+    if len(js) != 2:
+        fail(f"api/: expected 2 files (the endpoint and its validator), found {len(js)}")
+    for f in js:
         t = f.read_text()
         for n in SECRET_NAMES:
             # Names are fine; a literal default value next to one is not.

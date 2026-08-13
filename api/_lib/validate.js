@@ -41,7 +41,7 @@ function emailOk(v) {
 }
 
 // Single-line fields cannot carry line breaks into the message body layout.
-const flatten = (v) => String(v).replace(/\s+/g, ' ').trim();
+const flatten = (v) => v.replace(/\s+/g, ' ').trim();
 
 /**
  * @returns {{ok: true, value: object} | {ok: false, code: string, fieldErrors: object}}
@@ -55,13 +55,16 @@ function validate(raw) {
     if (!FIELDS.includes(k)) return { ok: false, code: 'unexpected_field', fieldErrors: {} };
   }
 
-  // Hidden from people, irresistible to form-filling bots.
+  // Hidden from people, irresistible to form-filling bots. Only an absent or
+  // empty string passes: anything else, including a non-string, is refused.
+  // String() is never called on it, because an object whose own toString is a
+  // non-callable value has no ToPrimitive path and would throw here.
   const trap = raw[HONEYPOT];
-  if (trap !== undefined && String(trap).trim() !== '') {
+  if (trap !== undefined && !(typeof trap === 'string' && trap.trim() === '')) {
     return { ok: false, code: 'rejected', fieldErrors: {} };
   }
 
-  const name = flatten(raw.name == null ? '' : raw.name);
+  const name = typeof raw.name === 'string' ? flatten(raw.name) : '';
   if (!name) fieldErrors.name = 'Tell us your name.';
   else if (bytes(name) > LIMITS.name) fieldErrors.name = 'That name is too long.';
   else if (CONTROL_RE.test(name)) fieldErrors.name = 'That name contains characters we cannot accept.';

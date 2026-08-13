@@ -1,0 +1,11 @@
+{
+  "name": "huntz-website",
+  "private": true,
+  "description": "Huntz marketing site. The pages are pre-built by build/ and committed; this file exists only so the contact function has a mail client.",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "nodemailer": "^9.0.5"
+  }
+}
