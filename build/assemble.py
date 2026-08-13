@@ -458,6 +458,7 @@ assert "#challenges" not in html
 # active-route marking is derived rather than hand-written per page.
 INK, BODYC, MUTED, CLAY = "#16130E", "#4A453C", "#6E6759", "#C24E1F"
 CREAM = "#F3EFE7"
+DONE = "#4F6A45"   # the design's own colour for a completed state
 SERIF = "'Playfair Display','Times New Roman',serif"
 SANS = "'Figtree',Arial,Helvetica,sans-serif"
 
@@ -980,11 +981,10 @@ FORM_CSS = f"""
 #hz-contact-status:empty{{ display:none }}
 /* Never an inline display here: it would outrank [hidden] and leave the success
    panel rendering under the form on every page load. */
-/* The panel holds the form's height so nothing below it moves, and starts at
-   the top of that space so "Message sent." lands where the first field was
-   rather than floating in the middle of a reserved block. */
-#hz-contact-done{{ display:flex; flex-direction:column; justify-content:flex-start; align-items:flex-start;
-  min-height:clamp(170px,24vh,230px) }}
+/* A compact card, not a reserved block: it stands in for the form and its
+   heading, and the page is allowed to shorten around it. */
+#hz-contact-done{{ display:flex; align-items:flex-start }}
+#hzc-again:hover{{ border-color:{CLAY}; color:{CLAY} }}
 #hz-contact-done[hidden]{{ display:none !important }}
 #hz-contact-done-title:focus-visible{{ outline:2px solid {CLAY} }}
 """
@@ -1032,10 +1032,13 @@ def contact_form() -> str:
   <p style="margin:16px 0 0;font:400 13px/1.6 {SANS};color:{MUTED}"><a href="/privacy" style="color:{MUTED};text-decoration:none;border-bottom:1px solid rgba(22,19,14,.2)">{CONTACT_PRIVACY}</a></p>
   <noscript><p style="{BS['p']}">This form needs JavaScript. Email team@huntz.ai instead and we will pick it up the same way.</p></noscript>
 </form>
-<div id="hz-contact-done" hidden role="status" style="margin:8px 0 10px">
-  <h2 id="hz-contact-done-title" tabindex="-1" style="margin:0 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 {SERIF};letter-spacing:-.012em;color:{INK};outline-offset:4px">{CONTACT_SUCCESS_TITLE}</h2>
-  <p style="{BS['p']}">{CONTACT_SUCCESS}</p>
-  <button type="button" id="hzc-again" style="padding:0;border:0;background:none;font:600 13px {SANS};color:{CLAY};text-decoration:none;border-bottom:1px solid rgba(194,78,31,.45);cursor:pointer">{CONTACT_AGAIN}</button>
+<div id="hz-contact-done" hidden role="status" style="margin:8px 0 10px;gap:15px;padding:clamp(20px,2.6vw,26px);border:1px solid rgba(22,19,14,.14);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34))">
+  <span aria-hidden="true" style="flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:30px;height:30px;margin-top:2px;border-radius:50%;background:{DONE}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{CREAM}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.2 5.2L20 7"></path></svg></span>
+  <div style="min-width:0">
+    <h2 id="hz-contact-done-title" tabindex="-1" style="margin:0 0 7px;font:600 clamp(20px,2.2vw,25px)/1.25 {SERIF};letter-spacing:-.012em;color:{INK};outline-offset:4px">{CONTACT_SUCCESS_TITLE}</h2>
+    <p style="margin:0 0 17px;font:400 15px/1.6 {SANS};color:{BODYC};text-wrap:pretty">{CONTACT_SUCCESS}</p>
+    <button type="button" id="hzc-again" style="padding:11px 18px;border:1px solid rgba(22,19,14,.26);border-radius:12px;background:transparent;font:700 11.5px {SANS};letter-spacing:.12em;text-transform:uppercase;color:{INK};cursor:pointer">{CONTACT_AGAIN}</button>
+  </div>
 </div>"""
 
 

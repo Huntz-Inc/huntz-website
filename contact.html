@@ -72,11 +72,10 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
 #hz-contact-status:empty{ display:none }
 /* Never an inline display here: it would outrank [hidden] and leave the success
    panel rendering under the form on every page load. */
-/* The panel holds the form's height so nothing below it moves, and starts at
-   the top of that space so "Message sent." lands where the first field was
-   rather than floating in the middle of a reserved block. */
-#hz-contact-done{ display:flex; flex-direction:column; justify-content:flex-start; align-items:flex-start;
-  min-height:clamp(170px,24vh,230px) }
+/* A compact card, not a reserved block: it stands in for the form and its
+   heading, and the page is allowed to shorten around it. */
+#hz-contact-done{ display:flex; align-items:flex-start }
+#hzc-again:hover{ border-color:#C24E1F; color:#C24E1F }
 #hz-contact-done[hidden]{ display:none !important }
 #hz-contact-done-title:focus-visible{ outline:2px solid #C24E1F }
 
@@ -133,10 +132,13 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
   <p style="margin:16px 0 0;font:400 13px/1.6 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759"><a href="/privacy" style="color:#6E6759;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.2)">We'll use your information only to respond to your message.</a></p>
   <noscript><p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">This form needs JavaScript. Email team@huntz.ai instead and we will pick it up the same way.</p></noscript>
 </form>
-<div id="hz-contact-done" hidden role="status" style="margin:8px 0 10px">
-  <h2 id="hz-contact-done-title" tabindex="-1" style="margin:0 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;outline-offset:4px">Message sent.</h2>
-  <p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">Thanks—your message reached the Huntz team.</p>
-  <button type="button" id="hzc-again" style="padding:0;border:0;background:none;font:600 13px 'Figtree',Arial,Helvetica,sans-serif;color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.45);cursor:pointer">Send another message</button>
+<div id="hz-contact-done" hidden role="status" style="margin:8px 0 10px;gap:15px;padding:clamp(20px,2.6vw,26px);border:1px solid rgba(22,19,14,.14);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34))">
+  <span aria-hidden="true" style="flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:30px;height:30px;margin-top:2px;border-radius:50%;background:#4F6A45"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F3EFE7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.2 5.2L20 7"></path></svg></span>
+  <div style="min-width:0">
+    <h2 id="hz-contact-done-title" tabindex="-1" style="margin:0 0 7px;font:600 clamp(20px,2.2vw,25px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;outline-offset:4px">Message sent.</h2>
+    <p style="margin:0 0 17px;font:400 15px/1.6 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">Thanks—your message reached the Huntz team.</p>
+    <button type="button" id="hzc-again" style="padding:11px 18px;border:1px solid rgba(22,19,14,.26);border-radius:12px;background:transparent;font:700 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#16130E;cursor:pointer">Send another message</button>
+  </div>
 </div>
 <h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">What to send where</h2>
 <ul style="margin:0 0 18px;padding-left:20px;display:flex;flex-direction:column;gap:7px;list-style:none"><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Questions about how Hunts work: read <a href="/how-it-works" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">how Huntz works</a> and <a href="/faq" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">the FAQ</a> first, then email anything they left open.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Privacy requests: rights and processes are described in the <a href="/privacy" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">privacy policy</a>; email us to exercise them.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Press, partnerships, and creators who want to run challenges: say who you are and what you have in mind.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Problems with the waitlist or this website: tell us what broke and on what device.</li></ul>

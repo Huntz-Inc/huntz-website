@@ -311,12 +311,27 @@ if "doneTitle.focus()" not in contact:
     fail("/contact: focus does not move to the success heading")
 if 'id="hzc-again"' not in contact:
     fail("/contact: no way back to a clean form")
-# An inline display would outrank the [hidden] attribute and leave the panel
-# rendering under the form on every page load.
-if 'id="hz-contact-done" hidden role="status" style="margin' not in contact:
-    fail("/contact: success panel carries an inline display that defeats [hidden]")
+# An inline display would outrank the [hidden] attribute and leave the card
+# rendering under the form on every page load. Assert the invariant itself.
+done_tag = re.search(r'<div id="hz-contact-done"[^>]*>', contact)
+if not done_tag:
+    fail("/contact: success card missing")
+elif "display:" in done_tag.group(0):
+    fail("/contact: success card carries an inline display that defeats [hidden]")
 if "#hz-contact-done[hidden]{ display:none !important }" not in contact:
-    fail("/contact: success panel has no [hidden] guard")
+    fail("/contact: success card has no [hidden] guard")
+if "min-height" in (done_tag.group(0) if done_tag else ""):
+    fail("/contact: success card reserves height instead of staying compact")
+# The card matches the page's own card language, and carries its own indicator.
+for token in ("border-radius:18px", "border:1px solid rgba(22,19,14,.14)",
+              "linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34))"):
+    if done_tag and token not in done_tag.group(0):
+        fail(f"/contact: success card does not use the site card treatment ({token})")
+if '<span aria-hidden="true"' not in contact or "<svg" not in contact:
+    fail("/contact: success card has no checkmark indicator")
+check_svg = re.search(r'<span aria-hidden="true"[^>]*>\s*<svg', contact)
+if not check_svg:
+    fail("/contact: the checkmark is not hidden from assistive technology")
 if "say(SUCCESS)" in contact or "say('Thanks" in contact:
     fail("/contact: the wide success notification is back under the button")
 
