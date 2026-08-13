@@ -359,8 +359,11 @@ EM_DASH_COPY = [
      "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit."),
     ("One proof per session — a photo, a screenshot, a check-in.",
      "One proof per session: a photo, a screenshot, a check-in."),
+    # The em-dash fix here also drops the 48-hour settlement claim: the
+    # approved Terms promise payouts after conclusion + verification + any
+    # dispute window, not a clock (founder direction, 2026-08-13).
     ("plus a capped share of the stakes forfeited by those who quit — both settled to your account within 48 hours of the hunt closing.",
-     "plus a capped share of the stakes forfeited by those who quit. Both are settled to your account within 48 hours of the hunt closing."),
+     "plus a capped share of the stakes forfeited by those who quit. Both are settled to your account once the Hunt closes and verification is complete."),
     ("Every hunt publishes its rules before you join — allowed misses, grace days, deadlines.",
      "Every hunt publishes its rules before you join: allowed misses, grace days, deadlines."),
     ("checked against the hunt's rules — an automated first pass, human review for anything unclear,",
@@ -396,25 +399,23 @@ old = f'<a href="mailto:team@huntz.ai" {LINK_STYLE}>Contact</a>'
 assert old in html, "footer Contact not found"
 html = html.replace(old, f'<a href="/contact" {LINK_STYLE}>Contact</a>')
 
-# (S-4) The pre-launch qualifier the plan requires, carrying the category
-# language, directly under the hero form.
-old = ('<div style="margin-top: 20px; font: 500 11px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .1em; '
-       'color: #6E6759; animation: hzRise .7s ease .84s both; font-family:\'Figtree\',Arial,Helvetica,sans-serif">'
-       'NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>')
-assert old in html, "hero microcopy not found"
-html = html.replace(old, old + '\n      '
-    '<div style="margin-top: 10px; max-width: 520px; font: 500 10px/1.7 \'Figtree\',Arial,Helvetica,sans-serif; '
-    'letter-spacing: .08em; color: #6E6759; animation: hzRise .7s ease .92s both">'
-    'HUNTZ IS AN ACCOUNTABILITY CHALLENGE PLATFORM IN PRE-LAUNCH. STAKES AND PAYOUTS SHOWN PREVIEW THE PLANNED EXPERIENCE.</div>')
+# (S-4) Removed 2026-08-13 (founder decision): no hero pre-launch disclaimer.
+# The waitlist CTA and the COMING SOON labels carry the pre-launch signal.
 
-# (S-5) Trust line on the worked settlement example: the money figures are
-# illustrative and every Hunt disclosés its own rules first.
-old = 'PAID IN 48H</span>\n        </div>'
+# (S-5) Money copy carries no unqualified operational promise. The approved
+# Terms commit to payouts after the Hunt concludes, verification completes and
+# any dispute window passes; they name no 48-hour clock, so the example card's
+# chip is reworded to what the Terms support.
+assert html.count("PAID IN 48H") == 1
+html = html.replace("PAID IN 48H", "SETTLED AFTER VERIFICATION")
+
+# The worked example is labeled as such, in the founder's exact wording.
+old = 'SETTLED AFTER VERIFICATION</span>\n        </div>'
 assert old in html, "settlement strip not found"
 html = html.replace(old, old + '\n        '
-    '<div style="padding:9px 15px 11px;font:500 9px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;'
-    'letter-spacing:.08em;color:rgba(243,239,231,.55)">'
-    'ILLUSTRATIVE EXAMPLE. RULES, STAKES AND VERIFICATION METHODS VARY BY HUNT AND ARE DISCLOSED BEFORE YOU JOIN.</div>')
+    '<div style="padding:9px 15px 11px;font:500 9.5px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;'
+    'letter-spacing:.02em;color:rgba(243,239,231,.6)">'
+    "Example outcome. Each Hunt's rules and verification method are shown before you join.</div>")
 
 # (S-6) The email fields relied on placeholder text alone; give them a
 # programmatic label without changing the design.

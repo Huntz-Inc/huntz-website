@@ -103,8 +103,12 @@ for marker in ("Governing law", "BINDING", "Arbitration Association", "hz-terms-
         fail(f"/: legal-document marker {marker!r} still embedded in home")
 if home.count('aria-label="Email address"') != 2:
     fail("/: email inputs missing aria-label")
-if "ACCOUNTABILITY CHALLENGE PLATFORM IN PRE-LAUNCH" not in home:
-    fail("/: pre-launch qualifier missing")
+if "Example outcome. Each Hunt's rules and verification method are shown before you join." not in home:
+    fail("/: example-outcome caption missing")
+if "48H" in home or "48 hours" in home:
+    fail("/: unsupported 48-hour settlement promise present")
+if "IN PRE-LAUNCH" in home:
+    fail("/: removed hero pre-launch disclaimer has reappeared")
 for link in ("/how-it-works", "/accountability-challenges", "/faq", "/about", "/contact", "/terms", "/privacy"):
     if f'href="{link}"' not in home:
         fail(f"/: footer link to {link} missing")
