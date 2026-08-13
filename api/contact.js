@@ -54,13 +54,17 @@ const fail = (res, status, code, extra) =>
 
 function readRaw(req, limit) {
   return new Promise((resolve) => {
+    // Node never re-emits 'end' on a finished stream, so listening to one would
+    // never settle. Belt and braces behind the check above.
+    if (req.readableEnded || req.destroyed) { resolve({ raw: '' }); return; }
     let size = 0;
     const chunks = [];
     req.on('data', (c) => {
       size += c.length;
-      // resume(), not destroy(): tearing the socket down here loses the 413
+      // pause(), not destroy(): tearing the socket down here loses the 413
       // envelope and the caller sees a connection reset instead of a refusal.
-      if (size > limit) { req.resume(); resolve({ tooLarge: true }); return; }
+      // Pausing also applies backpressure, so nothing further is buffered.
+      if (size > limit) { req.pause(); resolve({ tooLarge: true }); return; }
       chunks.push(c);
     });
     req.on('end', () => resolve({ raw: Buffer.concat(chunks).toString('utf8') }));
@@ -73,8 +77,18 @@ function makeTransport() {
     host: CONFIG.host,
     port: CONFIG.port,
     secure: CONFIG.port === 465,          // implicit TLS on 465, STARTTLS on 587
+    // Ignored on the secure path; on 587 it makes the connection fail rather
+    // than authenticate in the clear if the peer never offers STARTTLS.
+    requireTLS: true,
     auth: { user: CONFIG.user, pass: CONFIG.pass },
     name: 'huntz.ai',                     // EHLO argument, never taken from the request
+    // Nodemailer's defaults (2min connect, 30s greeting, 10min socket) all
+    // outlast the function's budget, so a stalled mail host would be killed by
+    // the platform — and the visitor would get its timeout page instead of the
+    // generic envelope below, with nothing written to the operator log.
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 8000,
   });
 }
 
@@ -103,7 +117,10 @@ async function handle(req, res, deps = {}) {
   let parsed;
   let pre;
   try { pre = req.body; } catch { return fail(res, 400, 'invalid_input', { fieldErrors: {} }); }
-  if (pre && typeof pre === 'object') {
+  if (pre !== undefined) {
+    // The host parsed it, so it has already consumed the stream. Whatever shape
+    // it produced is authoritative: validate() refuses anything that is not a
+    // plain object, so a JSON scalar becomes a refusal rather than a re-read.
     parsed = pre;
   } else {
     const got = await readRaw(req, LIMITS.body);

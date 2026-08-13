@@ -289,6 +289,66 @@ test('an oversize chunked body gets a 413, not a dropped connection', async () =
   });
 });
 
+test('a body the host already parsed is never re-read from a drained stream', async () => {
+  // Vercel exposes req.body over a pre-buffered request. A JSON scalar parses
+  // to a primitive, which used to miss the "is it an object" test and fall
+  // through to readRaw on a stream whose 'end' had already fired — a hang, not
+  // a refusal. Both shapes must answer, and answer quickly.
+  const contact = require('../api/contact');
+  for (const pre of ['hi', 42, true, null, ['a'], { name: 'Ada' }]) {
+    const chunks = [];
+    const req = {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: pre,
+      readableEnded: true,          // the host drained it
+      on() { /* a finished stream never emits again */ },
+    };
+    const res = {
+      statusCode: 0, setHeader() {},
+      end(b) { chunks.push(b); },
+    };
+    const done = await Promise.race([
+      contact.handle(req, res, { transport: { sendMail: async () => ({}), close() {} } }).then(() => 'answered'),
+      new Promise((r) => setTimeout(() => r('HUNG'), 1000)),
+    ]);
+    assert.equal(done, 'answered', 'req.body = ' + JSON.stringify(pre) + ' was not answered');
+    assert.ok(res.statusCode >= 200 && res.statusCode < 600, 'a status was set');
+    assert.ok(chunks.length, 'a body was written');
+  }
+});
+
+test('the transport is bounded and never authenticates in the clear', () => {
+  const contact = require('../api/contact');
+  const saved = contact.CONFIG.pass;
+  contact.CONFIG.pass = 'x';
+  try {
+    // Reach the real makeTransport through the handler's own default path.
+    const nodemailer = require('nodemailer');
+    const created = [];
+    const realCreate = nodemailer.createTransport;
+    nodemailer.createTransport = (opts) => { created.push(opts); return realCreate.call(nodemailer, { jsonTransport: true }); };
+    try {
+      const req = { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: { name: 'Ada', email: 'ada@example.com', reason: 'press', message: 'hi' },
+        readableEnded: true, on() {} };
+      const res = { statusCode: 0, setHeader() {}, end() {} };
+      return contact.handle(req, res, {}).then(() => {
+        assert.equal(created.length, 1, 'the endpoint built its own transport');
+        const o = created[0];
+        // Every failure mode has to resolve inside the platform's budget.
+        assert.ok(o.connectionTimeout > 0 && o.connectionTimeout <= 10000, 'connectionTimeout bounded');
+        assert.ok(o.greetingTimeout > 0 && o.greetingTimeout <= 10000, 'greetingTimeout bounded');
+        assert.ok(o.socketTimeout > 0 && o.socketTimeout <= 15000, 'socketTimeout bounded');
+        // 465 is implicit TLS; 587 must upgrade rather than AUTH in cleartext.
+        assert.equal(o.secure, true, 'the default port is implicit TLS');
+        assert.equal(o.requireTLS, true, 'STARTTLS is mandatory on the 587 branch');
+        assert.equal(o.auth.pass, 'x');
+      });
+    } finally { nodemailer.createTransport = realCreate; }
+  } finally { contact.CONFIG.pass = saved; }
+});
+
 // --------------------------------------------------------------- honeypot
 
 test('a filled honeypot is refused without hinting that it was the honeypot', async () => {
