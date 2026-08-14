@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """Generate the site icon set from the brand mark.
 
-    python3 build/icons.py build/source/logo.png
-    python3 build/icons.py build/source/logo.png --inspect out.html
+    python3 build/icons.py "build/source/Logo 1.png"
+    python3 build/icons.py "build/source/Logo 1.png" --inspect out.html
+
+"Logo 1.png" is the canonical source: it is a JPEG despite the extension, and it
+carries a 172x139 mark against white. The earlier build/source/logo.png is a
+transparent PNG of the same mark at 88x71, kept for provenance - it is half the
+resolution, so the 512 came out measurably softer from it.
 
 The mark itself is never stretched, cropped, redrawn or recoloured. It is scaled
 proportionally and centred on a square brand-cream canvas, and the only pixels

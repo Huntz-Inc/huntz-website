@@ -15,3 +15,6 @@ Page Review_ Kinetic Hero Design/
 
 # Installed only for the contact function; Vercel installs it at deploy time.
 node_modules/
+
+# Python bytecode from importing the build scripts.
+__pycache__/
