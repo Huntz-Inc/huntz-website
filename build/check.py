@@ -182,10 +182,100 @@ for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-cha
     if "Join the waitlist and we'll email you when the first Hunts open." not in full:
         fail(f"{path}: corrected CTA sentence missing")
 
-# icons and share images
-for f in ("favicon.ico", "apple-touch-icon.png", "icon-512.png", "og-image.jpg"):
+# ---- icons and share images ----
+# Dimensions are read from the file headers rather than with Pillow, so this
+# checker stays runnable with nothing but the standard library.
+
+def png_size(data: bytes):
+    if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+        return None
+    return (int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big"))
+
+
+def ico_sizes(data: bytes):
+    if data[:4] != b"\x00\x00\x01\x00":
+        return None
+    n = int.from_bytes(data[4:6], "little")
+    out = []
+    for i in range(n):
+        e = 6 + i * 16
+        w, h = data[e], data[e + 1]
+        out.append((w or 256, h or 256))
+    return sorted(out)
+
+
+# path -> expected square size. The ICO is checked separately: it is one file
+# holding several sizes.
+ICON_PNGS = {
+    "favicon-48x48.png": 48,
+    "apple-touch-icon.png": 180,
+    "icon-192.png": 192,
+    "icon-512.png": 512,
+}
+ICO_EXPECTED = [(16, 16), (32, 32), (48, 48)]
+
+for f in ("og-image.jpg",):
     if not (ROOT / f).exists():
         fail(f"{f} missing")
+
+for name, expected in ICON_PNGS.items():
+    path = ROOT / name
+    if not path.exists():
+        fail(f"{name} missing")
+        continue
+    size = png_size(path.read_bytes())
+    if size is None:
+        fail(f"{name} is not a PNG")
+    elif size != (expected, expected):
+        fail(f"{name} is {size[0]}x{size[1]}, expected {expected}x{expected}")
+
+ico = ROOT / "favicon.ico"
+if not ico.exists():
+    fail("favicon.ico missing")
+else:
+    sizes = ico_sizes(ico.read_bytes())
+    if sizes is None:
+        fail("favicon.ico is not an ICO")
+    else:
+        if sizes != ICO_EXPECTED:
+            fail(f"favicon.ico holds {sizes}, expected {ICO_EXPECTED}")
+        for w, h in sizes:
+            if w != h:
+                fail(f"favicon.ico contains a non-square {w}x{h} image")
+
+# Every route, including the legal pages, carries the same icon set.
+ICON_REFS = [
+    '<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">',
+    '<link rel="icon" href="/favicon-48x48.png" type="image/png" sizes="48x48">',
+    '<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">',
+    '<link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">',
+    '<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">',
+]
+for path, fname in PAGES.items():
+    t = (ROOT / fname).read_text()
+    for ref in ICON_REFS:
+        if ref not in t:
+            fail(f"{path}: missing icon reference {ref}")
+    # No stale references: the old inline lettermark, and nothing pointing at an
+    # icon file that is not on disk.
+    for href in re.findall(r'<link rel="(?:icon|apple-touch-icon)"[^>]*href="([^"]+)"', t):
+        if href.startswith("data:"):
+            fail(f"{path}: icon reference is a data URI, not a stable root URL")
+        elif not href.startswith("/"):
+            fail(f"{path}: icon reference {href!r} is not a root-relative URL")
+        elif not (ROOT / href.lstrip("/")).exists():
+            fail(f"{path}: icon reference {href} has no file on disk")
+
+# The Organization logo search engines read must be the 512px absolute URL.
+home_ld = [json.loads(m) for m in
+           re.findall(r'<script type="application/ld\+json">(.*?)</script>', home, re.S)]
+org = [b for b in home_ld if b.get("@type") == "Organization"]
+if not org:
+    fail("/: Organization structured data missing")
+elif org[0].get("logo") != SITE + "/icon-512.png":
+    fail(f"/: Organization logo is {org[0].get('logo')!r}, expected {SITE + '/icon-512.png'!r}")
+elif not (ROOT / "icon-512.png").exists():
+    fail("/: Organization logo points at a file that does not exist")
 
 
 # ---- navigation, active route, footer (2026-08-13) ----
