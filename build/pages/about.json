@@ -1,0 +1,80 @@
+{
+ "blocks": [
+  {
+   "type": "p",
+   "text": "Most goals fail quietly. You skip a day, nothing happens, and you skip another. Huntz exists to change what happens next."
+  },
+  {
+   "type": "h2",
+   "text": "The observation"
+  },
+  {
+   "type": "p",
+   "text": "Nearly every abandoned goal dies the same way. Not in one dramatic collapse, but in silence: a missed workout with no consequence, a skipped chapter no one saw, an application you never sent. When nothing happens, nothing changes."
+  },
+  {
+   "type": "p",
+   "text": "Commitment works when three things line up. The rules are clear. Progress is visible. Follow-through is shared with other people. Huntz was built to put all three in one place: a marketplace for accountability."
+  },
+  {
+   "type": "h2",
+   "text": "What Huntz is"
+  },
+  {
+   "type": "p",
+   "text": "Huntz is an accountability challenge platform. You join a structured challenge, called a Hunt, and commit a stake. The rules are published before you join. You submit proof of progress on the published schedule. Finish, and you recover your stake in full plus a share of the stakes forfeited by participants who quit or fall short."
+  },
+  {
+   "type": "p",
+   "text": "That is the entire model. The mechanics are laid out step by step in {a:/how-it-works|how Huntz works}, and the thinking behind stake-backed commitment lives on our {a:/accountability-challenges|accountability challenges} page."
+  },
+  {
+   "type": "h2",
+   "text": "What we believe"
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Rules first. Every Hunt publishes its complete rules before anyone joins: cadence, duration, proof requirements, allowed misses and grace days, stake, service fee, completion threshold. Frozen at publication. Never changed retroactively.",
+    "Verification disclosed up front. Submissions are evaluated against the published rules. Automated checks make a first pass; anything unclear gets human review. Disputes are decided by Huntz, acting reasonably. We do not promise absolute proof of anything, and we say so plainly.",
+    "Effort you can show. Proof is scheduled and defined before you start. If it cannot be shown, it cannot be a rule.",
+    "No element of chance. Huntz never wagers against you. Not a bank, not a bookmaker, not gambling.",
+    "One way we get paid. Our only compensation is the service fee shown when you join. Huntz never keeps forfeited stakes; every forfeit is distributed to finishers."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "Where we are today"
+  },
+  {
+   "type": "p",
+   "text": "The first Hunts are being developed now, directly with selected creators for their communities. Self-service tools for creators to launch Hunts independently are planned for later. The {a:/#waitlist|waitlist} is the way in."
+  },
+  {
+   "type": "p",
+   "text": "The first Hunts will cover five categories:"
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Fitness",
+    "Reading",
+    "Content creation",
+    "Applying to jobs",
+    "Live streaming"
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "The company"
+  },
+  {
+   "type": "p",
+   "text": "Huntz is built by Huntz, Inc. in Oakland, California. The platform is for adults only: 18 and up. If you have a question, the {a:/faq|FAQ} answers the common ones. For everything else, write to team@huntz.ai."
+  }
+ ],
+ "eyebrow": "THE COMPANY",
+ "h1": "Goals deserve consequences.",
+ "meta_description": "Huntz is the marketplace for accountability: stake-backed challenges with rules published up front. Built in Oakland by Huntz, Inc. Pre-launch, waitlist open.",
+ "title_tag": "About Huntz | The Marketplace for Accountability"
+}

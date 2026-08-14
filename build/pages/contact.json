@@ -1,0 +1,45 @@
+{
+ "title_tag": "Contact Huntz | team@huntz.ai",
+ "meta_description": "Reach the Huntz team. Questions about accountability challenges, the waitlist, privacy, or partnerships: team@huntz.ai. Based in Oakland, California.",
+ "h1": "Talk to a human.",
+ "eyebrow": "CONTACT",
+ "blocks": [
+  {
+   "type": "p",
+   "text": "Huntz is small enough that your email reaches the people building it. Whatever the question, one address covers it: team@huntz.ai is read by the team, not a ticket queue."
+  },
+  {
+   "type": "h2",
+   "text": "Send us a message",
+   "id": "hz-contact-heading"
+  },
+  {
+   "type": "form"
+  },
+  {
+   "type": "h2",
+   "text": "What to send where"
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Questions about how Hunts work: read {a:/how-it-works|how Huntz works} and {a:/faq|the FAQ} first, then email anything they left open.",
+    "Privacy requests: rights and processes are described in the {a:/privacy|privacy policy}; email us to exercise them.",
+    "Press, partnerships, and creators who want to run challenges: say who you are and what you have in mind.",
+    "Problems with the waitlist or this website: tell us what broke and on what device."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "Where we are"
+  },
+  {
+   "type": "p",
+   "text": "Huntz, Inc. is based at 269 24th Street, Oakland, California 94612, United States."
+  },
+  {
+   "type": "p",
+   "text": "Email: team@huntz.ai. We read everything."
+  }
+ ]
+}

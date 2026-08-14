@@ -87,7 +87,9 @@ link_re = re.compile(
     r'<link rel="stylesheet" href="https://fonts\.googleapis\.com/css2[^"]*">'
 )
 assert link_re.search(html), "font links not found"
-html = link_re.sub(lambda m: font_style, html)
+# The home page links the fonts as a shared cached asset; the artifact keeps
+# them inline. A token marks the spot until the variants split below.
+html = link_re.sub("<!--HZ:FONTS-->", html)
 
 # ---- 2b. content edits requested 2026-07-29 (deviations from the original export) ----
 # (1) Footer "Contact" goes to email instead of the CTA section.
@@ -140,8 +142,10 @@ for token, doc in (("{{TERMS}}", "legal-terms.html"), ("{{PRIVACY}}", "legal-pri
         sys.exit(f"missing {doc} — run: python3 build/legal_build.py")
     assert token in legal, f"{token} placeholder not found"
     legal = legal.replace(token, src.read_text())
-assert "</body>" in html
-html = html.replace("</body>", legal + "\n</body>")
+# The overlay is injected into the ARTIFACT variant only, further down. The
+# home page stopped embedding both legal documents: /terms and /privacy are
+# real routes, and duplicating ~220 KB of legal text on home hurt both weight
+# and semantics (three h1-bearing documents in one page source).
 
 # ---- 2c. design improvements requested 2026-07-29 (second round) ----
 
@@ -355,8 +359,11 @@ EM_DASH_COPY = [
      "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit."),
     ("One proof per session — a photo, a screenshot, a check-in.",
      "One proof per session: a photo, a screenshot, a check-in."),
+    # The em-dash fix here also drops the 48-hour settlement claim: the
+    # approved Terms promise payouts after conclusion + verification + any
+    # dispute window, not a clock (founder direction, 2026-08-13).
     ("plus a capped share of the stakes forfeited by those who quit — both settled to your account within 48 hours of the hunt closing.",
-     "plus a capped share of the stakes forfeited by those who quit. Both are settled to your account within 48 hours of the hunt closing."),
+     "plus a capped share of the stakes forfeited by those who quit. Both are settled to your account once the Hunt closes and verification is complete."),
     ("Every hunt publishes its rules before you join — allowed misses, grace days, deadlines.",
      "Every hunt publishes its rules before you join: allowed misses, grace days, deadlines."),
     ("checked against the hunt's rules — an automated first pass, human review for anything unclear,",
@@ -365,6 +372,306 @@ EM_DASH_COPY = [
 for old, new in EM_DASH_COPY:
     assert old in html, "em-dash copy not found: " + old[:60]
     html = html.replace(old, new)
+
+# ---- 2d. SEO phase 1 content edits (2026-08-13, approved plan) ----
+
+# (S-1) Footer becomes the crawlable route map. "How it works" points at the
+# dedicated page (the home section keeps its header anchor), and the new
+# Accountability challenges and FAQ pages join the PLATFORM column.
+LINK_STYLE = ('style="display:block;font:500 14.5px \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+              'text-decoration:none;transition:color .3s ease" style-hover="color:#C24E1F"')
+old = f'<a href="#mechanic" {LINK_STYLE}>How it works</a>'
+assert old in html, "footer How it works not found"
+html = html.replace(old,
+    f'<a href="/how-it-works" {LINK_STYLE}>How it works</a>\n'
+    f'            <a href="/accountability-challenges" {LINK_STYLE}>Accountability challenges</a>\n'
+    f'            <a href="/faq" {LINK_STYLE}>FAQ</a>')
+
+# (S-2) About is a real page now; the COMING SOON pill comes off.
+old = (f'<a href="#top" {LINK_STYLE}>About<span style="display:inline-block;margin-left:9px;padding:3px 8px;'
+       'border-radius:20px;background:rgba(194,78,31,.12);color:#C24E1F;white-space:nowrap;'
+       "font:700 8px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;vertical-align:1.5px\">COMING SOON</span></a>")
+assert old in html, "footer About not found"
+html = html.replace(old, f'<a href="/about" {LINK_STYLE}>About</a>')
+
+# (S-3) Contact gets its own page; the page itself carries the mailto.
+old = f'<a href="mailto:team@huntz.ai" {LINK_STYLE}>Contact</a>'
+assert old in html, "footer Contact not found"
+html = html.replace(old, f'<a href="/contact" {LINK_STYLE}>Contact</a>')
+
+# (S-4) Removed 2026-08-13 (founder decision): no hero pre-launch disclaimer.
+# The waitlist CTA and the COMING SOON labels carry the pre-launch signal.
+
+# (S-5) The dark HUNT No.0412 example card keeps the design's own "PAID IN 48H"
+# chip (founder direction, restored 2026-08-13). The unqualified prose promise
+# that used to repeat the claim was dropped in the em-dash pass above and stays
+# dropped, so the phrase survives exactly once: on the card that is labeled as
+# an example directly underneath it.
+assert html.count("PAID IN 48H") == 1, "settlement chip not found"
+
+# The worked example is labeled as such, in the founder's exact wording.
+old = 'PAID IN 48H</span>\n        </div>'
+assert old in html, "settlement strip not found"
+html = html.replace(old, old + '\n        '
+    '<div style="padding:9px 15px 11px;font:500 9.5px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;'
+    'letter-spacing:.02em;color:rgba(243,239,231,.6)">'
+    "Example outcome. Each Hunt's rules and verification method are shown before you join.</div>")
+
+# (S-6) The email fields relied on placeholder text alone; give them a
+# programmatic label without changing the design.
+n = html.count('<input type="email" required="" placeholder="you@email.com"')
+assert n == 2, f"expected 2 email inputs, found {n}"
+html = html.replace('<input type="email" required="" placeholder="you@email.com"',
+                    '<input type="email" required="" aria-label="Email address" placeholder="you@email.com"')
+
+# (S-7) Home keeps its five FAQ answers and links the full page.
+old = '>The five we get every day. Not here? team@huntz.ai</p>'
+assert old in html, "FAQ subtitle not found"
+html = html.replace(old,
+    '>The five we get every day. More answers on the <a href="/faq" style="color:#C24E1F">full FAQ</a>. '
+    'Not here? team@huntz.ai</p>')
+
+# (S-9) Waitlist anchor and Hunts-section anchor (2026-08-13 correction pass).
+# The hero form container becomes #waitlist so every JOIN THE WAITLIST button
+# can target and focus one form, on-page and cross-page. The Upcoming section
+# is renamed #hunts so the #challenges hash can be reserved as a legacy
+# redirect to the /accountability-challenges hub.
+assert html.count('id="join"') == 1
+html = html.replace('id="join"', 'id="waitlist"')
+assert '"#join"' not in html
+
+assert html.count('<a href="#cta"') == 1  # the nav JOIN THE WAITLIST button
+html = html.replace('<a href="#cta"', '<a href="#waitlist"')
+
+assert html.count('id="challenges"') == 1
+html = html.replace('id="challenges"', 'id="hunts"')
+# Three occurrences: the nav HUNTS link, the footer Upcoming hunts link, and
+# the mobile-nav CSS selector from (I-4b), which must track the rename.
+n = html.count('href="#challenges"')
+assert n == 3, f"expected 3 #challenges occurrences (2 links + 1 CSS selector), found {n}"
+html = html.replace('href="#challenges"', 'href="#hunts"')
+assert "#challenges" not in html
+
+# ---- 2e. site navigation (2026-08-13): one route table, three surfaces ----
+# Header bar, mobile drawer and page footers are all generated from ROUTES, so a
+# destination cannot exist in one surface and be missing from another, and the
+# active-route marking is derived rather than hand-written per page.
+INK, BODYC, MUTED, CLAY = "#16130E", "#4A453C", "#6E6759", "#C24E1F"
+CREAM = "#F3EFE7"
+DONE = "#4F6A45"   # the design's own colour for a completed state
+SERIF = "'Playfair Display','Times New Roman',serif"
+SANS = "'Figtree',Arial,Helvetica,sans-serif"
+
+# (href, drawer/footer label, header label, in the desktop header?, only >=900px?)
+ROUTES = [
+    ("/",                          "Home",         "HOME",         False, False),
+    ("/how-it-works",              "How it works", "HOW IT WORKS", True,  False),
+    ("/accountability-challenges", "Challenges",   "CHALLENGES",   True,  False),
+    ("/faq",                       "FAQ",          "FAQ",          True,  False),
+    ("/about",                     "About",        "ABOUT",        True,  True),
+    ("/contact",                   "Contact",      "CONTACT",      True,  True),
+    ("/terms",                     "Terms",        "TERMS",        False, False),
+    ("/privacy",                   "Privacy",      "PRIVACY",      False, False),
+]
+
+# `current` is the route the page is being generated for, so the active state is
+# baked into the HTML: no flash, no JavaScript, and it survives with JS off. The
+# home page is always "/" whatever the hash, so /#waitlist is not a second page.
+def _cur(href: str, current: str) -> str:
+    return ' aria-current="page"' if href == current else ""
+
+NAV_CSS = f"""
+/* Navigation. The drawer is the only navigation below 641px, so the desktop bar
+   and its CTA come off and the menu button comes on at exactly that width. */
+[data-hz-menu-btn]{{ display:none }}
+#hz-menu[hidden]{{ display:none !important }}
+#hz-menu{{ display:block }}
+@media (max-width:640px){{
+  [data-hz-menu-btn]{{ display:inline-flex !important }}
+  [data-hz-desknav]{{ display:none !important }}
+}}
+/* About and Contact would push the bar into a second line on small laptops. */
+@media (max-width:899px){{ [data-hz-wide]{{ display:none !important }} }}
+[data-hz-menu-btn]:focus-visible,#hz-menu a:focus-visible,#hz-menu button:focus-visible{{
+  outline:2px solid {CLAY}; outline-offset:2px }}
+[data-hz-navlink]:hover{{ color:{INK} }}
+[data-hz-drawerlink]:hover{{ color:{CLAY} }}
+/* Two balanced columns of comfortable tap targets instead of a ragged wrap. */
+@media (max-width:640px){{
+  [data-hz-footernav]{{ display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr));
+                        gap:0 18px !important; margin-left:0 !important }}
+  /* The legal pair is wrapped so it can sit right on desktop; the wrapper
+     carries an inline display:flex, which only !important can unseat. */
+  [data-hz-footernav] > span{{ display:contents !important }}
+  [data-hz-footernav] a{{ display:flex; align-items:center; min-height:44px; margin-left:0 !important }}
+}}
+"""
+
+MENU_BUTTON = (
+    '<button type="button" data-hz-menu-btn aria-controls="hz-menu" aria-expanded="false" '
+    'aria-label="Menu" style="align-items:center;justify-content:center;flex-direction:column;'
+    f'gap:5px;width:44px;height:44px;margin:-5px 0;padding:0;border:0;background:transparent;cursor:pointer;color:{INK}">'
+    + '<span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span>' * 3
+    + "</button>"
+)
+
+
+def header_nav(current: str) -> str:
+    """The content-page desktop bar. Home lives on the logo, so it is not a link here."""
+    base = (f"font:600 11px {SANS};letter-spacing:.14em;text-decoration:none;"
+            "padding:7px 0;border-bottom:2px solid transparent")
+    out = []
+    for href, _label, head_label, in_head, wide in ROUTES:
+        if not in_head:
+            continue
+        on = href == current
+        style = base + (f";color:{INK};border-bottom-color:{CLAY}" if on else f";color:{MUTED}")
+        out.append(f'<a href="{href}" data-hz-navlink{" data-hz-wide" if wide else ""}'
+                   f'{_cur(href, current)} style="{style}">{head_label}</a>')
+    return "\n    ".join(out)
+
+
+def drawer(current: str, waitlist_href: str) -> str:
+    """Full-height sheet: every route plus the waitlist action, one tap each."""
+    links = []
+    for href, _label, head_label, _in_head, _wide in ROUTES:
+        on = href == current
+        style = (f"display:flex;align-items:center;min-height:52px;font:600 12.5px {SANS};"
+                 "letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);"
+                 + (f"padding-left:13px;border-left:3px solid {CLAY};color:{CLAY}"
+                    if on else f"padding-left:0;color:{INK}"))
+        links.append(f'<a href="{href}" data-hz-drawerlink{_cur(href, current)} '
+                     f'style="{style}">{head_label}</a>')
+    return f"""<div id="hz-menu" hidden tabindex="-1" role="dialog" aria-modal="true" aria-label="Site menu" style="position:fixed;inset:0;z-index:90;outline:0">
+  <div data-hz-scrim style="position:absolute;inset:0;background:rgba(22,19,14,.5)"></div>
+  <nav data-hz-panel aria-label="Site" style="position:absolute;top:0;left:0;right:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:{CREAM};border-bottom:1px solid rgba(22,19,14,.14);padding:0 clamp(20px,5vw,44px) 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;height:64px">
+      <span style="font:800 20px {SANS};letter-spacing:-.02em;color:{INK}">HUNTZ<span style="color:{CLAY}">.</span></span>
+      <button type="button" data-hz-menu-close aria-label="Close menu" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:0;background:transparent;color:{INK};font:400 21px/1 {SANS};cursor:pointer">&#10005;</button>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      {chr(10).join("      " + l for l in links).strip()}
+    </div>
+    <a href="{waitlist_href}" style="display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};letter-spacing:.12em;text-decoration:none">JOIN THE WAITLIST</a>
+  </nav>
+</div>"""
+
+
+def footer_nav(current: str) -> str:
+    """Content-page footer row: one flex line on desktop, two even columns on phones."""
+    base = f"font:600 11px {SANS};letter-spacing:.12em;text-decoration:none"
+    def link(href, label, extra=""):
+        on = href == current
+        style = base + (f";color:{CLAY}" if on else f";color:{MUTED}") + extra
+        return f'<a href="{href}"{_cur(href, current)} style="{style}">{label.upper()}</a>'
+    main = [link(h, hl) for h, _l, hl, _ih, _w in ROUTES if h not in ("/terms", "/privacy")]
+    legal = [link(h, hl) for h, _l, hl, _ih, _w in ROUTES if h in ("/terms", "/privacy")]
+    return ('<nav data-hz-footernav aria-label="Footer" style="display:flex;flex-wrap:wrap;gap:10px 22px;'
+            'align-items:baseline;margin-top:26px;padding-top:22px;border-top:1px solid rgba(22,19,14,.14)">\n    '
+            + "\n    ".join(main)
+            + '\n    <span style="margin-left:auto;display:flex;gap:22px">'
+            + "".join(legal) + "</span>\n  </nav>")
+
+
+# The controller is deliberately outside the design runtime: it delegates from
+# `document`, so it keeps working across a React re-render, and it owns nothing
+# React renders except the button's aria state, which it re-asserts if the bar
+# is ever rebuilt while the sheet is open.
+NAV_JS = """<script>
+(function () {
+  var open = false, opener = null, savedY = 0, obs = null;
+  function panel() { var m = document.getElementById('hz-menu'); return m && m.querySelector('[data-hz-panel]'); }
+  function sync() {
+    var b = document.querySelectorAll('[data-hz-menu-btn]');
+    for (var i = 0; i < b.length; i++) b[i].setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function focusable() {
+    var p = panel();
+    if (!p) return [];
+    return Array.prototype.filter.call(
+      p.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])'),
+      function (el) { return el.getClientRects().length > 0; });
+  }
+  function openMenu(trigger) {
+    var m = document.getElementById('hz-menu');
+    if (!m || open) return;
+    opener = trigger || document.activeElement;
+    open = true;
+    m.hidden = false;
+    // iOS ignores overflow:hidden on a scrolled document, so the body is pinned
+    // at its current offset and released to the same offset on close.
+    savedY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = -savedY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    sync();
+    m.focus({ preventScroll: true });
+    if (window.MutationObserver) {
+      obs = new MutationObserver(sync);
+      obs.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+  function closeMenu(restoreFocus) {
+    var m = document.getElementById('hz-menu');
+    if (!m || !open) return;
+    open = false;
+    m.hidden = true;
+    if (obs) { obs.disconnect(); obs = null; }
+    document.documentElement.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedY);
+    sync();
+    if (restoreFocus !== false && opener && opener.isConnected) opener.focus({ preventScroll: true });
+    opener = null;
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var btn = t.closest('[data-hz-menu-btn]');
+    if (btn) { e.preventDefault(); open ? closeMenu() : openMenu(btn); return; }
+    if (!open) return;
+    if (t.closest('[data-hz-menu-close]') || t.closest('[data-hz-scrim]')) { e.preventDefault(); closeMenu(); return; }
+    // Selecting a destination closes the sheet; focus follows the navigation,
+    // so it is not pulled back to the button that is about to disappear.
+    if (t.closest('#hz-menu a[href]')) closeMenu(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!open) return;
+    if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); closeMenu(); return; }
+    if (e.key !== 'Tab') return;
+    var f = focusable();
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !panel().contains(document.activeElement))) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  });
+  // A phone rotated to landscape, or a window dragged wider, must not leave the
+  // sheet open over a desktop layout whose menu button is no longer rendered.
+  addEventListener('resize', function () { if (open && innerWidth > 640) closeMenu(false); });
+})();
+</script>"""
+
+
+# (N-1) The home bar gets the menu button. It is plain markup with no runtime
+# binding, so the delegated controller in NAV_JS keeps working across a React
+# re-render, and the button is the only header control left below 641px.
+old = 'style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>'
+assert html.count(old) == 1, "nav CTA not found"
+html = html.replace(old, old + "\n    " + MENU_BUTTON)
+
+# Below 641px the bar is logo + menu button: the three section anchors were
+# already hidden by (I-4b), and the CTA moves into the sheet.
+HOME_NAV_CSS = '@media (max-width:640px){#hz-nav a[href="#waitlist"]{display:none !important}}\n'
 
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
@@ -395,50 +702,176 @@ inline_scripts = (
     + js_escape(support) + "</script>"
 )
 assert '<script src="./support.js"></script>' in html
-html = html.replace('<script src="./support.js"></script>', inline_scripts)
+html = html.replace('<script src="./support.js"></script>', "<!--HZ:SCRIPTS-->")
 
-# ---- 4. standalone page ----
-# (I-1) Title, description, social-share (OG/Twitter) tags, favicon.
-# The share image is served from SITE_URL/og-image.png — previews stay blank
-# until the site actually answers on that domain.
+# One concatenated, content-hashed file for the home page: execution order
+# (React, ReactDOM, the __resources flag, the runtime) is preserved inside it.
+app_js = (
+    "/* react@18.3.1 + react-dom@18.3.1 UMD + Claude Design dc-runtime.\n"
+    "   Generated by build/assemble.py — do not edit. */\n"
+    + react + "\n;\n" + react_dom + "\n;\n"
+    + "window.__resources = {};/* single-file build: template + logic are inline, no sibling fetches */\n"
+    + support
+)
+
+# ---- 4. shared assets: hashed, immutable-cacheable ----
+import hashlib
+import json
+
+ASSETS = ROOT / "assets"
+ASSETS.mkdir(exist_ok=True)
+
+def write_hashed(stem: str, ext: str, content: str) -> str:
+    """Write assets/<stem>.<hash8>.<ext>, prune stale siblings, return the path."""
+    digest = hashlib.sha256(content.encode()).hexdigest()[:8]
+    name = f"{stem}.{digest}.{ext}"
+    for old in ASSETS.glob(f"{stem}.????????.{ext}"):
+        if old.name != name:
+            old.unlink()
+    (ASSETS / name).write_text(content)
+    return f"/assets/{name}"
+
+fonts_css_out = ("/* Playfair Display + Figtree, latin subset, embedded. Generated by "
+                 "build/assemble.py — do not edit. */\n" + "\n".join(kept) + "\n")
+FONTS_HREF = write_hashed("fonts", "css", fonts_css_out)
+APP_HREF = write_hashed("app", "js", app_js)
+# Kept for any cached copy of the earlier legal pages that still links it.
+(ASSETS / "fonts.css").write_text(fonts_css_out)
+
+# ---- 4b. head metadata, icons, structured data ----
 FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E"
            "%3Crect width='100' height='100' rx='22' fill='%23F3EFE7'/%3E"
            "%3Ctext x='50' y='56' text-anchor='middle' dominant-baseline='central' "
            "font-family='Arial,Helvetica,sans-serif' font-weight='800' font-size='58' "
            "fill='%2316130E'%3EH%3Ctspan fill='%23C24E1F'%3E.%3C/tspan%3E%3C/text%3E%3C/svg%3E")
-HEAD_META = """<title>Huntz · Put your money where your goals are.</title>
-<meta name="description" content="Stake $50–$500 of your own money on your own goal. Post proof every day. Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.">
+
+ICON_LINKS = f"""<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="{FAVICON}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">"""
+
+# Facts only: name, entity, address (already public in the legal pages), contact.
+ORG_LD = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Huntz",
+    "legalName": "Huntz, Inc.",
+    "url": SITE_URL + "/",
+    "logo": SITE_URL + "/icon-512.png",
+    "email": "team@huntz.ai",
+    "address": {"@type": "PostalAddress", "streetAddress": "269 24th Street",
+                "addressLocality": "Oakland", "addressRegion": "CA",
+                "postalCode": "94612", "addressCountry": "US"},
+}
+SITE_LD = {"@context": "https://schema.org", "@type": "WebSite",
+           "name": "Huntz", "url": SITE_URL + "/"}
+
+def ld(obj) -> str:
+    return '<script type="application/ld+json">' + json.dumps(obj, separators=(",", ":")) + "</script>"
+
+def breadcrumb_ld(title: str, slug: str) -> str:
+    return ld({"@context": "https://schema.org", "@type": "BreadcrumbList",
+               "itemListElement": [
+                   {"@type": "ListItem", "position": 1, "name": "Huntz", "item": SITE_URL + "/"},
+                   {"@type": "ListItem", "position": 2, "name": title, "item": f"{SITE_URL}/{slug}"}]})
+
+# Search metadata leads with the category (per the approved SEO plan); the
+# social card keeps the brand line, which the visible hero also carries, so
+# metadata and visible copy agree in both places.
+HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</title>
+<meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is currently in pre-launch.">
+<link rel="canonical" href="{SITE_URL}/">
+<meta property="og:site_name" content="Huntz">
 <meta property="og:title" content="Huntz · Put your money where your goals are.">
 <meta property="og:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back, plus a share of the stakes forfeited by everyone who quit.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="{site}/">
-<meta property="og:image" content="{site}/og-image.png">
+<meta property="og:url" content="{SITE_URL}/">
+<meta property="og:image" content="{SITE_URL}/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Huntz · Put your money where your goals are.">
 <meta name="twitter:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back.">
-<meta name="twitter:image" content="{site}/og-image.png">
-<link rel="icon" href="{favicon}">""".replace("{favicon}", FAVICON).replace("{site}", SITE_URL)
-html = html.replace(
-    "<head>\n<meta charset=\"utf-8\">",
-    "<head>\n<meta charset=\"utf-8\">\n" + HEAD_META,
-    1,
-)
-(ROOT / "index.html").write_text(html)
+<meta name="twitter:image" content="{SITE_URL}/og-image.jpg">
+{ICON_LINKS}
+<link rel="preload" href="{FONTS_HREF}" as="style">
+<link rel="stylesheet" href="{FONTS_HREF}">
+{ld(ORG_LD)}
+{ld(SITE_LD)}
+<script>if(/^#\/(terms|privacy)$/.test(location.hash))location.replace(location.hash.slice(2));else if(location.hash==="#challenges")location.replace("/accountability-challenges");</script>
+<style>{NAV_CSS}{HOME_NAV_CSS}</style>"""
 
-# ---- 4b. real pages at /terms and /privacy ----
-# The in-page #/terms route still works (and is all the single-file artifact
-# copy can do), but a legal document deserves a genuine URL: shareable,
-# indexable, printable, and readable without running any JavaScript. These are
-# separate documents that link one shared stylesheet for the webfonts, so the
-# 600 KB of font data is fetched once and cached rather than inlined per page.
-ASSETS = ROOT / "assets"
-ASSETS.mkdir(exist_ok=True)
-(ASSETS / "fonts.css").write_text(
-    "/* Playfair Display + Figtree, latin subset, embedded. Generated by "
-    "build/assemble.py — do not edit. */\n" + "\n".join(kept) + "\n")
+# ---- 4c. the two variants ----
+assert html.count("<!--HZ:FONTS-->") == 1 and html.count("<!--HZ:SCRIPTS-->") == 1
+html = html.replace("<html>", '<html lang="en">', 1)
 
+home = html.replace("<!--HZ:FONTS-->", "")
+home = home.replace("<!--HZ:SCRIPTS-->", f'<script src="{APP_HREF}" defer></script>')
+home = home.replace('<head>\n<meta charset="utf-8">',
+                    '<head>\n<meta charset="utf-8">\n' + HEAD_META, 1)
+assert "HZ:" not in home
+# Every JOIN THE WAITLIST button targets the one existing form: on-page clicks
+# scroll to it and put the caret in the email field; /#waitlist arrivals from
+# other pages do the same once the runtime has rendered the form.
+FOCUS_JS = """<script>
+(function () {
+  // Native smooth scrolling does not run on this page at all: the design
+  // runtime's 60fps loop cancels it, which is why html{scroll-behavior:smooth}
+  // had to be removed. A hand-rolled tween is not cancelled, so the waitlist
+  // reveal animates instead of teleporting.
+  function glideTo(y) {
+    var max = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+    y = Math.max(0, Math.min(max, y));
+    var from = pageYOffset, d = y - from, t0 = 0;
+    if (Math.abs(d) < 2) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { scrollTo(0, y); return; }
+    requestAnimationFrame(function step(ts) {
+      if (!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / 420);
+      scrollTo(0, from + d * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    });
+  }
+  function focusWaitlist() {
+    var w = document.getElementById('waitlist');
+    if (!w) return;
+    var r = w.getBoundingClientRect();
+    glideTo(r.top + pageYOffset - Math.max(72, (innerHeight - r.height) / 2));
+    // preventScroll so the caret landing in the field does not fight the tween.
+    var i = w.querySelector('input');
+    if (i) i.focus({ preventScroll: true });
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href=\"#waitlist\"]');
+    if (!a) return;
+    e.preventDefault();
+    history.replaceState(null, '', '#waitlist');
+    focusWaitlist();
+  });
+  if (location.hash === '#waitlist') {
+    window.addEventListener('load', function () { setTimeout(focusWaitlist, 350); });
+  }
+})();
+</script>"""
+home = home.replace("</body>", drawer("/", "#waitlist") + "\n" + NAV_JS + "\n" + FOCUS_JS + "\n</body>")
+(ROOT / "index.html").write_text(home)
+
+art = html.replace("<!--HZ:FONTS-->", font_style)
+art = art.replace("<!--HZ:SCRIPTS-->", "")
+art = art.replace("</body>", legal + "\n</body>")
+m = re.search(r"<body>\n?(.*)\n?</body>", art, re.S)
+fragment = (inline_scripts + "\n" + m.group(1) + "\n<style>" + NAV_CSS + HOME_NAV_CSS + "</style>\n"
+            + drawer("/", "#waitlist") + "\n" + NAV_JS)
+# The artifact is one file with no /terms to navigate to, so its footer keeps
+# the in-page hash routes that the embedded overlay still serves.
+for a, b in (('href="/terms"', 'href="#/terms"'), ('href="/privacy"', 'href="#/privacy"'),
+             ('href="/faq"', 'href="#why"'), ('href="/how-it-works"', 'href="#mechanic"'),
+             ('href="/about"', 'href="#top"'), ('href="/contact"', 'href="mailto:team@huntz.ai"'),
+             ('href="/accountability-challenges"', 'href="#hunts"'),
+             ('href="/"', 'href="#top"')):
+    fragment = fragment.replace(a, b)
+(BUILD / "huntz-landing.artifact.html").write_text(fragment)
+
+# ---- 5. legal pages ----
 page_tpl = (BUILD / "legal-page.html").read_text()
 LEGAL_PAGES = [
     ("terms", "legal-terms.html", "Terms of Service",
@@ -455,23 +888,314 @@ for slug, doc, title, desc, other_href, other_label in LEGAL_PAGES:
             .replace("{{CANONICAL}}", f"{SITE_URL}/{slug}")
             .replace("{{SITE}}", SITE_URL)
             .replace("{{FAVICON}}", FAVICON)
+            .replace("{{ICONS}}", ICON_LINKS)
+            .replace("{{FONTS_HREF}}", FONTS_HREF)
+            .replace("{{BREADCRUMB_LD}}", breadcrumb_ld(title, slug))
             .replace("{{OTHER_HREF}}", other_href)
             .replace("{{OTHER_LABEL}}", other_label)
             .replace("{{BODY}}", (BUILD / doc).read_text()))
     assert "{{" not in page, f"unfilled placeholder in {slug}.html"
     (ROOT / f"{slug}.html").write_text(page)
-    print(f"{slug}.html  {len(page):,} bytes")
 
-# ---- 5. artifact fragment: no doctype/html/head/body (publisher wraps it) ----
-m = re.search(r"<body>\n?(.*)\n?</body>", html, re.S)
-body = m.group(1)
-# support.js boots on DOMContentLoaded, so keeping the original source order
-# (scripts, then the <x-dc> template) is all that matters here.
-fragment = inline_scripts + "\n" + body
-# The artifact is one file with no /terms to navigate to, so its footer
-# falls back to the in-page hash route that the overlay still serves.
-fragment = fragment.replace('href="/terms"', 'href="#/terms"').replace('href="/privacy"', 'href="#/privacy"')
-(BUILD / "huntz-landing.artifact.html").write_text(fragment)
+# ---- 6. content pages (About, Contact, FAQ, How it works, hub) ----
+# Copy lives in build/pages/<slug>.json as typed blocks; this renderer maps the
+# blocks onto the site's type system so pages cannot drift stylistically.
+BS = {
+    "h2": f"margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 {SERIF};letter-spacing:-.012em;color:{INK};text-wrap:balance",
+    "h3": f"margin:26px 0 8px;font:700 13px {SANS};letter-spacing:.13em;text-transform:uppercase;color:{CLAY}",
+    "p": f"margin:0 0 15px;font:400 15.5px/1.75 {SANS};color:{BODYC};text-wrap:pretty",
+    "ul": f"margin:0 0 18px;padding-left:20px;display:flex;flex-direction:column;gap:7px;list-style:none",
+    "li": f"position:relative;font:400 15.5px/1.7 {SANS};color:{BODYC};text-wrap:pretty",
+    "note": (f"margin:26px 0 15px;padding:14px 18px;border-left:2px solid {CLAY};background:rgba(194,78,31,.05);"
+             f"font:600 12px/1.8 {SANS};letter-spacing:.05em;text-transform:uppercase;color:{INK}"),
+}
 
-for f in (ROOT / "index.html", BUILD / "huntz-landing.artifact.html"):
-    print(f"{f.relative_to(ROOT)}  {f.stat().st_size:,} bytes")
+LINK_RE = re.compile(r"\{a:(/[a-z#/-]*|/#[a-z-]+)\|([^}]+)\}")
+
+def render_text(s: str) -> str:
+    import html as H
+    s = H.escape(s, quote=False)
+    s = s.replace("team@huntz.ai",
+                  f'<a href="mailto:team@huntz.ai" style="color:{CLAY};text-decoration:none;'
+                  f'border-bottom:1px solid rgba(194,78,31,.4)">team@huntz.ai</a>')
+    return LINK_RE.sub(
+        rf'<a href="\1" style="color:{CLAY};text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">\2</a>', s)
+
+def render_blocks(blocks) -> str:
+    out = []
+    for b in blocks:
+        k = b["type"]
+        if k in ("h2", "h3", "p", "note"):
+            tag = {"h2": "h2", "h3": "h3", "p": "p", "note": "p"}[k]
+            attr = f' id="{b["id"]}"' if b.get("id") else ""
+            out.append(f'<{tag}{attr} style="{BS[k]}">{render_text(b.get("text", ""))}</{tag}>')
+        elif k == "form":
+            out.append(contact_form())
+        elif k == "ul":
+            items = "".join(
+                f'<li style="{BS["li"]}"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;'
+                f'border-radius:50%;background:{CLAY};opacity:.55"></span>{render_text(i)}</li>'
+                for i in b.get("items", []))
+            out.append(f'<ul style="{BS["ul"]}">{items}</ul>')
+    return "\n".join(out)
+
+# ---- 6b. the contact form (2026-08-13) ----
+# Markup and behaviour for /contact. The endpoint that receives it lives in
+# api/; the copy below is the founder's exact wording and is asserted by
+# build/check.py so a later edit cannot quietly reword it.
+
+CONTACT_INTRO = ("Questions, partnerships, press, or interested in creating a Hunt? "
+                 "Send us a note.")
+CONTACT_SUCCESS_TITLE = "Message sent."
+CONTACT_SUCCESS = "Thanks\u2014your message reached the Huntz team."
+CONTACT_AGAIN = "Send another message"
+CONTACT_FAILURE = "Something went wrong. Please email team@huntz.ai."
+CONTACT_PRIVACY = "We'll use your information only to respond to your message."
+CONTACT_SUBMIT = "Send message"
+# value -> visible label. The server holds the same list and builds the email
+# Subject from it, so no visitor text ever reaches a mail header.
+CONTACT_REASONS = [
+    ("create-a-hunt", "I want to create a Hunt"),
+    ("partnership", "Partnership"),
+    ("press", "Press"),
+    ("general-question", "General question"),
+    ("website-issue", "Website issue"),
+]
+
+FORM_CSS = f"""
+#hz-contact label{{ display:block; font:600 11px {SANS}; letter-spacing:.14em; text-transform:uppercase;
+  color:{MUTED}; margin-bottom:7px }}
+#hz-contact input,#hz-contact select,#hz-contact textarea{{ width:100%; box-sizing:border-box; min-height:48px;
+  padding:12px 14px; border:1px solid rgba(22,19,14,.22); border-radius:0; background:rgba(255,255,255,.72);
+  color:{INK}; font:400 15.5px/1.5 {SANS}; -webkit-appearance:none; appearance:none }}
+#hz-contact textarea{{ min-height:150px; resize:vertical }}
+#hz-contact select{{ background-image:linear-gradient(45deg,transparent 50%,{MUTED} 50%),
+  linear-gradient(135deg,{MUTED} 50%,transparent 50%);
+  background-position:calc(100% - 20px) 21px,calc(100% - 14px) 21px; background-size:6px 6px,6px 6px;
+  background-repeat:no-repeat; padding-right:42px }}
+#hz-contact input:focus-visible,#hz-contact select:focus-visible,#hz-contact textarea:focus-visible{{
+  outline:2px solid {CLAY}; outline-offset:1px }}
+#hz-contact [aria-invalid="true"]{{ border-color:{CLAY}; background:rgba(194,78,31,.05) }}
+#hz-contact [data-hz-err]{{ margin:7px 0 0; font:600 12px/1.5 {SANS}; color:{CLAY} }}
+#hz-contact button[disabled]{{ opacity:.6; cursor:progress }}
+#hz-contact-status:empty{{ display:none }}
+/* Never an inline display here: it would outrank [hidden] and leave the success
+   panel rendering under the form on every page load. */
+/* A compact card, not a reserved block: it stands in for the form and its
+   heading, and the page is allowed to shorten around it. */
+#hz-contact-done{{ display:flex; align-items:flex-start }}
+#hzc-again:hover{{ border-color:{CLAY}; color:{CLAY} }}
+#hz-contact-done[hidden]{{ display:none !important }}
+#hz-contact-done-title:focus-visible{{ outline:2px solid {CLAY} }}
+"""
+
+
+def contact_form() -> str:
+    # The success panel is rendered here, hidden, rather than assembled in
+    # JavaScript: it stays in the page source, keeps the site's type system, and
+    # build/check.py can assert its copy the same way it asserts the form's.
+    fields = []
+
+    def wrap(inner, fid, label):
+        return (f'<div style="margin-bottom:20px">'
+                f'<label for="{fid}">{label}</label>{inner}'
+                f'<p id="{fid}-err" data-hz-err hidden></p></div>')
+
+    fields.append(wrap(
+        f'<input id="hzc-name" name="name" type="text" required maxlength="100" autocomplete="name" '
+        f'aria-describedby="hzc-name-err">', "hzc-name", "Name"))
+    fields.append(wrap(
+        f'<input id="hzc-email" name="email" type="email" required maxlength="254" autocomplete="email" '
+        f'inputmode="email" aria-describedby="hzc-email-err">', "hzc-email", "Email"))
+    options = '<option value="">Choose one</option>' + "".join(
+        f'<option value="{v}">{l}</option>' for v, l in CONTACT_REASONS)
+    fields.append(wrap(
+        f'<select id="hzc-reason" name="reason" required aria-describedby="hzc-reason-err">{options}</select>',
+        "hzc-reason", "Reason"))
+    fields.append(wrap(
+        f'<textarea id="hzc-message" name="message" required maxlength="5000" rows="7" '
+        f'aria-describedby="hzc-message-err"></textarea>', "hzc-message", "Message"))
+
+    # Off-screen rather than display:none, which some form-fillers skip.
+    honeypot = ('<div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;'
+                'clip:rect(0 0 0 0);white-space:nowrap">'
+                '<label for="hzc-company">Company</label>'
+                '<input id="hzc-company" name="company" type="text" tabindex="-1" autocomplete="off">'
+                '</div>')
+
+    return f"""<form id="hz-contact" novalidate style="margin:8px 0 10px">
+  <p style="{BS['p']}">{CONTACT_INTRO}</p>
+  {"".join(fields)}
+  {honeypot}
+  <button type="submit" id="hzc-submit" style="font:700 12px {SANS};letter-spacing:.12em;text-transform:uppercase;color:{CREAM};background:{CLAY};border:1px solid {CLAY};padding:15px 26px;cursor:pointer">{CONTACT_SUBMIT}</button>
+  <p id="hz-contact-status" role="status" aria-live="polite" style="margin:18px 0 0;padding:13px 16px;border-left:2px solid {CLAY};background:rgba(194,78,31,.06);font:600 13.5px/1.6 {SANS};color:{INK}"></p>
+  <p style="margin:16px 0 0;font:400 13px/1.6 {SANS};color:{MUTED}"><a href="/privacy" style="color:{MUTED};text-decoration:none;border-bottom:1px solid rgba(22,19,14,.2)">{CONTACT_PRIVACY}</a></p>
+  <noscript><p style="{BS['p']}">This form needs JavaScript. Email team@huntz.ai instead and we will pick it up the same way.</p></noscript>
+</form>
+<div id="hz-contact-done" hidden role="status" style="margin:8px 0 10px;gap:15px;padding:clamp(20px,2.6vw,26px);border:1px solid rgba(22,19,14,.14);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34))">
+  <span aria-hidden="true" style="flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:30px;height:30px;margin-top:2px;border-radius:50%;background:{DONE}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{CREAM}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.2 5.2L20 7"></path></svg></span>
+  <div style="min-width:0">
+    <h2 id="hz-contact-done-title" tabindex="-1" style="margin:0 0 7px;font:600 clamp(20px,2.2vw,25px)/1.25 {SERIF};letter-spacing:-.012em;color:{INK};outline-offset:4px">{CONTACT_SUCCESS_TITLE}</h2>
+    <p style="margin:0 0 17px;font:400 15px/1.6 {SANS};color:{BODYC};text-wrap:pretty">{CONTACT_SUCCESS}</p>
+    <button type="button" id="hzc-again" style="padding:11px 18px;border:1px solid rgba(22,19,14,.26);border-radius:12px;background:transparent;font:700 11.5px {SANS};letter-spacing:.12em;text-transform:uppercase;color:{INK};cursor:pointer">{CONTACT_AGAIN}</button>
+  </div>
+</div>"""
+
+
+CONTACT_JS = """<script>
+(function () {
+  var form = document.getElementById('hz-contact');
+  if (!form) return;
+  var status = document.getElementById('hz-contact-status');
+  var submit = document.getElementById('hzc-submit');
+  var SUBMIT_LABEL = submit.textContent;
+  var heading = document.getElementById('hz-contact-heading');
+  var done = document.getElementById('hz-contact-done');
+  var doneTitle = document.getElementById('hz-contact-done-title');
+  var again = document.getElementById('hzc-again');
+  var FIELDS = ['name', 'email', 'reason', 'message'];
+  var busy = false;
+
+  function setError(name, msg) {
+    var input = document.getElementById('hzc-' + name);
+    var slot = document.getElementById('hzc-' + name + '-err');
+    if (!input || !slot) return;
+    if (msg) { input.setAttribute('aria-invalid', 'true'); slot.textContent = msg; slot.hidden = false; }
+    else { input.removeAttribute('aria-invalid'); slot.textContent = ''; slot.hidden = true; }
+  }
+  function clearErrors() { FIELDS.forEach(function (f) { setError(f, null); }); }
+  function say(msg) { status.textContent = msg; }
+
+  var EMAIL = /^[^\s@,;<>()\[\]\\"]+@[^\s@,;<>()\[\]\\".]+\.[^\s@,;<>()\[\]\\"]{2,}$/;
+  function localCheck(v) {
+    var e = {};
+    if (!v.name) e.name = 'Tell us your name.';
+    if (!v.email) e.email = 'We need an email address to reply to.';
+    else if (!EMAIL.test(v.email)) e.email = 'That email address does not look right.';
+    if (!v.reason) e.reason = 'Pick a reason.';
+    if (!v.message) e.message = 'Add a message.';
+    return e;
+  }
+  function showErrors(e) {
+    clearErrors();
+    FIELDS.forEach(function (f) { if (e[f]) setError(f, e[f]); });
+    var first = FIELDS.filter(function (f) { return e[f]; })[0];
+    if (first) { var el = document.getElementById('hzc-' + first); if (el) el.focus(); }
+  }
+  function setBusy(on) {
+    busy = on;
+    submit.disabled = on;
+    submit.textContent = on ? 'Sending' : SUBMIT_LABEL;
+  }
+
+  function showSuccess() {
+    form.reset();
+    clearErrors();
+    say('');
+    if (heading) heading.hidden = true;
+    form.hidden = true;
+    done.hidden = false;
+    // Focus is what reliably announces the new state; role="status" covers
+    // readers that would otherwise miss a revealed region.
+    doneTitle.focus();
+  }
+
+  again.addEventListener('click', function () {
+    done.hidden = true;
+    if (heading) heading.hidden = false;
+    form.hidden = false;
+    form.reset();
+    clearErrors();
+    say('');
+    var first = document.getElementById('hzc-name');
+    if (first) first.focus();
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (busy) return;                       // no double send while one is in flight
+    var v = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      reason: form.reason.value,
+      message: form.message.value.trim(),
+      company: form.company.value
+    };
+    var local = localCheck(v);
+    if (Object.keys(local).length) { say(''); showErrors(local); return; }
+    clearErrors();
+    say('');
+    setBusy(true);
+    fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(v)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; });
+    }).then(function (o) {
+      setBusy(false);
+      if (o.r.ok && o.j.ok) { showSuccess(); return; }
+      var err = (o.j && o.j.error) || {};
+      if (err.fieldErrors && Object.keys(err.fieldErrors).length) { showErrors(err.fieldErrors); say(''); return; }
+      // Values are left exactly as typed so nothing has to be retyped.
+      say(FAILURE);
+    }).catch(function () {
+      setBusy(false);
+      say(FAILURE);
+    });
+  });
+})();
+</script>"""
+
+CONTACT_JS = CONTACT_JS.replace("FAILURE", "'" + CONTACT_FAILURE + "'")
+assert "SUCCESS" not in CONTACT_JS, "success copy belongs in the markup, not the script"
+
+
+content_tpl = (BUILD / "content-page.html").read_text()
+PAGES_DIR = BUILD / "pages"
+CONTENT_PAGES = []
+for spec_path in sorted(PAGES_DIR.glob("*.json")):
+    spec = json.loads(spec_path.read_text())
+    slug = spec_path.stem
+    body = render_blocks(spec["blocks"])
+    page = (content_tpl
+            .replace("{{TITLE_TAG}}", spec["title_tag"])
+            .replace("{{TITLE}}", spec["h1"])
+            .replace("{{EYEBROW}}", spec.get("eyebrow", "HUNTZ"))
+            .replace("{{DESC}}", spec["meta_description"])
+            .replace("{{CANONICAL}}", f"{SITE_URL}/{slug}")
+            .replace("{{SITE}}", SITE_URL)
+            .replace("{{ICONS}}", ICON_LINKS)
+            .replace("{{FONTS_HREF}}", FONTS_HREF)
+            .replace("{{BREADCRUMB_LD}}", breadcrumb_ld(spec["h1"], slug))
+            .replace("{{NAV_CSS}}", NAV_CSS)
+            .replace("{{HEADER_NAV}}", header_nav(f"/{slug}"))
+            .replace("{{MENU_BUTTON}}", MENU_BUTTON)
+            .replace("{{DRAWER}}", drawer(f"/{slug}", "/#waitlist"))
+            .replace("{{FOOTER_NAV}}", footer_nav(f"/{slug}"))
+            .replace("{{NAV_JS}}", NAV_JS)
+            .replace("{{PAGE_CSS}}", FORM_CSS + "\n" if slug == "contact" else "")
+            .replace("{{PAGE_JS}}", CONTACT_JS + "\n" if slug == "contact" else "")
+            .replace("{{BODY}}", body))
+    assert "{{" not in page, f"unfilled placeholder in {slug}.html"
+    # The contact success line is the founder's exact wording and is the one
+    # sanctioned em dash; build/check.py asserts it verbatim.
+    assert "—" not in body.replace(CONTACT_SUCCESS, ""), f"em dash in {slug} content"
+    (ROOT / f"{slug}.html").write_text(page)
+    CONTENT_PAGES.append(slug)
+
+# ---- 7. robots + sitemap: canonical, public, 200 pages only ----
+SITEMAP_PATHS = ["/", "/terms", "/privacy"] + [f"/{s}" for s in sorted(CONTENT_PAGES)]
+sitemap = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+for path in SITEMAP_PATHS:
+    sitemap.append(f"  <url><loc>{SITE_URL}{path}</loc></url>")
+sitemap.append("</urlset>")
+(ROOT / "sitemap.xml").write_text("\n".join(sitemap) + "\n")
+
+print(f"index.html  {(ROOT / 'index.html').stat().st_size:,} bytes")
+print(f"app js      {APP_HREF}")
+print(f"fonts css   {FONTS_HREF}")
+print(f"pages       {', '.join(['terms', 'privacy'] + CONTENT_PAGES)}")
+print(f"sitemap     {len(SITEMAP_PATHS)} urls")
+print(f"artifact    {(BUILD / 'huntz-landing.artifact.html').stat().st_size:,} bytes")

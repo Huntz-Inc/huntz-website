@@ -1,0 +1,140 @@
+{
+ "blocks": [
+  {
+   "type": "h2",
+   "text": "What is Huntz?"
+  },
+  {
+   "type": "p",
+   "text": "Huntz is an accountability challenge platform. You join a structured challenge called a Hunt, commit a stake, and follow rules that were published before the Hunt began. You submit proof of progress on the published schedule. Finish, and you recover your stake in full plus a share of the stakes forfeited by participants who quit or fall short."
+  },
+  {
+   "type": "h2",
+   "text": "What is a Hunt?"
+  },
+  {
+   "type": "p",
+   "text": "A Hunt is a structured challenge with a defined duration, a defined cadence, and rules frozen before anyone joins. Everyone in a Hunt plays by the same published terms. Your outcome depends on your own documented effort, measured against those terms."
+  },
+  {
+   "type": "h2",
+   "text": "Who creates Hunts at launch?"
+  },
+  {
+   "type": "p",
+   "text": "At launch, Huntz works directly with selected creators to develop Hunts for their communities. Self-service tools for creators to launch Hunts independently are planned for later."
+  },
+  {
+   "type": "h2",
+   "text": "How are rules set?"
+  },
+  {
+   "type": "p",
+   "text": "Every Hunt publishes its complete rules before a single person joins. Rules are frozen at publication and never changed retroactively; what you agree to on day one is what you are judged by on the last day. The full walkthrough is in {a:/how-it-works|how Huntz works}. Every Hunt states, up front:"
+  },
+  {
+   "type": "ul",
+   "items": [
+    "The cadence and duration.",
+    "The proof requirements.",
+    "Allowed misses and grace days.",
+    "The stake amount and the service fee.",
+    "The completion threshold."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "How is progress checked?"
+  },
+  {
+   "type": "p",
+   "text": "Submissions are evaluated against the published rules. Automated checks make the first pass. Anything the automation cannot settle cleanly goes to human review."
+  },
+  {
+   "type": "h2",
+   "text": "What happens when a submission is unclear?"
+  },
+  {
+   "type": "p",
+   "text": "A person looks at it. Unclear submissions get human review against the same published rules, and disputes are reviewed and decided by Huntz, acting reasonably. Huntz evaluates what you submitted against what the rules require; it does not promise absolute proof of anything."
+  },
+  {
+   "type": "h2",
+   "text": "Can I join with friends?"
+  },
+  {
+   "type": "p",
+   "text": "Not yet, but soon. Private Hunts with friends are planned, so a small group will be able to run a challenge together under the same published rules."
+  },
+  {
+   "type": "h2",
+   "text": "What types of challenges are supported?"
+  },
+  {
+   "type": "p",
+   "text": "The first Hunt categories are:"
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Fitness.",
+    "Reading.",
+    "Content creation.",
+    "Applying to jobs.",
+    "Live streaming."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "Is Huntz available right now?"
+  },
+  {
+   "type": "p",
+   "text": "Not yet. The first Hunts are being developed now with our first creators. {a:/#waitlist|Join the waitlist} and we will email you when they open. Huntz is for adults 18 and up."
+  },
+  {
+   "type": "h2",
+   "text": "Does Huntz guarantee that someone completed an activity?"
+  },
+  {
+   "type": "p",
+   "text": "No. Huntz evaluates submissions under rules and methods disclosed before a challenge begins. Automated checks handle the clear cases, humans review the unclear ones, and disputes are decided reasonably. Huntz does not promise absolute proof."
+  },
+  {
+   "type": "h2",
+   "text": "Is this gambling?"
+  },
+  {
+   "type": "p",
+   "text": "No. There is no chance anywhere in Huntz. Your outcome depends entirely on your own documented effort measured against rules published before you join. Huntz never wagers against you, and forfeited stakes are distributed to finishing participants. Huntz does not keep them."
+  },
+  {
+   "type": "h2",
+   "text": "What does Huntz charge?"
+  },
+  {
+   "type": "p",
+   "text": "Only a service fee when you join a Hunt, shown before you commit. Never a percentage of the pool, never a cent from forfeits. Finishers recover their stake in full plus their share of forfeited stakes; the service fee is Huntz's only compensation."
+  },
+  {
+   "type": "h2",
+   "text": "How does Huntz handle privacy?"
+  },
+  {
+   "type": "p",
+   "text": "Proof submissions are private by default. They are visible only to you, to authorized reviewers, and to the trusted service providers that help run the platform. Huntz does not sell personal information. The full policy is in {a:/privacy|our privacy policy}."
+  },
+  {
+   "type": "h2",
+   "text": "Where can I find the terms?"
+  },
+  {
+   "type": "p",
+   "text": "In {a:/terms|our terms of service}. Huntz is for adults 18 and over, operated by Huntz, Inc. of Oakland, California. Anything the terms do not answer, ask at team@huntz.ai."
+  }
+ ],
+ "eyebrow": "STRAIGHT ANSWERS",
+ "h1": "Asked plainly, answered plainly.",
+ "meta_description": "Plain answers on Hunts, stakes, proof, fees, and privacy. Huntz is pre-launch: the iOS app is in development and the waitlist at huntz.ai is open.",
+ "title_tag": "Huntz FAQ | Challenges, Progress and Accountability"
+}

@@ -98,7 +98,7 @@ def esc(s: str) -> str:
 
 def linkify(s: str) -> str:
     """Emails and huntz.ai become real links; everything else is left alone."""
-    s = re.sub(r"([\w.+-]+@[\w-]+\.[\w.]+)",
+    s = re.sub(r"([\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[A-Za-z]{2,})",
                rf'<a href="mailto:\1" style="color:{CLAY};text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">\1</a>', s)
     s = re.sub(r"(?<![\w/@.])(huntz\.ai)(?![\w@])",
                r'<a href="/" style="color:%s;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">\1</a>' % CLAY, s)

@@ -12,3 +12,6 @@ build/huntz-landing.artifact.html
 Page Review_ Kinetic Hero Design/
 
 .DS_Store
+
+# Installed only for the contact function; Vercel installs it at deploy time.
+node_modules/

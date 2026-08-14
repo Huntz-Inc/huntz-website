@@ -1,0 +1,9 @@
+# What Vercel deploys is the committed HTML at the repo root, assets/, and api/.
+# The build pipeline and its tests run locally, so keeping them out of the
+# upload means no build script or test file is publicly fetchable from the site.
+# Removing this file changes nothing about how the site renders; it only makes
+# those paths reachable again.
+build/
+test/
+README.md
+Page Review_ Kinetic Hero Design/

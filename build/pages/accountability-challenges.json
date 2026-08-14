@@ -1,0 +1,86 @@
+{
+ "blocks": [
+  {
+   "type": "p",
+   "text": "Most goals do not fail loudly. They fade. An accountability challenge is the fix: a structured commitment with rules written down, a clock running, and other people watching. Here is what that means, what good rules look like, and how Huntz builds on it."
+  },
+  {
+   "type": "h2",
+   "text": "What an accountability challenge is"
+  },
+  {
+   "type": "p",
+   "text": "An accountability challenge is a commitment with structure. Not a resolution, not a vibe. It has published rules, a defined duration, a set cadence, progress you can show, and people other than you holding you to it."
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Rules written down before anyone starts.",
+    "A start date, an end date, and a cadence in between.",
+    "Progress that can be shown, not just claimed.",
+    "Someone other than you checking the work."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "Who it is for"
+  },
+  {
+   "type": "p",
+   "text": "People whose goals die quietly when no one is watching. Friend groups tired of announcing plans in the chat and never hearing about them again. Communities that want a shared standard, not shared intentions. Creators who want to run something real with their audience. If any of that sounds familiar, you are who this is for."
+  },
+  {
+   "type": "h2",
+   "text": "What good rules look like"
+  },
+  {
+   "type": "p",
+   "text": "A challenge is only as honest as its rules. Weak rules invite arguing after the fact. Good rules settle arguments before they start."
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Written before anyone starts, and never changed after.",
+    "Objective enough that a third party can check them.",
+    "Realistic misses and grace days built in, because life happens.",
+    "An end date. Open-ended commitments are where goals go to stall."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "Why structure beats motivation"
+  },
+  {
+   "type": "p",
+   "text": "Motivation is a feeling, and feelings run out. Structure does not care how you feel on day twelve. A published schedule tells you exactly what today requires. A stake makes skipping expensive. A deadline makes the whole thing finite, which makes it finishable. You do not need to feel like it. You need to not want to lose."
+  },
+  {
+   "type": "h2",
+   "text": "How Huntz runs it"
+  },
+  {
+   "type": "p",
+   "text": "On Huntz, an accountability challenge is called a Hunt, and every Hunt publishes its complete rules before anyone joins: cadence, duration, proof requirements, allowed misses and grace days, stake amount, the service fee, and the completion threshold. Rules are frozen at publication and never changed retroactively."
+  },
+  {
+   "type": "p",
+   "text": "You commit a stake to join. You submit proof of progress on the published schedule, and submissions are checked against the published rules. Automated checks make a first pass; anything unclear gets human review. Finish, and you recover your stake in full plus a share of the stakes forfeited by participants who quit or fell short. The full walkthrough lives in {a:/how-it-works|how Huntz works}."
+  },
+  {
+   "type": "p",
+   "text": "That last part is why finishing means something. Quitting has a cost, and the cost goes to the people who did not quit. Huntz keeps only the service fee shown when you join, never the forfeits. There is no element of chance anywhere, and Huntz never wagers against you. Not a bank, not a bookmaker, not gambling. Common questions are covered in {a:/faq|the FAQ}."
+  },
+  {
+   "type": "h2",
+   "text": "Where people run them"
+  },
+  {
+   "type": "p",
+   "text": "Accountability challenges show up wherever consistency is the whole game: fitness, reading, content creation, applying to jobs, live streaming, productivity. Huntz's first Hunt categories are fitness, reading, content creation, applying to jobs, and live streaming."
+  }
+ ],
+ "eyebrow": "THE CATEGORY",
+ "h1": "Accountability challenges built for follow-through.",
+ "meta_description": "What accountability challenges are, what good rules look like, and how Huntz runs them with real stakes and published rules. Pre-launch; iOS waitlist open.",
+ "title_tag": "Accountability Challenges for Goals and Habits | Huntz"
+}
