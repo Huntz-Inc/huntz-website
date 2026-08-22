@@ -468,6 +468,7 @@ ROUTES = [
     ("/how-it-works",              "How it works", "HOW IT WORKS", True,  False),
     ("/accountability-challenges", "Challenges",   "CHALLENGES",   True,  False),
     ("/faq",                       "FAQ",          "FAQ",          True,  False),
+    ("/blog",                      "Blog",         "BLOG",         True,  True),
     ("/about",                     "About",        "ABOUT",        True,  True),
     ("/contact",                   "Contact",      "CONTACT",      True,  True),
     ("/terms",                     "Terms",        "TERMS",        False, False),
@@ -908,7 +909,13 @@ BS = {
              f"font:600 12px/1.8 {SANS};letter-spacing:.05em;text-transform:uppercase;color:{INK}"),
 }
 
-LINK_RE = re.compile(r"\{a:(/[a-z#/-]*|/#[a-z-]+)\|([^}]+)\}")
+LINK_RE = re.compile(r"\{a:(https://[^|}]+|/[a-z0-9#/-]*|/#[a-z-]+)\|([^}]+)\}")
+
+def H_ESCAPE(s: str) -> str:
+    """Escape for both text and double-quoted attributes. Apostrophes are left
+    alone: they are safe in either position and &#x27; only makes titles ugly."""
+    import html as H
+    return H.escape(str(s), quote=False).replace('"', "&quot;")
 
 def render_text(s: str) -> str:
     import html as H
@@ -916,8 +923,16 @@ def render_text(s: str) -> str:
     s = s.replace("team@huntz.ai",
                   f'<a href="mailto:team@huntz.ai" style="color:{CLAY};text-decoration:none;'
                   f'border-bottom:1px solid rgba(194,78,31,.4)">team@huntz.ai</a>')
-    return LINK_RE.sub(
-        rf'<a href="\1" style="color:{CLAY};text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">\2</a>', s)
+    def _link(m):
+        href, label = m.group(1), m.group(2)
+        style = f'color:{CLAY};text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)'
+        if href.startswith("https://"):
+            # Citations and competitor sources leave the site, so they open in a
+            # new tab and cannot reach back through window.opener.
+            return (f'<a href="{href}" target="_blank" rel="noopener noreferrer" '
+                    f'style="{style}">{label}</a>')
+        return f'<a href="{href}" style="{style}">{label}</a>'
+    return LINK_RE.sub(_link, s)
 
 def render_blocks(blocks) -> str:
     out = []
@@ -929,6 +944,18 @@ def render_blocks(blocks) -> str:
             out.append(f'<{tag}{attr} style="{BS[k]}">{render_text(b.get("text", ""))}</{tag}>')
         elif k == "form":
             out.append(contact_form())
+        elif k == "table":
+            head = b["head"]
+            ths = "".join(f"<th scope=\"col\">{render_text(h)}</th>" for h in head)
+            trs = ""
+            for row in b["rows"]:
+                tds = "".join(
+                    f'<td data-label="{H_ESCAPE(head[i])}">{render_text(c)}</td>'
+                    for i, c in enumerate(row))
+                trs += f"<tr>{tds}</tr>"
+            cap = f"<caption>{render_text(b['caption'])}</caption>" if b.get("caption") else ""
+            out.append(f'<div data-hz-tablewrap><table data-hz-table>{cap}'
+                       f"<thead><tr>{ths}</tr></thead><tbody>{trs}</tbody></table></div>")
         elif k == "ul":
             items = "".join(
                 f'<li style="{BS["li"]}"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;'
@@ -1182,8 +1209,233 @@ for spec_path in sorted(PAGES_DIR.glob("*.json")):
     (ROOT / f"{slug}.html").write_text(page)
     CONTENT_PAGES.append(slug)
 
+# ---- 6c. the blog (2026-08-14) ----
+# Articles are structured content in build/blog/*.json, rendered through the same
+# block renderer the marketing pages use, so an article is copy rather than a
+# hand-built page. Everything below is derived: reading time, heading ids, the
+# table of contents, breadcrumbs and the BlogPosting record.
+
+BLOG_DIR = BUILD / "blog"
+BLOG_H1 = "Notes on accountability."
+BLOG_INTRO = ("Why goals fall apart, what actually holds them together, and how the tools "
+              "compare. Written by the team building Huntz.")
+BLOG_TITLE_TAG = "Huntz Blog | Accountability, Goals and Follow-Through"
+BLOG_DESC = ("Notes on accountability from the team building Huntz: why goals fall apart, "
+             "what holds them together, and how the accountability apps compare.")
+
+ARTICLE_CSS = f"""
+/* Article body: a measure that stays readable, and a table that restacks rather
+   than scrolling sideways on a phone - the same treatment the legal pages give
+   their retention table. */
+[data-hz-toc] a{{ color:{BODYC}; text-decoration:none; border-bottom:1px solid rgba(22,19,14,.16) }}
+[data-hz-toc] a:hover{{ color:{CLAY} }}
+[data-hz-tablewrap]{{ margin:0 0 22px; overflow-x:auto; -webkit-overflow-scrolling:touch }}
+[data-hz-table]{{ width:100%; border-collapse:collapse; font:400 14.5px/1.55 {SANS}; color:{BODYC} }}
+[data-hz-table] caption{{ caption-side:bottom; padding-top:12px; font:400 12.5px/1.6 {SANS};
+  color:{MUTED}; text-align:left }}
+[data-hz-table] th{{ text-align:left; font:700 10.5px {SANS}; letter-spacing:.13em;
+  text-transform:uppercase; color:{MUTED}; padding:0 16px 10px 0;
+  border-bottom:1px solid rgba(22,19,14,.20) }}
+[data-hz-table] td{{ padding:13px 16px 13px 0; border-bottom:1px solid rgba(22,19,14,.10);
+  vertical-align:top }}
+[data-hz-table] td:first-child{{ font-weight:600; color:{INK} }}
+@media (max-width:640px){{
+  [data-hz-tablewrap]{{ overflow-x:visible }}
+  /* Once the table is no longer a table, caption-side stops applying and the
+     caption would jump above the rows. Flex ordering puts it back underneath. */
+  [data-hz-table]{{ display:flex; flex-direction:column; width:auto }}
+  [data-hz-table] caption{{ order:2; padding-top:10px }}
+  [data-hz-table] tbody{{ order:1 }}
+  [data-hz-table] tbody,[data-hz-table] tr,[data-hz-table] td{{ display:block; width:auto }}
+  [data-hz-table] thead{{ display:none }}
+  [data-hz-table] tr{{ padding:15px 0; border-bottom:1px solid rgba(22,19,14,.14) }}
+  [data-hz-table] td{{ padding:0 0 8px; border:0 }}
+  [data-hz-table] td::before{{ content:attr(data-label); display:block; font:700 9.5px {SANS};
+    letter-spacing:.13em; text-transform:uppercase; color:{MUTED}; margin-bottom:3px }}
+}}
+"""
+
+
+def reading_time(blocks) -> str:
+    words = 0
+    for b in blocks:
+        words += len(b.get("text", "").split())
+        words += sum(len(i.split()) for i in b.get("items", []))
+        words += sum(len(c.split()) for row in b.get("rows", []) for c in row)
+    return f"{max(1, round(words / 200))} min read"
+
+
+def heading_id(text: str) -> str:
+    keep = [c.lower() if c.isalnum() else "-" for c in text]
+    slug = re.sub(r"-+", "-", "".join(keep)).strip("-")
+    return "s-" + slug[:60].strip("-")
+
+
+def human_date(iso: str) -> str:
+    from datetime import date
+    d = date.fromisoformat(iso)
+    return f"{d.strftime('%B')} {d.day}, {d.year}"
+
+
+def crumbs(trail) -> str:
+    """trail: [(name, href)] - the last entry is the page you are on, so it is
+    rendered as text rather than a link back to itself. The structured-data
+    version below still carries its URL, which is what schema.org expects."""
+    out = []
+    last = len(trail) - 1
+    for i, (name, href) in enumerate(trail):
+        sep = ('<li aria-hidden="true" style="color:rgba(22,19,14,.3)">/</li>' if i else "")
+        if i == last:
+            out.append(sep + f'<li aria-current="page" style="color:{INK}">{H_ESCAPE(name)}</li>')
+        else:
+            out.append(sep + f'<li><a href="{href}" style="color:{MUTED};text-decoration:none;'
+                             f'border-bottom:1px solid rgba(22,19,14,.2)">{H_ESCAPE(name)}</a></li>')
+    return "\n      ".join(out)
+
+
+def crumb_ld(trail):
+    items = []
+    for i, (name, href) in enumerate(trail, start=1):
+        items.append({"@type": "ListItem", "position": i, "name": name,
+                      "item": SITE_URL + (href if href else trail[-1][1] or "/")})
+    return ld({"@context": "https://schema.org", "@type": "BreadcrumbList",
+               "itemListElement": items})
+
+
+def toc_of(blocks) -> str:
+    heads = [b for b in blocks if b["type"] == "h2"]
+    if len(heads) < 3:
+        return ""
+    items = "".join(
+        f'<li style="margin:0 0 7px"><a href="#{b["id"]}">{render_text(b["text"])}</a></li>'
+        for b in heads)
+    return (f'<nav data-hz-toc aria-label="On this page" style="margin:26px 0 6px;padding:18px 20px;'
+            f'border:1px solid rgba(22,19,14,.14);border-radius:14px;'
+            f'background:rgba(255,255,255,.45)">'
+            f'<p style="margin:0 0 10px;font:700 10px {SANS};letter-spacing:.14em;'
+            f'text-transform:uppercase;color:{MUTED}">On this page</p>'
+            # Unnumbered: these headings already carry their own numbering, and an
+            # ordered list would render "1. 1. Nobody knows whether you quit".
+            f'<ul style="margin:0;padding:0;list-style:none;font:400 14.5px/1.5 {SANS};color:{BODYC}">'
+            f"{items}</ul></nav>")
+
+
+article_tpl = (BUILD / "article-page.html").read_text()
+index_tpl = (BUILD / "blog-index.html").read_text()
+ARTICLES = []
+
+for spec_path in sorted(BLOG_DIR.glob("*.json")):
+    a = json.loads(spec_path.read_text())
+    slug = spec_path.stem
+    route = f"/blog/{slug}"
+    for b in a["blocks"]:
+        if b["type"] == "h2":
+            b["id"] = heading_id(b["text"])
+
+    trail = [("Huntz", "/"), ("Blog", "/blog"), (a["title"], route)]
+    posting = ld({
+        "@context": "https://schema.org", "@type": "BlogPosting",
+        "headline": a["title"],
+        "description": a["meta_description"],
+        "datePublished": a["published"],
+        "dateModified": a["published"],
+        "author": {"@type": "Organization", "name": a["author"], "url": SITE_URL + "/"},
+        "publisher": {"@type": "Organization", "name": "Huntz",
+                      "logo": {"@type": "ImageObject", "url": SITE_URL + "/icon-512.png"}},
+        "image": SITE_URL + "/og-image.jpg",
+        "mainEntityOfPage": {"@type": "WebPage", "@id": SITE_URL + route},
+        "url": SITE_URL + route,
+        "inLanguage": "en",
+    })
+
+    page = (article_tpl
+            .replace("{{TITLE_TAG}}", H_ESCAPE(a["title_tag"]))
+            .replace("{{DESC}}", H_ESCAPE(a["meta_description"]))
+            .replace("{{CANONICAL}}", SITE_URL + route)
+            .replace("{{SITE}}", SITE_URL)
+            .replace("{{ICONS}}", ICON_LINKS)
+            .replace("{{FONTS_HREF}}", FONTS_HREF)
+            .replace("{{BREADCRUMB_LD}}", crumb_ld(trail))
+            .replace("{{ARTICLE_LD}}", posting)
+            .replace("{{NAV_CSS}}", NAV_CSS)
+            .replace("{{ARTICLE_CSS}}", ARTICLE_CSS)
+            .replace("{{HEADER_NAV}}", header_nav("/blog"))
+            .replace("{{MENU_BUTTON}}", MENU_BUTTON)
+            .replace("{{DRAWER}}", drawer("/blog", "/#waitlist"))
+            .replace("{{FOOTER_NAV}}", footer_nav("/blog"))
+            .replace("{{NAV_JS}}", NAV_JS)
+            .replace("{{BREADCRUMBS}}", crumbs(trail))
+            .replace("{{EYEBROW}}", a.get("eyebrow", "BLOG"))
+            .replace("{{TITLE}}", H_ESCAPE(a["title"]))
+            .replace("{{AUTHOR}}", H_ESCAPE(a["author"]))
+            .replace("{{PUBLISHED_ISO}}", a["published"])
+            .replace("{{PUBLISHED_HUMAN}}", human_date(a["published"]))
+            .replace("{{READING_TIME}}", reading_time(a["blocks"]))
+            .replace("{{TOC}}", toc_of(a["blocks"]))
+            .replace("{{BODY}}", render_blocks(a["blocks"])))
+    assert "{{" not in page, f"unfilled placeholder in {route}"
+    out = ROOT / "blog" / f"{slug}.html"
+    out.parent.mkdir(exist_ok=True)
+    out.write_text(page)
+    ARTICLES.append({"slug": slug, "route": route, "title": a["title"],
+                     "description": a["description"], "published": a["published"],
+                     "author": a["author"], "reading": reading_time(a["blocks"])})
+
+# Newest first, so the index does not silently depend on filename order.
+ARTICLES.sort(key=lambda x: (x["published"], x["title"]), reverse=True)
+
+cards = "\n  ".join(
+    f'<article><a data-hz-post href="{x["route"]}" style="display:block;margin:0 0 18px;'
+    f'padding:clamp(20px,2.6vw,26px);border:1px solid rgba(22,19,14,.14);border-radius:18px;'
+    f'background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));'
+    f'text-decoration:none;transition:border-color .25s ease">'
+    f'<div style="font:500 12px {SANS};color:{MUTED};margin-bottom:9px">'
+    f'<time datetime="{x["published"]}">{human_date(x["published"])}</time>'
+    f' <span aria-hidden="true">·</span> {x["reading"]}</div>'
+    f'<h2 data-hz-posttitle style="margin:0 0 9px;font:600 clamp(21px,2.5vw,27px)/1.25 {SERIF};'
+    f'letter-spacing:-.012em;color:{INK};transition:color .25s ease">{H_ESCAPE(x["title"])}</h2>'
+    f'<p style="margin:0 0 12px;font:400 15px/1.65 {SANS};color:{BODYC};text-wrap:pretty">'
+    f'{H_ESCAPE(x["description"])}</p>'
+    f'<span style="font:700 11px {SANS};letter-spacing:.12em;text-transform:uppercase;'
+    f'color:{CLAY}">Read the article &#8594;</span></a></article>'
+    for x in ARTICLES)
+
+blog_trail = [("Huntz", "/"), ("Blog", "/blog")]
+list_ld = ld({"@context": "https://schema.org", "@type": "Blog",
+              "name": "Huntz Blog", "url": SITE_URL + "/blog",
+              "description": BLOG_DESC,
+              "publisher": {"@type": "Organization", "name": "Huntz",
+                            "logo": {"@type": "ImageObject", "url": SITE_URL + "/icon-512.png"}},
+              "blogPost": [{"@type": "BlogPosting", "headline": x["title"],
+                            "url": SITE_URL + x["route"], "datePublished": x["published"],
+                            "description": x["description"]} for x in ARTICLES]})
+
+index_page = (index_tpl
+              .replace("{{TITLE_TAG}}", H_ESCAPE(BLOG_TITLE_TAG))
+              .replace("{{DESC}}", H_ESCAPE(BLOG_DESC))
+              .replace("{{CANONICAL}}", SITE_URL + "/blog")
+              .replace("{{SITE}}", SITE_URL)
+              .replace("{{ICONS}}", ICON_LINKS)
+              .replace("{{FONTS_HREF}}", FONTS_HREF)
+              .replace("{{BREADCRUMB_LD}}", crumb_ld(blog_trail))
+              .replace("{{LIST_LD}}", list_ld)
+              .replace("{{NAV_CSS}}", NAV_CSS)
+              .replace("{{HEADER_NAV}}", header_nav("/blog"))
+              .replace("{{MENU_BUTTON}}", MENU_BUTTON)
+              .replace("{{DRAWER}}", drawer("/blog", "/#waitlist"))
+              .replace("{{FOOTER_NAV}}", footer_nav("/blog"))
+              .replace("{{NAV_JS}}", NAV_JS)
+              .replace("{{BREADCRUMBS}}", crumbs(blog_trail))
+              .replace("{{H1}}", H_ESCAPE(BLOG_H1))
+              .replace("{{INTRO}}", H_ESCAPE(BLOG_INTRO))
+              .replace("{{POSTS}}", cards))
+assert "{{" not in index_page, "unfilled placeholder in /blog"
+(ROOT / "blog.html").write_text(index_page)
+
+
 # ---- 7. robots + sitemap: canonical, public, 200 pages only ----
-SITEMAP_PATHS = ["/", "/terms", "/privacy"] + [f"/{s}" for s in sorted(CONTENT_PAGES)]
+SITEMAP_PATHS = (["/", "/terms", "/privacy"] + [f"/{s}" for s in sorted(CONTENT_PAGES)]
+                 + ["/blog"] + [a["route"] for a in ARTICLES])
 sitemap = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
 for path in SITEMAP_PATHS:
@@ -1195,5 +1447,6 @@ print(f"index.html  {(ROOT / 'index.html').stat().st_size:,} bytes")
 print(f"app js      {APP_HREF}")
 print(f"fonts css   {FONTS_HREF}")
 print(f"pages       {', '.join(['terms', 'privacy'] + CONTENT_PAGES)}")
+print(f"blog        /blog + {len(ARTICLES)} articles")
 print(f"sitemap     {len(SITEMAP_PATHS)} urls")
 print(f"artifact    {(BUILD / 'huntz-landing.artifact.html').stat().st_size:,} bytes")

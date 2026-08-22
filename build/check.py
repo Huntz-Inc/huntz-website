@@ -25,7 +25,13 @@ PAGES = {
     "/faq": "faq.html",
     "/how-it-works": "how-it-works.html",
     "/accountability-challenges": "accountability-challenges.html",
+    "/blog": "blog.html",
+    "/blog/best-accountability-apps-2026": "blog/best-accountability-apps-2026.html",
+    "/blog/why-you-dont-achieve-your-goals": "blog/why-you-dont-achieve-your-goals.html",
 }
+# Articles keep the author's voice, em dashes and all, so they are excluded from
+# the marketing-copy rules that apply to the hand-written pages.
+ARTICLES = ["/blog/best-accountability-apps-2026", "/blog/why-you-dont-achieve-your-goals"]
 
 failures = []
 
@@ -303,11 +309,15 @@ for path, fname in NAV_PAGES.items():
         fail(f"{path}: mobile menu missing the waitlist action")
     # Active route is baked in at build time: no JS, no flash, works with JS off.
     marked = re.findall(r'<a href="([^"]+)"[^>]*aria-current="page"', t)
-    expected = "/" if path == "/" else path
+    # An article has no navigation entry of its own, so the nav marks the
+    # section it lives in; the breadcrumb is what marks the article itself.
+    expected = "/blog" if path in ARTICLES else ("/" if path == "/" else path)
     if not marked:
         fail(f"{path}: nothing marked aria-current=\"page\"")
     if set(marked) != {expected}:
         fail(f"{path}: aria-current marks {sorted(set(marked))}, expected only {expected!r}")
+    if path in ARTICLES and 'aria-current="page"' not in t[t.index('aria-label="Breadcrumb"'):t.index("</ol>")]:
+        fail(f"{path}: the breadcrumb does not mark the current article")
 
 # The footer route row: Home added, two even columns on phones, real hub link.
 for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-challenges"):
@@ -454,6 +464,115 @@ if API.exists():
             m = re.search(re.escape(n) + r"\s*(?:\|\||=)\s*['\"]([^'\"]+)['\"]", t)
             if m:
                 fail(f"api/{f.name}: {n} has a hard-coded value")
+
+
+# ---- blog (2026-08-14) ----
+BLOG_SOURCES = sorted((ROOT / "build/blog").glob("*.json"))
+if len(BLOG_SOURCES) != len(ARTICLES):
+    fail(f"blog: {len(BLOG_SOURCES)} source files but {len(ARTICLES)} routes expected")
+
+blog_index = (ROOT / "blog.html").read_text()
+
+for route in ARTICLES:
+    t = (ROOT / PAGES[route]).read_text()
+    slug = route.rsplit("/", 1)[1]
+    src = json.loads((ROOT / f"build/blog/{slug}.json").read_text())
+
+    # Structured data: a real BlogPosting whose identity matches the route.
+    blocks = {}
+    for m in re.finditer(r'<script type="application/ld\+json">(.*?)</script>', t, re.S):
+        try:
+            b = json.loads(m.group(1))
+        except json.JSONDecodeError as e:
+            fail(f"{route}: invalid JSON-LD ({e})")
+            continue
+        blocks[b.get("@type")] = b
+    post = blocks.get("BlogPosting")
+    if not post:
+        fail(f"{route}: BlogPosting structured data missing")
+    else:
+        if post.get("headline") != src["title"]:
+            fail(f"{route}: BlogPosting headline does not match the source title")
+        if post.get("url") != SITE + route:
+            fail(f"{route}: BlogPosting url is {post.get('url')!r}")
+        if post.get("datePublished") != src["published"]:
+            fail(f"{route}: BlogPosting datePublished does not match the source")
+        if (post.get("author") or {}).get("name") != src["author"]:
+            fail(f"{route}: BlogPosting author does not match the source")
+        if not str((post.get("publisher") or {}).get("logo", {}).get("url", "")).startswith(SITE):
+            fail(f"{route}: BlogPosting publisher logo is not an absolute Huntz URL")
+    crumb = blocks.get("BreadcrumbList")
+    if not crumb or len(crumb.get("itemListElement", [])) != 3:
+        fail(f"{route}: breadcrumb structured data should be Huntz > Blog > article")
+
+    # Visible publication metadata, and the reading time the layout derives.
+    if f'datetime="{src["published"]}"' not in t:
+        fail(f"{route}: publication date missing from the page")
+    if src["author"] not in t:
+        fail(f"{route}: author missing from the page")
+    if not re.search(r"\d+ min read", t):
+        fail(f"{route}: reading time missing from the page")
+    if 'aria-label="Breadcrumb"' not in t:
+        fail(f"{route}: visible breadcrumbs missing")
+    if "data-hz-toc" not in t:
+        fail(f"{route}: table of contents missing")
+
+    # Every h2 the source declares should be reachable from the contents list.
+    for b in src["blocks"]:
+        if b["type"] == "h2":
+            head = re.sub(r"<[^>]+>", "", b["text"])
+            if head.split(" ")[0] not in t:
+                fail(f"{route}: section {head!r} did not render")
+
+    # Article-to-article and article-to-product links, and the real CTA.
+    others = [r for r in ARTICLES if r != route]
+    if not any(f'href="{o}"' in t for o in others):
+        fail(f"{route}: does not link to the other article")
+    if 'href="/how-it-works"' not in t:
+        fail(f"{route}: does not link to the how-it-works page")
+    if 'href="/#waitlist"' not in t:
+        fail(f"{route}: does not use the real waitlist CTA")
+
+    # External citations open safely and are absolute.
+    for href in re.findall(r'<a href="(https://[^"]+)"[^>]*>', t):
+        tag = re.search(r'<a href="' + re.escape(href) + r'"[^>]*>', t).group(0)
+        if 'rel="noopener noreferrer"' not in tag or 'target="_blank"' not in tag:
+            fail(f"{route}: external link {href} is not target=_blank + rel=noopener noreferrer")
+
+    # No placeholder or dead internal link.
+    for href in re.findall(r'<a [^>]*href="(/[^"#][^"]*)"', t):
+        clean = href.split("#")[0].rstrip("/")
+        if clean and clean not in PAGES and not (ROOT / clean.lstrip("/")).exists():
+            fail(f"{route}: internal link {href} goes nowhere")
+
+# The comparison table restacks rather than overflowing on a phone.
+comp = (ROOT / PAGES["/blog/best-accountability-apps-2026"]).read_text()
+if "data-hz-table" not in comp:
+    fail("/blog/best-accountability-apps-2026: comparison table missing")
+if comp.count("data-label=") < 21:
+    fail("/blog/best-accountability-apps-2026: table cells are not labelled for the stacked layout")
+if "[data-hz-table] thead{ display:none }" not in comp:
+    fail("/blog/best-accountability-apps-2026: table does not restack on mobile")
+if "Disclosure:" not in comp:
+    fail("/blog/best-accountability-apps-2026: the Huntz disclosure is missing")
+
+# The index lists every article, and the blog is reachable from the navigation.
+for route in ARTICLES:
+    if f'href="{route}"' not in blog_index:
+        fail(f"/blog: index does not link to {route}")
+if blog_index.count("data-hz-post") < len(ARTICLES):
+    fail("/blog: an article card is missing")
+for path, fname in PAGES.items():
+    if path in ARTICLES or path in ("/terms", "/privacy"):
+        continue
+    if 'href="/blog"' not in (ROOT / fname).read_text():
+        fail(f"{path}: /blog is not reachable from the navigation")
+
+# Sitemap already checked above against PAGES; assert the blog routes explicitly.
+sitemap_text = (ROOT / "sitemap.xml").read_text()
+for route in ["/blog"] + ARTICLES:
+    if f"<loc>{SITE}{route}</loc>" not in sitemap_text:
+        fail(f"sitemap missing {route}")
 
 if failures:
     print(f"FAIL ({len(failures)}):")
