@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE_TAG}}</title>
+<meta name="description" content="{{DESC}}">
+<!-- Invitation landing pages are per-Hunt and must never enter the index. The
+     page is also kept out of sitemap.xml for the same reason. -->
+<meta name="robots" content="noindex">
+<!-- Sharing metadata is deliberately constant and Hunt-agnostic: this one file
+     is served for every /hunt/... URL, so nothing here can carry an id or a
+     referral token into a link preview. -->
+<meta property="og:site_name" content="Huntz">
+<meta property="og:title" content="{{TITLE_TAG}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{SITE}}/">
+<meta property="og:image" content="{{SITE}}/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{{ICONS}}
+<link rel="stylesheet" href="{{FONTS_HREF}}">
+<style>
+html{ overflow-x:hidden; overflow-x:clip; overscroll-behavior-x:none }
+body{ margin:0; background:#F1EBE0; color:#16130E; overflow-x:hidden; overflow-x:clip;
+      font-family:'Figtree',Arial,Helvetica,sans-serif; -webkit-font-smoothing:antialiased }
+body::before{ content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%) }
+a{ color:#16130E } a:hover{ color:#C24E1F }
+::selection{ background:#C24E1F; color:#F3EFE7 }
+a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:3px }
+{{NAV_CSS}}
+[data-hz-id]{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.94em;
+  background:rgba(22,19,14,.06); border:1px solid rgba(22,19,14,.12); border-radius:6px;
+  padding:2px 7px; overflow-wrap:anywhere }
+[data-hz-steps]{ margin:0; padding:0; list-style:none; counter-reset:s }
+[data-hz-steps] li{ counter-increment:s; position:relative; padding:0 0 0 38px; margin:0 0 16px;
+  font:400 15.5px/1.62 'Figtree',Arial,Helvetica,sans-serif; color:#4A453C; text-wrap:pretty }
+[data-hz-steps] li:last-child{ margin-bottom:0 }
+[data-hz-steps] li::before{ content:counter(s); position:absolute; left:0; top:1px;
+  width:24px; height:24px; border-radius:50%; background:#C24E1F; color:#F3EFE7;
+  font:700 12px 'Figtree',Arial,Helvetica,sans-serif; display:grid; place-items:center }
+@media print{ header,#hz-menu{ display:none !important } body::before{ display:none } body{ background:#fff } }
+</style>
+</head>
+<body>
+
+<header style="position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px clamp(20px,4vw,44px);background:rgba(243,239,231,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(22,19,14,.12)">
+  <a href="/" style="font:800 20px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;text-decoration:none;color:#16130E">HUNTZ<span style="color:#C24E1F">.</span></a>
+  <nav data-hz-desknav aria-label="Primary" style="display:flex;align-items:center;gap:clamp(14px,2.5vw,26px)">
+    {{HEADER_NAV}}
+  </nav>
+  <a data-hz-desknav href="/#waitlist" style="font:700 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;white-space:nowrap">JOIN THE WAITLIST</a>
+  {{MENU_BUTTON}}
+</header>
+
+{{DRAWER}}
+
+<main style="position:relative;max-width:660px;margin:0 auto;padding:clamp(30px,6vh,60px) clamp(20px,5vw,44px) 40px">
+
+  <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759;margin-bottom:14px">HUNT INVITATION</div>
+  <h1 style="margin:0 0 16px;font:600 clamp(30px,4.4vw,46px)/1.08 'Playfair Display','Times New Roman',serif;letter-spacing:-.014em;color:#16130E;text-wrap:balance">You&#8217;ve been invited to a Hunt<span style="color:#C24E1F">.</span></h1>
+
+  <p style="margin:0 0 10px;font:400 clamp(16px,1.9vw,18px)/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">
+    Huntz is in limited beta, so this invitation can&#8217;t open on the web yet. Hunts run in the Huntz app, which isn&#8217;t publicly available at the moment.
+  </p>
+  <p data-hz-idline hidden style="margin:0 0 10px;font:400 15px/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759">
+    Invitation: <span data-hz-id></span>
+  </p>
+
+  <div aria-hidden="true" style="width:44px;height:2px;margin:26px 0 30px;background:#C24E1F"></div>
+
+  <div style="padding:clamp(22px,3vw,30px);border:1px solid rgba(22,19,14,.14);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34))">
+    <div style="font:600 clamp(19px,2.3vw,25px)/1.28 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;margin-bottom:16px">What to do next</div>
+    <ol data-hz-steps>
+      <li>Join the waitlist below. We&#8217;ll email you when Huntz opens up.</li>
+      <li>Keep this link. Once you have Huntz installed, open the original invitation again &#8212; that&#8217;s what takes you to this Hunt.</li>
+      <li>Already have Huntz installed? Opening this link on your iPhone should take you straight into the app.</li>
+    </ol>
+    <a href="/#waitlist" style="display:inline-block;margin-top:22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none">JOIN THE WAITLIST &#8594;</a>
+  </div>
+
+  <p style="margin:26px 0 0;font:400 14.5px/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759;text-wrap:pretty">
+    New to Huntz? <a href="/how-it-works" style="color:#C24E1F">See how a Hunt works</a> &#8212; you join a multi-day challenge, put money behind your commitment and post proof as you go.
+  </p>
+
+</main>
+
+<aside style="max-width:660px;margin:0 auto;padding:0 clamp(20px,5vw,44px) 110px">
+  {{FOOTER_NAV}}
+</aside>
+
+<script>
+/* Shows the Hunt id from the path, and nothing else.
+   Three deliberate properties, each asserted by build/check.py:
+   - Only location.pathname is read. The query string is never touched, so a
+     referral token cannot reach the DOM, a request, or browser storage.
+   - The id is written with textContent into an element that is never a link and
+     never an attribute, so it cannot become a URL or an injection.
+   - Nothing here navigates. iOS opens an installed app through the universal
+     link itself; a JavaScript redirect or a custom-scheme probe would fight
+     that and would push the full invitation URL into browser history. */
+(function () {
+  var m = /^\/hunt\/([^\/]+)\/?$/.exec(location.pathname);
+  if (!m) return;
+  var id;
+  try { id = decodeURIComponent(m[1]); } catch (e) { return; }
+  if (!/^[A-Za-z0-9._-]{1,64}$/.test(id)) return;
+  var slot = document.querySelector('[data-hz-id]');
+  var line = document.querySelector('[data-hz-idline]');
+  if (!slot || !line) return;
+  slot.textContent = id;
+  line.hidden = false;
+})();
+</script>
+{{NAV_JS}}
+</body>
+</html>
