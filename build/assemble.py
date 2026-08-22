@@ -1445,10 +1445,85 @@ for path in SITEMAP_PATHS:
 sitemap.append("</urlset>")
 (ROOT / "sitemap.xml").write_text("\n".join(sitemap) + "\n")
 
+# ---- 8. Universal Links: AASA + the /hunt fallback (2026-08-22) ----
+# Apple fetches the association file through its CDN and follows no redirects
+# (TN3155: "host your AASA at each domain and subdomain included in your
+# applinks"), so the file is written as a real static asset rather than served
+# by a function, and vercel.json gives it application/json.
+#
+# APPLE_TEAM_ID is the Team ID from the Apple Development certificate in the
+# founder's keychain (subject OU, O=Kingsley Nwankwu). It is a real identifier,
+# not a placeholder - but it has NOT been cross-checked against the signed
+# TestFlight build, so build/check.py refuses anything placeholder-shaped and
+# the PR holds deployment until it is confirmed against App Store Connect.
+APPLE_TEAM_ID = "GDRCC5G29F"
+IOS_BUNDLE_ID = "ai.huntz.app"
+
+# One component matches both plain and referral invitations: in the modern
+# format the "?" key defaults to "*", so /hunt/* matches with or without a query
+# string. Nothing else on the site is associated - no marketing page, no article
+# and no bare "/" - so a tapped link only leaves the browser for a real Hunt.
+AASA = {
+    "applinks": {
+        "details": [
+            {
+                "appIDs": [f"{APPLE_TEAM_ID}.{IOS_BUNDLE_ID}"],
+                "components": [
+                    {
+                        "/": "/hunt/*",
+                        "comment": "Hunt invitations, including referral links such as "
+                                   "/hunt/<id>?ref=<token>",
+                    },
+                    {
+                        "/": "/hunt",
+                        "comment": "The bare /hunt path, which /hunt/* does not match",
+                    },
+                ],
+            }
+        ]
+    }
+}
+
+AASA_JSON = json.dumps(AASA, indent=2) + "\n"
+# Both paths are written from the one object so they cannot drift apart.
+AASA_PATHS = [".well-known/apple-app-site-association", "apple-app-site-association"]
+for rel in AASA_PATHS:
+    out = ROOT / rel
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(AASA_JSON)
+
+
+# The /hunt fallback. Deliberately a flat static file behind a rewrite rather
+# than a function: one identical byte stream is served for every invitation, so
+# a referral token provably cannot be rendered into the HTML, reach any server
+# code, or land in a hosting log line that has a body. The Hunt id is recovered
+# from the path in the browser; ?ref= is never read. "/hunt" is not in ROUTES,
+# so it stays out of the nav, and not in SITEMAP_PATHS, so it stays unindexed.
+HUNT_TITLE_TAG = "Hunt invitation | Huntz"
+HUNT_DESC = ("This Hunt invitation opens in the Huntz app. Huntz is in limited beta - "
+             "join the waitlist, then reopen your invitation once you have the app.")
+hunt_page = ((BUILD / "hunt-page.html").read_text()
+             .replace("{{TITLE_TAG}}", HUNT_TITLE_TAG)
+             .replace("{{DESC}}", HUNT_DESC)
+             .replace("{{SITE}}", SITE_URL)
+             .replace("{{ICONS}}", ICON_LINKS)
+             .replace("{{FONTS_HREF}}", FONTS_HREF)
+             .replace("{{NAV_CSS}}", NAV_CSS)
+             .replace("{{HEADER_NAV}}", header_nav("/hunt"))
+             .replace("{{MENU_BUTTON}}", MENU_BUTTON)
+             .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist"))
+             .replace("{{FOOTER_NAV}}", footer_nav("/hunt"))
+             .replace("{{NAV_JS}}", NAV_JS))
+assert "{{" not in hunt_page, "unfilled placeholder in hunt.html"
+(ROOT / "hunt.html").write_text(hunt_page)
+
+
 print(f"index.html  {(ROOT / 'index.html').stat().st_size:,} bytes")
 print(f"app js      {APP_HREF}")
 print(f"fonts css   {FONTS_HREF}")
 print(f"pages       {', '.join(['terms', 'privacy'] + CONTENT_PAGES)}")
 print(f"blog        /blog + {len(ARTICLES)} articles")
+print(f"aasa        {APPLE_TEAM_ID}.{IOS_BUNDLE_ID} at {len(AASA_PATHS)} paths")
+print(f"hunt        /hunt/* -> hunt.html (noindex, unlisted)")
 print(f"sitemap     {len(SITEMAP_PATHS)} urls")
 print(f"artifact    {(BUILD / 'huntz-landing.artifact.html').stat().st_size:,} bytes")

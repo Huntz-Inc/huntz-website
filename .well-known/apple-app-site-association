@@ -1,0 +1,21 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "GDRCC5G29F.ai.huntz.app"
+        ],
+        "components": [
+          {
+            "/": "/hunt/*",
+            "comment": "Hunt invitations, including referral links such as /hunt/<id>?ref=<token>"
+          },
+          {
+            "/": "/hunt",
+            "comment": "The bare /hunt path, which /hunt/* does not match"
+          }
+        ]
+      }
+    ]
+  }
+}

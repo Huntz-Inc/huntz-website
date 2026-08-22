@@ -574,9 +574,163 @@ for route in ["/blog"] + ARTICLES:
     if f"<loc>{SITE}{route}</loc>" not in sitemap_text:
         fail(f"sitemap missing {route}")
 
+# ---- universal links: AASA + the /hunt fallback (2026-08-22) ----
+# A wrong appID, an accidentally indexed invitation page, or a referral token
+# that survives into the HTML all fail silently in production, so each is
+# asserted here rather than left to review.
+AASA_FILES = [".well-known/apple-app-site-association", "apple-app-site-association"]
+aasa_raw = {}
+for rel in AASA_FILES:
+    f = ROOT / rel
+    if not f.exists():
+        fail(f"AASA missing at /{rel}")
+        continue
+    aasa_raw[rel] = f.read_text()
+
+if len(aasa_raw) == len(AASA_FILES) and len(set(aasa_raw.values())) != 1:
+    fail("AASA copies differ between /.well-known and the root path")
+
+if aasa_raw:
+    rel, raw = sorted(aasa_raw.items())[0]
+    try:
+        aasa = json.loads(raw)
+    except json.JSONDecodeError as e:
+        aasa = None
+        fail(f"AASA is not valid JSON: {e}")
+
+    if aasa is not None:
+        try:
+            detail, = aasa["applinks"]["details"]
+            app_ids = detail["appIDs"]
+            components = detail["components"]
+        except (KeyError, TypeError, ValueError) as e:
+            detail = app_ids = components = None
+            fail(f"AASA is not in the expected applinks/details shape: {e}")
+
+        # A placeholder that reaches production breaks universal links with no
+        # visible symptom, so the app id is pattern-checked, not eyeballed.
+        PLACEHOLDERS = ("REALTEAMID", "TEAMID", "APPLE_TEAM_ID", "ABCDE12345",
+                        "XXXXXXXXXX", "YOURTEAMID", "TODO", "CHANGEME")
+        if app_ids is not None:
+            if len(app_ids) != 1:
+                fail(f"AASA: expected exactly one appID, found {len(app_ids)}")
+            for app_id in app_ids:
+                team, _, bundle = app_id.partition(".")
+                if bundle != "ai.huntz.app":
+                    fail(f"AASA: appID bundle is {bundle!r}, expected 'ai.huntz.app'")
+                if not re.fullmatch(r"[A-Z0-9]{10}", team):
+                    fail(f"AASA: {team!r} is not a 10-character Apple Team ID")
+                if any(ph in app_id.upper() for ph in PLACEHOLDERS):
+                    fail(f"AASA: appID {app_id!r} contains a placeholder identifier")
+
+        # Evaluate the components the way Apple does, so the assertions below are
+        # about real matching behaviour rather than the presence of a substring.
+        def _matches(components, path, query=""):
+            for c in components:
+                pat = c.get("/")
+                if pat is None:
+                    continue
+                rx = "".join(".*" if ch == "*" else "." if ch == "?" else re.escape(ch)
+                             for ch in pat)
+                if not re.fullmatch(rx, path):
+                    continue
+                q = c.get("?")
+                if q is not None and not query:
+                    continue
+                return not c.get("exclude", False)
+            return False
+
+        if components is not None:
+            # Invitations, with and without a referral token, must be associated.
+            for path, query in [("/hunt/abc123", ""),
+                                ("/hunt/abc123", "ref=SOMETOKEN"),
+                                ("/hunt/01HZY9K3", "ref=a&utm_source=x"),
+                                ("/hunt", "")]:
+                if not _matches(components, path, query):
+                    fail(f"AASA does not associate /hunt path {path!r} (query {query!r})")
+            # Nothing else may leave the browser for the app.
+            for path in ["/", "/about", "/contact", "/faq", "/how-it-works",
+                         "/accountability-challenges", "/blog",
+                         "/blog/best-accountability-apps-2026", "/terms", "/privacy",
+                         "/hunts/abc", "/.well-known/apple-app-site-association"]:
+                if _matches(components, path):
+                    fail(f"AASA associates unrelated route {path}")
+
+hunt_file = ROOT / "hunt.html"
+if not hunt_file.exists():
+    fail("hunt.html was not generated")
+else:
+    hunt = hunt_file.read_text()
+
+    # The page is one static file served for every invitation. Nothing in it may
+    # read the query string, and nothing may carry an id or token into a request.
+    for banned, why in [
+        ("location.search", "reads the query string"),
+        ("URLSearchParams", "parses the query string"),
+        ("searchParams", "parses the query string"),
+        ("location.href", "captures the full URL including ?ref="),
+        ("document.referrer", "captures the referring URL"),
+        ("fetch(", "makes a network request"),
+        ("XMLHttpRequest", "makes a network request"),
+        ("navigator.sendBeacon", "exfiltrates to an endpoint"),
+        ("localStorage", "persists invitation data"),
+        ("sessionStorage", "persists invitation data"),
+        ("document.cookie", "persists invitation data"),
+        ("location.replace", "redirects in JavaScript"),
+        ("location.assign", "redirects in JavaScript"),
+        ("huntz://", "uses a custom-scheme trick"),
+    ]:
+        if banned in hunt:
+            fail(f"hunt.html {why} ({banned!r}) - referral tokens must never be read")
+
+    # No hunt id or referral token can be baked in: the file is constant.
+    for leak in ["?ref=", "&ref=", "abc123"]:
+        if leak in hunt:
+            fail(f"hunt.html contains {leak!r} - the served bytes must be invitation-agnostic")
+
+    if '<meta name="robots" content="noindex">' not in hunt:
+        fail("hunt.html is not noindex")
+    if "<link rel=\"canonical\"" in hunt:
+        fail("hunt.html declares a canonical - it is one file for many URLs")
+    if 'href="/#waitlist"' not in hunt:
+        fail("hunt.html does not offer the real waitlist CTA")
+    if "limited beta" not in hunt:
+        fail("hunt.html does not explain that Huntz is in limited beta")
+    if "reopen" not in hunt.lower() and "open the original invitation" not in hunt.lower():
+        fail("hunt.html does not tell the recipient to reopen the invitation after installing")
+
+    # Claims Huntz cannot make yet.
+    for phrase in ["App Store", "apps.apple.com", "TestFlight", "testflight.apple.com",
+                   "Download the app", "automatically join", "automatically added"]:
+        if phrase.lower() in hunt.lower():
+            fail(f"hunt.html claims {phrase!r}, which is not true of a limited beta")
+
+    if f"<loc>{SITE}/hunt" in (ROOT / "sitemap.xml").read_text():
+        fail("sitemap lists a /hunt URL - invitation pages must stay unindexed")
+
+# Hosting wiring. Vercel reserves /.well-known from redirects and rewrites, so
+# the file has to be a real static asset; assert nothing has started routing it.
+vercel = json.loads((ROOT / "vercel.json").read_text())
+rewrites = vercel.get("rewrites", [])
+if not any(r.get("source", "").startswith("/hunt/") and r.get("destination") == "/hunt.html"
+           for r in rewrites):
+    fail("vercel.json does not rewrite /hunt/* to /hunt.html")
+for rule in rewrites + vercel.get("redirects", []):
+    if ".well-known" in rule.get("source", ""):
+        fail("vercel.json routes /.well-known, which Vercel reserves - serve the file statically")
+for rel in AASA_FILES:
+    entry = next((h for h in vercel.get("headers", []) if h.get("source") == "/" + rel), None)
+    if entry is None:
+        fail(f"vercel.json sets no headers for /{rel}")
+    elif not any(k.get("key", "").lower() == "content-type"
+                 and k.get("value") == "application/json" for k in entry.get("headers", [])):
+        fail(f"vercel.json does not serve /{rel} as application/json")
+
+
 if failures:
     print(f"FAIL ({len(failures)}):")
     for m in failures:
         print("  -", m)
     sys.exit(1)
 print(f"OK: {len(PAGES)} pages, {len(titles)} unique titles, sitemap + robots + icons verified")
+print(f"OK: AASA at {len(AASA_FILES)} paths for {app_ids[0]}, /hunt fallback token-safe")
