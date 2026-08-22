@@ -392,7 +392,8 @@ old = (f'<a href="#top" {LINK_STYLE}>About<span style="display:inline-block;marg
        'border-radius:20px;background:rgba(194,78,31,.12);color:#C24E1F;white-space:nowrap;'
        "font:700 8px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;vertical-align:1.5px\">COMING SOON</span></a>")
 assert old in html, "footer About not found"
-html = html.replace(old, f'<a href="/about" {LINK_STYLE}>About</a>')
+html = html.replace(old, f'<a href="/about" {LINK_STYLE}>About</a>\n'
+                         f'            <a href="/blog" {LINK_STYLE}>Blog</a>')
 
 # (S-3) Contact gets its own page; the page itself carries the mailto.
 old = f'<a href="mailto:team@huntz.ai" {LINK_STYLE}>Contact</a>'
@@ -1227,6 +1228,7 @@ ARTICLE_CSS = f"""
 /* Article body: a measure that stays readable, and a table that restacks rather
    than scrolling sideways on a phone - the same treatment the legal pages give
    their retention table. */
+article h2{{ text-wrap:pretty !important }}
 [data-hz-toc] a{{ color:{BODYC}; text-decoration:none; border-bottom:1px solid rgba(22,19,14,.16) }}
 [data-hz-toc] a:hover{{ color:{CLAY} }}
 [data-hz-tablewrap]{{ margin:0 0 22px; overflow-x:auto; -webkit-overflow-scrolling:touch }}
