@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE_TAG}}</title>
+<meta name="description" content="{{DESC}}">
+<link rel="canonical" href="{{CANONICAL}}">
+<meta property="og:site_name" content="Huntz">
+<meta property="og:title" content="{{TITLE_TAG}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{CANONICAL}}">
+<meta property="og:image" content="{{SITE}}/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{TITLE_TAG}}">
+<meta name="twitter:description" content="{{DESC}}">
+{{ICONS}}
+{{BREADCRUMB_LD}}
+{{LIST_LD}}
+<link rel="stylesheet" href="{{FONTS_HREF}}">
+<style>
+html{ overflow-x:hidden; overflow-x:clip; overscroll-behavior-x:none }
+body{ margin:0; background:#F1EBE0; color:#16130E; overflow-x:hidden; overflow-x:clip;
+      font-family:'Figtree',Arial,Helvetica,sans-serif; -webkit-font-smoothing:antialiased }
+body::before{ content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%) }
+a{ color:#16130E } a:hover{ color:#C24E1F }
+::selection{ background:#C24E1F; color:#F3EFE7 }
+a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:3px }
+{{NAV_CSS}}
+[data-hz-post]:hover{ border-color:rgba(194,78,31,.45) }
+[data-hz-post]:hover [data-hz-posttitle]{ color:#C24E1F }
+@media print{ header,[data-cta],#hz-menu{ display:none !important } body::before{ display:none } body{ background:#fff } }
+</style>
+</head>
+<body>
+
+<header style="position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px clamp(20px,4vw,44px);background:rgba(243,239,231,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(22,19,14,.12)">
+  <a href="/" style="font:800 20px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;text-decoration:none;color:#16130E">HUNTZ<span style="color:#C24E1F">.</span></a>
+  <nav data-hz-desknav aria-label="Primary" style="display:flex;align-items:center;gap:clamp(14px,2.5vw,26px)">
+    {{HEADER_NAV}}
+  </nav>
+  <a data-hz-desknav href="/#waitlist" style="font:700 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;white-space:nowrap">JOIN THE WAITLIST</a>
+  {{MENU_BUTTON}}
+</header>
+
+{{DRAWER}}
+
+<main style="position:relative;max-width:820px;margin:0 auto;padding:clamp(28px,5vh,48px) clamp(20px,5vw,44px) 40px">
+  <nav aria-label="Breadcrumb" style="margin-bottom:22px">
+    <ol style="display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none;font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#6E6759">
+      {{BREADCRUMBS}}
+    </ol>
+  </nav>
+
+  <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759;margin-bottom:14px">BLOG</div>
+  <h1 style="margin:0 0 18px;font:600 clamp(32px,4.6vw,54px)/1.05 'Playfair Display','Times New Roman',serif;letter-spacing:-.014em;color:#16130E;text-wrap:balance">{{H1}}</h1>
+  <p style="margin:0 0 6px;font:400 clamp(16px,1.9vw,18.5px)/1.6 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">{{INTRO}}</p>
+  <div aria-hidden="true" style="width:44px;height:2px;margin:24px 0 34px;background:#C24E1F"></div>
+
+  {{POSTS}}
+</main>
+
+<aside data-cta style="max-width:820px;margin:0 auto;padding:0 clamp(20px,5vw,44px) 110px">
+  <div style="padding:clamp(22px,3vw,30px);border:1px solid rgba(22,19,14,.14);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34))">
+    <div style="font:600 clamp(20px,2.4vw,27px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;margin-bottom:8px">Ready when you are<span style="color:#C24E1F">.</span></div>
+    <p style="margin:0 0 16px;font:400 15px/1.65 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C">Join the waitlist and we'll email you when the first Hunts open.</p>
+    <a href="/#waitlist" style="display:inline-block;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none">JOIN THE WAITLIST &#8594;</a>
+  </div>
+  {{FOOTER_NAV}}
+</aside>
+
+{{NAV_JS}}
+</body>
+</html>
