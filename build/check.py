@@ -748,16 +748,25 @@ else:
 # the file has to be a real static asset; assert nothing has started routing it.
 vercel = json.loads((ROOT / "vercel.json").read_text())
 rewrites = vercel.get("rewrites", [])
-if not any(r.get("source", "").startswith("/hunt/") and r.get("destination") == "/hunt.html"
+# The destination is the clean URL, not hunt.html: cleanUrls serves the file at
+# /hunt and 308s the .html path, so /hunt.html does not resolve as a rewrite
+# target. ":path+" rather than ":path*" keeps /hunt from matching its own rewrite.
+if not any(r.get("source") == "/hunt/:path+" and r.get("destination") == "/hunt"
            for r in rewrites):
-    fail("vercel.json does not rewrite /hunt/* to /hunt.html")
+    fail("vercel.json does not rewrite /hunt/<id> to the /hunt page")
 # Vercel reserves /.well-known from redirects and rewrites. Whether a rule would
 # actually move the file is asserted behaviourally by the routing matrix further
 # down; here we only bar a REWRITE from targeting it, which the matrix does not
 # model.
+def _rewrite_regex(src: str) -> str:
+    """path-to-regexp params as a regex: ":n*" spans segments, ":n+" needs one, ":n" is one."""
+    src = re.sub(r":[A-Za-z_][A-Za-z0-9_]*\*", ".*", src)
+    src = re.sub(r":[A-Za-z_][A-Za-z0-9_]*\+", ".+", src)
+    return re.sub(r":[A-Za-z_][A-Za-z0-9_]*", "[^/]+", src)
+
+
 for rule in rewrites:
-    src = rule.get("source", "")
-    if re.fullmatch(src.replace(":path*", ".*").replace(":path", "[^/]+"),
+    if re.fullmatch(_rewrite_regex(rule.get("source", "")),
                     "/.well-known/apple-app-site-association"):
         fail("a rewrite would move /.well-known, which Vercel reserves")
 # A page that receives single-use auth codes must not be stored anywhere, and the

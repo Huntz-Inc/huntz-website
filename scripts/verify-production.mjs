@@ -73,6 +73,19 @@ async function main() {
   }
   if (!failures.length) pass(`${MARKETING.length} www routes 200 with no redirect (no loop)`);
 
+  console.log('\n== the two new pages actually render on the canonical host ==');
+  for (const p of ['/hunt', '/hunt/test-hunt', '/hunt/test-hunt?ref=REDACTED_TEST_TOKEN',
+                   '/auth/callback', '/auth/callback?code=VERIFY_ONLY_CODE']) {
+    const r = await head(WWW + p);
+    if (r.status !== 200) fail(`${WWW}${p} returned ${r.status}, expected 200`);
+    else if (r.location) fail(`${WWW}${p} redirects to ${r.location}`);
+  }
+  const wwwTok = await (await fetch(`${WWW}/hunt/test-hunt?ref=REDACTED_TEST_TOKEN`)).text();
+  if (wwwTok.includes('REDACTED_TEST_TOKEN')) fail('the referral token appears in the rendered HTML');
+  const wwwCb = await (await fetch(`${WWW}/auth/callback?code=VERIFY_ONLY_CODE`)).text();
+  if (wwwCb.includes('VERIFY_ONLY_CODE')) fail('the auth code appears in the rendered HTML');
+  if (!failures.length) pass('/hunt/<id> and /auth/callback render, with no secret in the bytes');
+
   console.log('\n== canonicals and sitemap unchanged ==');
   const sm = await (await fetch(`${WWW}/sitemap.xml`)).text();
   const locs = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
