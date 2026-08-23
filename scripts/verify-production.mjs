@@ -76,11 +76,18 @@ async function main() {
   console.log('\n== canonicals and sitemap unchanged ==');
   const sm = await (await fetch(`${WWW}/sitemap.xml`)).text();
   const locs = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-  if (locs.length !== 11) fail(`sitemap has ${locs.length} urls, expected 11`);
-  else pass('sitemap still lists 11 canonical www urls');
-  for (const bad of ['/hunt', '/auth']) {
-    if (locs.some((l) => l.includes(bad))) fail(`sitemap leaks ${bad}`);
+  // Assert the properties, not a count. This script decides whether to roll back
+  // a production change, so it must not cry wolf the next time a blog post ships.
+  for (const required of ['/', ...MARKETING.filter((p) => !p.includes('.'))]) {
+    if (!locs.includes(WWW + (required === '/' ? '/' : required))) {
+      fail(`sitemap no longer lists ${required}`);
+    }
   }
+  for (const l of locs) {
+    if (!l.startsWith(WWW + '/')) fail(`sitemap lists a non-canonical url: ${l}`);
+    if (/\/(hunt|auth)(\/|$)/.test(l)) fail(`sitemap leaks an unindexed route: ${l}`);
+  }
+  if (!failures.length) pass(`sitemap lists ${locs.length} canonical www urls, none unindexed`);
   const home = await (await fetch(`${WWW}/about`)).text();
   if (!home.includes(`<link rel="canonical" href="${WWW}/about">`)) {
     fail('/about canonical is not the www url');
