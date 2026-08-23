@@ -744,6 +744,24 @@ for rule in rewrites:
     if re.fullmatch(src.replace(":path*", ".*").replace(":path", "[^/]+"),
                     "/.well-known/apple-app-site-association"):
         fail("a rewrite would move /.well-known, which Vercel reserves")
+# A page that receives single-use auth codes must not be stored anywhere, and the
+# header form of the referrer policy beats the meta tag where both apply.
+cb_hdrs = next((h for h in vercel.get("headers", []) if h.get("source") == "/auth/callback"), None)
+if cb_hdrs is None:
+    fail("vercel.json sets no headers for /auth/callback")
+else:
+    got = {k.get("key", "").lower(): k.get("value", "") for k in cb_hdrs.get("headers", [])}
+    if got.get("cache-control") != "no-store":
+        fail("/auth/callback is not sent with Cache-Control: no-store")
+    if got.get("referrer-policy") != "no-referrer":
+        fail("/auth/callback is not sent with Referrer-Policy: no-referrer")
+    if got.get("x-content-type-options") != "nosniff":
+        fail("/auth/callback is not sent with X-Content-Type-Options: nosniff")
+    csp = got.get("content-security-policy", "")
+    for directive in ["default-src 'none'", "frame-ancestors 'none'", "form-action 'none'"]:
+        if directive not in csp:
+            fail(f"/auth/callback CSP is missing {directive!r}")
+
 for rel in AASA_FILES:
     entry = next((h for h in vercel.get("headers", []) if h.get("source") == "/" + rel), None)
     if entry is None:
@@ -814,9 +832,20 @@ else:
                    "automatically signed in", "you are now signed in", "signed you in"]:
         if phrase.lower() in cb.lower():
             fail(f"auth/callback.html claims {phrase!r}, which it must not")
-    # Success is the no-JS default; the error branch must exist and be hidden by default.
-    if 'data-when="error"' not in cb or '[data-when="error"]{ display:none }' not in cb:
-        fail("auth/callback.html has no default-hidden error branch")
+    # Neutral is the no-JS default. "Confirmed" must never be what someone sees
+    # without positive evidence in the URL: mail scanners prefetch these links
+    # and burn the token, so a bare visit is not proof that anything worked.
+    for block in ("neutral", "ok", "error"):
+        if f'data-when="{block}"' not in cb:
+            fail(f"auth/callback.html has no {block} branch")
+    if "[data-when]{ display:none }" not in cb or \
+       '[data-when="neutral"]{ display:block }' not in cb:
+        fail("auth/callback.html does not default to the neutral branch")
+    for state in ("ok", "error"):
+        if f'html[data-auth="{state}"] [data-when="{state}"]{{ display:block }}' not in cb:
+            fail(f"auth/callback.html never reveals its {state} branch")
+    if 'data-auth="ok"' in cb[:cb.index("<style")]:
+        fail("auth/callback.html hard-codes the confirmed state")
 
     if f"<loc>{SITE}/auth" in (ROOT / "sitemap.xml").read_text():
         fail("sitemap lists /auth/callback - it must stay unindexed")

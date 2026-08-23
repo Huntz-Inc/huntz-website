@@ -23,26 +23,42 @@
 <script>
 /* Runs before first paint, and before anything else can observe the URL.
    Two jobs, in this order:
-     1. Classify the result. Only the PRESENCE of an error param is read.
-        No value is ever read, and Supabase's human-readable error text
-        is never rendered: it is attacker-controllable, and putting it on
-        a Huntz-branded page would make a ready-made phishing surface.
+     1. Classify the result, using only the PRESENCE of parameters. No value is
+        ever read, and Supabase's human-readable error text is never rendered:
+        it is attacker-controllable, and putting it on a Huntz-branded page
+        would make a ready-made phishing surface.
      2. Drop the query and fragment from the address bar and from this history
         entry, so a single-use code is not left sitting in browser history,
         in a screenshot, or in whatever the user pastes when asking for help.
    This is the exact opposite of the /hunt page, which preserves its URL on
    purpose so an invitation can be reopened. An auth code must not survive;
-   an invitation must. build/check.py asserts both directions. */
+   an invitation must. build/check.py asserts both directions.
+
+   "Confirmed" requires positive evidence in the URL, and is deliberately NOT
+   the no-JavaScript default. Corporate mail scanners fetch links before the
+   human does, which burns the single-use token, so a plain visit to this path
+   is not proof that anything succeeded - the person may be about to be told
+   the link expired. The neutral copy below is true in every one of those cases.
+
+   Error covers both flows: with PKCE the error is duplicated into the query,
+   with the implicit flow it is fragment-only, and some failures send
+   error_code with no error key at all. Matching the "error" prefix across
+   query and fragment together catches all three.
+
+   Success is recognised only from a PKCE code param. An implicit-flow arrival
+   carries a session in the fragment instead, which would mean some sender
+   upstream is not using PKCE - a bug to fix there, not here. Such an arrival
+   simply gets the neutral copy, which is true for it too. */
 (function () {
   try {
-    var d = document.documentElement;
     var s = location.search || "";
     var h = location.hash || "";
-    if (/[?&#]error/.test(s + h)) {
-      d.setAttribute("data-auth-state", "error");
-    }
+    var state = "";
+    if (/[?&#]error/.test(s + h)) state = "error";
+    else if (/[?&]code=/.test(s)) state = "ok";
+    if (state) document.documentElement.setAttribute("data-auth", state);
     if (s || h) history.replaceState(null, "", location.pathname);
-  } catch (e) { /* a stripped URL is best effort; the copy below is correct either way */ }
+  } catch (e) { /* a stripped URL is best effort; the neutral copy is true regardless */ }
 })();
 </script>
 {{ICONS}}
@@ -57,12 +73,15 @@ a{ color:#16130E } a:hover{ color:#C24E1F }
 ::selection{ background:#C24E1F; color:#F3EFE7 }
 a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:3px }
 {{NAV_CSS}}
-/* Success is the default, including with JavaScript switched off. Reaching this
-   URL at all means Supabase already verified the address server side; the error
-   branch is the exception and is the only thing the script has to switch on. */
-[data-when="error"]{ display:none }
-[data-auth-state="error"] [data-when="ok"]{ display:none }
-[data-auth-state="error"] [data-when="error"]{ display:block }
+/* Neutral is the default, and is what shows with JavaScript switched off or if
+   the script throws. It is the only message that is true no matter what
+   happened, so nothing here can tell someone their email is confirmed when a
+   mail scanner already burned the link out from under them. */
+[data-when]{ display:none }
+[data-when="neutral"]{ display:block }
+html[data-auth] [data-when="neutral"]{ display:none }
+html[data-auth="ok"] [data-when="ok"]{ display:block }
+html[data-auth="error"] [data-when="error"]{ display:block }
 [data-hz-mark]{ width:46px; height:46px; border-radius:50%; display:grid; place-items:center;
   background:#C24E1F; margin-bottom:20px }
 [data-hz-secondary]{ display:inline-block; font:700 12px 'Figtree',Arial,Helvetica,sans-serif;
@@ -86,6 +105,17 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
 {{DRAWER}}
 
 <main style="position:relative;max-width:620px;margin:0 auto;padding:clamp(34px,7vh,72px) clamp(20px,5vw,44px) 40px">
+
+  <div data-when="neutral">
+    <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759;margin-bottom:14px">EMAIL CONFIRMATION</div>
+    <h1 style="margin:0 0 16px;font:600 clamp(30px,4.4vw,44px)/1.1 'Playfair Display','Times New Roman',serif;letter-spacing:-.014em;color:#16130E;text-wrap:balance">Finish in the Huntz app<span style="color:#C24E1F">.</span></h1>
+    <p style="margin:0 0 14px;font:400 clamp(16px,1.9vw,18px)/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">
+      Open Huntz on your phone and sign in to pick up where you left off.
+    </p>
+    <p style="margin:0;font:400 15px/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759;text-wrap:pretty">
+      If you were confirming your email address and it did not go through, ask for a new confirmation email from the app and use the newest one.
+    </p>
+  </div>
 
   <div data-when="ok">
     <div data-hz-mark aria-hidden="true">
