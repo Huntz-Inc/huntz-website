@@ -5,5 +5,7 @@
 # those paths reachable again.
 build/
 test/
+scripts/
 README.md
+CUTOVER.md
 Page Review_ Kinetic Hero Design/

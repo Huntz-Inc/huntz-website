@@ -1445,10 +1445,127 @@ for path in SITEMAP_PATHS:
 sitemap.append("</urlset>")
 (ROOT / "sitemap.xml").write_text("\n".join(sitemap) + "\n")
 
+# ---- 8. Universal Links: AASA + the /hunt fallback (2026-08-22) ----
+# Apple fetches the association file through its CDN and follows no redirects
+# (TN3155: "host your AASA at each domain and subdomain included in your
+# applinks"), so the file is written as a real static asset rather than served
+# by a function, and vercel.json gives it application/json.
+#
+# APPLE_TEAM_ID is confirmed from the signed Build 7 provisioning profile, whose
+# entitlement carries the BARE APEX domain (applinks:huntz.ai) - not www. That is
+# what forces the apex to serve this file directly; see the host-scoped redirect
+# in vercel.json.
+APPLE_TEAM_ID = "JVTW9DH25L"
+IOS_BUNDLE_ID = "ai.huntz.app"
+
+# Narrow on purpose. Two path families are associated and nothing else, so a
+# tapped marketing or blog link never leaves the browser:
+#
+#   /hunt/*        Hunt invitations. In the modern format the "?" key defaults to
+#                  matching any query, so this one entry covers ?ref=<token> too.
+#   /auth/callback The Supabase email-confirmation return. Associating it is what
+#                  lets an installed app take the confirmation instead of the web
+#                  page; the app's deep-link handler treats a /auth/callback URL
+#                  carrying ?code= as a PKCE auth return.
+AASA = {
+    "applinks": {
+        "details": [
+            {
+                "appIDs": [f"{APPLE_TEAM_ID}.{IOS_BUNDLE_ID}"],
+                "components": [
+                    {
+                        "/": "/hunt/*",
+                        "comment": "Hunt invitations, including referral links such as "
+                                   "/hunt/<id>?ref=<token>",
+                    },
+                    {
+                        "/": "/hunt",
+                        "comment": "The bare /hunt path, which /hunt/* does not match",
+                    },
+                    {
+                        "/": "/auth/callback",
+                        "comment": "Supabase email-confirmation return, with or without "
+                                   "its ?code= query",
+                    },
+                ],
+            }
+        ]
+    }
+}
+
+AASA_JSON = json.dumps(AASA, indent=2) + "\n"
+# Both paths are written from the one object so they cannot drift apart.
+AASA_PATHS = [".well-known/apple-app-site-association", "apple-app-site-association"]
+for rel in AASA_PATHS:
+    out = ROOT / rel
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(AASA_JSON)
+
+
+# The /hunt fallback. Deliberately a flat static file behind a rewrite rather
+# than a function: one identical byte stream is served for every invitation, so
+# a referral token provably cannot be rendered into the HTML, reach any server
+# code, or land in a hosting log line that has a body. The Hunt id is recovered
+# from the path in the browser; ?ref= is never read. "/hunt" is not in ROUTES,
+# so it stays out of the nav, and not in SITEMAP_PATHS, so it stays unindexed.
+HUNT_TITLE_TAG = "Hunt invitation | Huntz"
+HUNT_DESC = ("This Hunt invitation opens in the Huntz app. Huntz is in limited beta - "
+             "join the waitlist, then reopen your invitation once you have the app.")
+hunt_page = ((BUILD / "hunt-page.html").read_text()
+             .replace("{{TITLE_TAG}}", HUNT_TITLE_TAG)
+             .replace("{{DESC}}", HUNT_DESC)
+             .replace("{{SITE}}", SITE_URL)
+             .replace("{{ICONS}}", ICON_LINKS)
+             .replace("{{FONTS_HREF}}", FONTS_HREF)
+             .replace("{{NAV_CSS}}", NAV_CSS)
+             .replace("{{HEADER_NAV}}", header_nav("/hunt"))
+             .replace("{{MENU_BUTTON}}", MENU_BUTTON)
+             .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist"))
+             .replace("{{FOOTER_NAV}}", footer_nav("/hunt"))
+             .replace("{{NAV_JS}}", NAV_JS))
+assert "{{" not in hunt_page, "unfilled placeholder in hunt.html"
+(ROOT / "hunt.html").write_text(hunt_page)
+
+
+# The /auth/callback browser fallback. Written as auth/callback.html and served
+# at /auth/callback by cleanUrls, the same way the blog articles are - no rewrite
+# needed. Like the /hunt page it is one constant static file, so a single-use
+# auth code cannot be rendered into it or reach any server code of ours.
+#
+# It exists because a Supabase email confirmation currently returns to a target
+# no browser can display, which is what produces the blank desktop page. On an
+# iPhone with Huntz installed the universal link wins and this page never
+# renders; it is the fallback for desktop, for other browsers, and for anyone
+# without the app.
+# One static file serves confirmation, password-reset and expired-link arrivals
+# alike, so the title and description have to be true for all of them. Only the
+# body copy is allowed to name the specific outcome.
+AUTH_TITLE_TAG = "Continue in Huntz"
+AUTH_DESC = "Finish signing in to Huntz. Email links open in the Huntz app on your phone."
+auth_page = ((BUILD / "auth-callback-page.html").read_text()
+             .replace("{{TITLE_TAG}}", AUTH_TITLE_TAG)
+             .replace("{{DESC}}", AUTH_DESC)
+             .replace("{{SITE}}", SITE_URL)
+             .replace("{{ICONS}}", ICON_LINKS)
+             .replace("{{FONTS_HREF}}", FONTS_HREF)
+             .replace("{{NAV_CSS}}", NAV_CSS)
+             .replace("{{HEADER_NAV}}", header_nav("/auth/callback"))
+             .replace("{{MENU_BUTTON}}", MENU_BUTTON)
+             .replace("{{DRAWER}}", drawer("/auth/callback", "/#waitlist"))
+             .replace("{{FOOTER_NAV}}", footer_nav("/auth/callback"))
+             .replace("{{NAV_JS}}", NAV_JS))
+assert "{{" not in auth_page, "unfilled placeholder in auth/callback.html"
+(ROOT / "auth").mkdir(exist_ok=True)
+(ROOT / "auth" / "callback.html").write_text(auth_page)
+
+
 print(f"index.html  {(ROOT / 'index.html').stat().st_size:,} bytes")
 print(f"app js      {APP_HREF}")
 print(f"fonts css   {FONTS_HREF}")
 print(f"pages       {', '.join(['terms', 'privacy'] + CONTENT_PAGES)}")
 print(f"blog        /blog + {len(ARTICLES)} articles")
+print(f"aasa        {APPLE_TEAM_ID}.{IOS_BUNDLE_ID} at {len(AASA_PATHS)} paths")
+print(f"hunt        /hunt/* -> hunt.html (noindex, unlisted)")
+print(f"auth        /auth/callback (noindex, unlisted)")
 print(f"sitemap     {len(SITEMAP_PATHS)} urls")
 print(f"artifact    {(BUILD / 'huntz-landing.artifact.html').stat().st_size:,} bytes")

@@ -1,0 +1,25 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "JVTW9DH25L.ai.huntz.app"
+        ],
+        "components": [
+          {
+            "/": "/hunt/*",
+            "comment": "Hunt invitations, including referral links such as /hunt/<id>?ref=<token>"
+          },
+          {
+            "/": "/hunt",
+            "comment": "The bare /hunt path, which /hunt/* does not match"
+          },
+          {
+            "/": "/auth/callback",
+            "comment": "Supabase email-confirmation return, with or without its ?code= query"
+          }
+        ]
+      }
+    ]
+  }
+}
