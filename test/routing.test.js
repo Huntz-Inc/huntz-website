@@ -137,7 +137,12 @@ test('the association file is not reachable by any redirect or rewrite', () => {
       }
     }
     for (const rw of vercel.rewrites || []) {
-      const src = rw.source.replace(':path*', '.*').replace(/:[a-z]+/g, '[^/]+');
+      // path-to-regexp params as a regex: ":n*" spans segments, ":n+" needs at
+      // least one, a bare ":n" is exactly one.
+      const src = rw.source
+        .replace(/:[A-Za-z_]\w*\*/g, '.*')
+        .replace(/:[A-Za-z_]\w*\+/g, '.+')
+        .replace(/:[A-Za-z_]\w*/g, '[^/]+');
       assert.equal(new RegExp(`^${src}$`).test(aasa), false, `rewrite ${rw.source} moves ${aasa}`);
     }
   }

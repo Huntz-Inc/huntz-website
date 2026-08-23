@@ -48,6 +48,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/hunt/:path*", "destination": "/hunt.html" }
+    { "source": "/hunt/:path+", "destination": "/hunt" }
   ]
 }
