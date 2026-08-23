@@ -611,6 +611,12 @@ if aasa_raw:
         # visible symptom, so the app id is pattern-checked, not eyeballed.
         PLACEHOLDERS = ("REALTEAMID", "TEAMID", "APPLE_TEAM_ID", "ABCDE12345",
                         "XXXXXXXXXX", "YOURTEAMID", "TODO", "CHANGEME")
+        # Read from the signed Build 7 provisioning profile, whose entitlement is
+        # applinks:huntz.ai. Pinned rather than merely pattern-checked because an
+        # earlier, well-formed but WRONG candidate (GDRCC5G29F, taken from a
+        # development certificate) very nearly shipped, and a wrong team id
+        # breaks universal links with no visible symptom.
+        EXPECTED_APP_ID = "JVTW9DH25L.ai.huntz.app"
         if app_ids is not None:
             if len(app_ids) != 1:
                 fail(f"AASA: expected exactly one appID, found {len(app_ids)}")
@@ -622,6 +628,9 @@ if aasa_raw:
                     fail(f"AASA: {team!r} is not a 10-character Apple Team ID")
                 if any(ph in app_id.upper() for ph in PLACEHOLDERS):
                     fail(f"AASA: appID {app_id!r} contains a placeholder identifier")
+                if app_id != EXPECTED_APP_ID:
+                    fail(f"AASA: appID is {app_id!r}, expected {EXPECTED_APP_ID!r} from "
+                         "the signed Build 7 provisioning profile")
 
         # Evaluate the components the way Apple does, so the assertions below are
         # about real matching behaviour rather than the presence of a substring.
@@ -645,14 +654,19 @@ if aasa_raw:
             for path, query in [("/hunt/abc123", ""),
                                 ("/hunt/abc123", "ref=SOMETOKEN"),
                                 ("/hunt/01HZY9K3", "ref=a&utm_source=x"),
-                                ("/hunt", "")]:
+                                ("/hunt", ""),
+                                ("/auth/callback", ""),
+                                ("/auth/callback", "code=SOMEPKCECODE"),
+                                ("/auth/callback", "error=access_denied")]:
                 if not _matches(components, path, query):
                     fail(f"AASA does not associate /hunt path {path!r} (query {query!r})")
             # Nothing else may leave the browser for the app.
             for path in ["/", "/about", "/contact", "/faq", "/how-it-works",
                          "/accountability-challenges", "/blog",
                          "/blog/best-accountability-apps-2026", "/terms", "/privacy",
-                         "/hunts/abc", "/.well-known/apple-app-site-association"]:
+                         "/hunts/abc", "/.well-known/apple-app-site-association",
+                         "/auth", "/auth/other", "/auth/callbackx", "/auth/reset",
+                         "/authx/callback"]:
                 if _matches(components, path):
                     fail(f"AASA associates unrelated route {path}")
 
@@ -679,6 +693,12 @@ else:
         ("location.replace", "redirects in JavaScript"),
         ("location.assign", "redirects in JavaScript"),
         ("huntz://", "uses a custom-scheme trick"),
+        # The mirror image of the /auth/callback rule. An auth code must not
+        # survive in the URL; an invitation must, because the recipient has to
+        # reopen this exact link after installing the app. Stripping it here
+        # would quietly make every invitation single-use.
+        ("history.replaceState", "rewrites the URL, so the invitation could not be reopened"),
+        ("history.pushState", "rewrites the URL, so the invitation could not be reopened"),
     ]:
         if banned in hunt:
             fail(f"hunt.html {why} ({banned!r}) - referral tokens must never be read")
@@ -715,9 +735,15 @@ rewrites = vercel.get("rewrites", [])
 if not any(r.get("source", "").startswith("/hunt/") and r.get("destination") == "/hunt.html"
            for r in rewrites):
     fail("vercel.json does not rewrite /hunt/* to /hunt.html")
-for rule in rewrites + vercel.get("redirects", []):
-    if ".well-known" in rule.get("source", ""):
-        fail("vercel.json routes /.well-known, which Vercel reserves - serve the file statically")
+# Vercel reserves /.well-known from redirects and rewrites. Whether a rule would
+# actually move the file is asserted behaviourally by the routing matrix further
+# down; here we only bar a REWRITE from targeting it, which the matrix does not
+# model.
+for rule in rewrites:
+    src = rule.get("source", "")
+    if re.fullmatch(src.replace(":path*", ".*").replace(":path", "[^/]+"),
+                    "/.well-known/apple-app-site-association"):
+        fail("a rewrite would move /.well-known, which Vercel reserves")
 for rel in AASA_FILES:
     entry = next((h for h in vercel.get("headers", []) if h.get("source") == "/" + rel), None)
     if entry is None:
@@ -727,10 +753,175 @@ for rel in AASA_FILES:
         fail(f"vercel.json does not serve /{rel} as application/json")
 
 
+# ---- auth callback fallback + apex routing (2026-08-22, Option B) ----
+cb_file = ROOT / "auth" / "callback.html"
+if not cb_file.exists():
+    fail("auth/callback.html was not generated")
+else:
+    cb = cb_file.read_text()
+
+    # The page is loaded with a single-use auth code in its query string. It may
+    # READ the URL - it has to, to tell success from an expired link - but it may
+    # never render a value from it, never transmit one, and never persist one.
+    for banned, why in [
+        ("innerHTML", "writes markup, so a URL value could reach the DOM"),
+        ("insertAdjacentHTML", "writes markup, so a URL value could reach the DOM"),
+        ("textContent", "writes text, so a URL value could reach the DOM"),
+        ("document.write", "writes markup, so a URL value could reach the DOM"),
+        ("fetch(", "makes a network request"),
+        ("XMLHttpRequest", "makes a network request"),
+        ("navigator.sendBeacon", "exfiltrates to an endpoint"),
+        ("localStorage", "persists an auth value"),
+        ("sessionStorage", "persists an auth value"),
+        ("document.cookie", "persists an auth value"),
+        ("error_description", "would render Supabase's attacker-controllable text"),
+        ("URLSearchParams", "extracts a value from the URL; only presence may be tested"),
+        ("searchParams", "extracts a value from the URL; only presence may be tested"),
+        (".exec(", "captures a value from the URL; only presence may be tested"),
+    ]:
+        if banned in cb:
+            fail(f"auth/callback.html {why} ({banned!r})")
+
+    # The single-use code must not survive in the address bar or in history.
+    if "history.replaceState" not in cb:
+        fail("auth/callback.html does not clear the query and fragment from history")
+    if '<meta name="referrer" content="no-referrer">' not in cb:
+        fail("auth/callback.html does not set a no-referrer policy, so the code would "
+             "ride along in subresource Referer headers and into the access log")
+    # The referrer policy is only useful if it is parsed before the stylesheet.
+    ref_at, css_at = cb.find('name="referrer"'), cb.find('<link rel="stylesheet"')
+    if ref_at >= 0 and css_at >= 0 and ref_at > css_at:
+        fail("auth/callback.html declares its referrer policy after the stylesheet link")
+
+    if '<meta name="robots" content="noindex">' not in cb:
+        fail("auth/callback.html is not noindex")
+    if '<link rel="canonical"' in cb:
+        fail("auth/callback.html declares a canonical - it is one file for many URLs")
+
+    # No specimen auth value may be baked into the served bytes.
+    for leak in ["?code=", "&code=", "access_token", "refresh_token", "token_hash",
+                 "@gmail.com", "@huntz.ai"]:
+        if leak in cb:
+            fail(f"auth/callback.html contains {leak!r} - the served bytes must be "
+                 "account-agnostic")
+
+    # Copy: truthful about what actually happens next.
+    if 'href="huntz://"' not in cb:
+        fail("auth/callback.html does not offer the approved custom-scheme app fallback")
+    if "sign in" not in cb.lower():
+        fail("auth/callback.html does not tell the user they still need to sign in")
+    for phrase in ["App Store", "apps.apple.com", "TestFlight", "testflight.apple.com",
+                   "automatically signed in", "you are now signed in", "signed you in"]:
+        if phrase.lower() in cb.lower():
+            fail(f"auth/callback.html claims {phrase!r}, which it must not")
+    # Success is the no-JS default; the error branch must exist and be hidden by default.
+    if 'data-when="error"' not in cb or '[data-when="error"]{ display:none }' not in cb:
+        fail("auth/callback.html has no default-hidden error branch")
+
+    if f"<loc>{SITE}/auth" in (ROOT / "sitemap.xml").read_text():
+        fail("sitemap lists /auth/callback - it must stay unindexed")
+
+# The entitlement signed into Build 7 is applinks:huntz.ai - the bare apex. That
+# is only meaningful if the apex serves the file itself, which is what the
+# routing matrix below proves. Recorded here so the connection is not lost.
+SIGNED_ASSOCIATED_DOMAIN = "applinks:huntz.ai"
+
+# Production routing, simulated. The apex redirect is the one change here that can
+# take the live marketing site down: if the host condition matched www as well as
+# the apex, every www request would redirect to itself in a loop. So rather than
+# trusting one reading of Vercel's matching rules, the rule is evaluated under
+# BOTH possible semantics - an unanchored regex search, and Vercel wrapping the
+# value as ^(?:value)$ - and required to behave identically and correctly under
+# each. Writing the value with explicit anchors is what makes that true.
+vercel = json.loads((ROOT / "vercel.json").read_text())
+redirects = vercel.get("redirects", [])
+if len(redirects) != 1:
+    fail(f"expected exactly one redirect rule, found {len(redirects)}")
+else:
+    rule = redirects[0]
+
+    def host_matches(value, host, wrap):
+        rx = f"^(?:{value})$" if wrap else value
+        return re.search(rx, host) is not None
+
+    def source_matches(source, path):
+        # path-to-regexp compiles "/(<re>)" to "^/(<re>)" with an optional
+        # trailing delimiter; Vercel matches the pathname only, never the query.
+        return re.fullmatch(source.replace("(?!", "(?!") + r"[/#?]?", path) \
+            or re.fullmatch(source, path)
+
+    def outcome(host, path, wrap):
+        if not host_matches(rule["has"][0]["value"], host, wrap):
+            return "SERVE"
+        m = source_matches(rule["source"], path)
+        if not m:
+            return "SERVE"
+        return rule["destination"].replace("$1", m.group(1))
+
+    APEX, WWW = "huntz.ai", "www.huntz.ai"
+    MATRIX = [
+        # The apex serves these directly. Everything Apple fetches, plus the two
+        # universal-link paths: an auth callback in particular must never be
+        # bounced to another origin carrying its code.
+        (APEX, "/.well-known/apple-app-site-association", "SERVE"),
+        (APEX, "/apple-app-site-association", "SERVE"),
+        (APEX, "/hunt", "SERVE"),
+        (APEX, "/hunt/test-hunt", "SERVE"),
+        (APEX, "/hunt/test-hunt/", "SERVE"),
+        (APEX, "/auth/callback", "SERVE"),
+        # Ordinary apex marketing traffic still goes to the canonical www host.
+        (APEX, "/", "https://www.huntz.ai/"),
+        (APEX, "/about", "https://www.huntz.ai/about"),
+        (APEX, "/how-it-works", "https://www.huntz.ai/how-it-works"),
+        (APEX, "/faq", "https://www.huntz.ai/faq"),
+        (APEX, "/blog", "https://www.huntz.ai/blog"),
+        (APEX, "/blog/best-accountability-apps-2026",
+               "https://www.huntz.ai/blog/best-accountability-apps-2026"),
+        (APEX, "/contact", "https://www.huntz.ai/contact"),
+        (APEX, "/terms", "https://www.huntz.ai/terms"),
+        (APEX, "/privacy", "https://www.huntz.ai/privacy"),
+        (APEX, "/accountability-challenges",
+               "https://www.huntz.ai/accountability-challenges"),
+        (APEX, "/sitemap.xml", "https://www.huntz.ai/sitemap.xml"),
+        # Near-misses must not be mistaken for the exempt paths.
+        (APEX, "/hunts/foo", "https://www.huntz.ai/hunts/foo"),
+        (APEX, "/apple-app-site-association-x",
+               "https://www.huntz.ai/apple-app-site-association-x"),
+        (APEX, "/auth/callbackx", "https://www.huntz.ai/auth/callbackx"),
+        (APEX, "/auth/other", "https://www.huntz.ai/auth/other"),
+        # THE LOOP TEST. www is the canonical host and must never be redirected,
+        # whatever the path, under either matching semantics.
+        (WWW, "/", "SERVE"),
+        (WWW, "/about", "SERVE"),
+        (WWW, "/blog", "SERVE"),
+        (WWW, "/hunt/test-hunt", "SERVE"),
+        (WWW, "/auth/callback", "SERVE"),
+        (WWW, "/.well-known/apple-app-site-association", "SERVE"),
+    ]
+    for wrap in (False, True):
+        how = "wrapped as ^(?:v)$" if wrap else "unanchored search"
+        for host, path, expected in MATRIX:
+            got = outcome(host, path, wrap)
+            if got != expected:
+                fail(f"routing ({how}): {host}{path} -> {got}, expected {expected}")
+
+    # The AASA must be unreachable by any future redirect, not merely by this one.
+    for r in redirects + vercel.get("rewrites", []):
+        for aasa_path in ["/.well-known/apple-app-site-association",
+                          "/apple-app-site-association"]:
+            if r in redirects:
+                if outcome(APEX, aasa_path, True) != "SERVE" or \
+                   outcome(WWW, aasa_path, True) != "SERVE":
+                    fail(f"a redirect rule would move {aasa_path}")
+            elif re.fullmatch(r["source"].replace(":path*", ".*"), aasa_path):
+                fail(f"a rewrite rule would move {aasa_path}")
+
+
 if failures:
     print(f"FAIL ({len(failures)}):")
     for m in failures:
         print("  -", m)
     sys.exit(1)
 print(f"OK: {len(PAGES)} pages, {len(titles)} unique titles, sitemap + robots + icons verified")
-print(f"OK: AASA at {len(AASA_FILES)} paths for {app_ids[0]}, /hunt fallback token-safe")
+print(f"OK: AASA at {len(AASA_FILES)} paths for {EXPECTED_APP_ID}, {SIGNED_ASSOCIATED_DOMAIN}, /hunt fallback token-safe")
+print(f"OK: /auth/callback fallback code-safe, apex routing matrix {len(MATRIX)}x2 verified")

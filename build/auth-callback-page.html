@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Set before the stylesheet link, deliberately. This page is loaded with a
+     single-use auth code in its query string, and without this the code would
+     ride along in the Referer header of every subresource request and land in
+     the hosting access log. -->
+<meta name="referrer" content="no-referrer">
+<title>{{TITLE_TAG}}</title>
+<meta name="description" content="{{DESC}}">
+<meta name="robots" content="noindex">
+<!-- Constant and account-agnostic: one file is served for every confirmation,
+     so nothing here can carry a code or an address into a link preview. -->
+<meta property="og:site_name" content="Huntz">
+<meta property="og:title" content="{{TITLE_TAG}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{SITE}}/">
+<meta property="og:image" content="{{SITE}}/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<script>
+/* Runs before first paint, and before anything else can observe the URL.
+   Two jobs, in this order:
+     1. Classify the result. Only the PRESENCE of an error param is read.
+        No value is ever read, and Supabase's human-readable error text
+        is never rendered: it is attacker-controllable, and putting it on
+        a Huntz-branded page would make a ready-made phishing surface.
+     2. Drop the query and fragment from the address bar and from this history
+        entry, so a single-use code is not left sitting in browser history,
+        in a screenshot, or in whatever the user pastes when asking for help.
+   This is the exact opposite of the /hunt page, which preserves its URL on
+   purpose so an invitation can be reopened. An auth code must not survive;
+   an invitation must. build/check.py asserts both directions. */
+(function () {
+  try {
+    var d = document.documentElement;
+    var s = location.search || "";
+    var h = location.hash || "";
+    if (/[?&#]error/.test(s + h)) {
+      d.setAttribute("data-auth-state", "error");
+    }
+    if (s || h) history.replaceState(null, "", location.pathname);
+  } catch (e) { /* a stripped URL is best effort; the copy below is correct either way */ }
+})();
+</script>
+{{ICONS}}
+<link rel="stylesheet" href="{{FONTS_HREF}}">
+<style>
+html{ overflow-x:hidden; overflow-x:clip; overscroll-behavior-x:none }
+body{ margin:0; background:#F1EBE0; color:#16130E; overflow-x:hidden; overflow-x:clip;
+      font-family:'Figtree',Arial,Helvetica,sans-serif; -webkit-font-smoothing:antialiased }
+body::before{ content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%) }
+a{ color:#16130E } a:hover{ color:#C24E1F }
+::selection{ background:#C24E1F; color:#F3EFE7 }
+a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:3px }
+{{NAV_CSS}}
+/* Success is the default, including with JavaScript switched off. Reaching this
+   URL at all means Supabase already verified the address server side; the error
+   branch is the exception and is the only thing the script has to switch on. */
+[data-when="error"]{ display:none }
+[data-auth-state="error"] [data-when="ok"]{ display:none }
+[data-auth-state="error"] [data-when="error"]{ display:block }
+[data-hz-mark]{ width:46px; height:46px; border-radius:50%; display:grid; place-items:center;
+  background:#C24E1F; margin-bottom:20px }
+[data-hz-secondary]{ display:inline-block; font:700 12px 'Figtree',Arial,Helvetica,sans-serif;
+  letter-spacing:.12em; color:#16130E; background:transparent; border:1px solid rgba(22,19,14,.3);
+  padding:13px 21px; text-decoration:none; border-radius:2px }
+[data-hz-secondary]:hover{ border-color:#C24E1F; color:#C24E1F }
+@media print{ header,#hz-menu{ display:none !important } body::before{ display:none } body{ background:#fff } }
+</style>
+</head>
+<body>
+
+<header style="position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px clamp(20px,4vw,44px);background:rgba(243,239,231,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(22,19,14,.12)">
+  <a href="/" style="font:800 20px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;text-decoration:none;color:#16130E">HUNTZ<span style="color:#C24E1F">.</span></a>
+  <nav data-hz-desknav aria-label="Primary" style="display:flex;align-items:center;gap:clamp(14px,2.5vw,26px)">
+    {{HEADER_NAV}}
+  </nav>
+  <a data-hz-desknav href="/#waitlist" style="font:700 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;white-space:nowrap">JOIN THE WAITLIST</a>
+  {{MENU_BUTTON}}
+</header>
+
+{{DRAWER}}
+
+<main style="position:relative;max-width:620px;margin:0 auto;padding:clamp(34px,7vh,72px) clamp(20px,5vw,44px) 40px">
+
+  <div data-when="ok">
+    <div data-hz-mark aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F3EFE7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759;margin-bottom:14px">EMAIL CONFIRMATION</div>
+    <h1 style="margin:0 0 16px;font:600 clamp(30px,4.4vw,44px)/1.1 'Playfair Display','Times New Roman',serif;letter-spacing:-.014em;color:#16130E;text-wrap:balance">Your email is confirmed<span style="color:#C24E1F">.</span></h1>
+    <p style="margin:0 0 14px;font:400 clamp(16px,1.9vw,18px)/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">
+      You can head back to Huntz and sign in.
+    </p>
+    <p style="margin:0;font:400 15px/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759;text-wrap:pretty">
+      Confirmed on a different device from the one you signed up on? That is fine. Signing in still happens in the app, so open Huntz on your phone and sign in there.
+    </p>
+  </div>
+
+  <div data-when="error">
+    <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759;margin-bottom:14px">EMAIL CONFIRMATION</div>
+    <h1 style="margin:0 0 16px;font:600 clamp(30px,4.4vw,44px)/1.1 'Playfair Display','Times New Roman',serif;letter-spacing:-.014em;color:#16130E;text-wrap:balance">This link has expired<span style="color:#C24E1F">.</span></h1>
+    <p style="margin:0 0 14px;font:400 clamp(16px,1.9vw,18px)/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">
+      Confirmation links can be used once, and they do not last forever. This one has already been used or has run out of time.
+    </p>
+    <p style="margin:0;font:400 15px/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759;text-wrap:pretty">
+      Open Huntz and ask for a new confirmation email, then use the newest one.
+    </p>
+  </div>
+
+  <div aria-hidden="true" style="width:44px;height:2px;margin:30px 0;background:#C24E1F"></div>
+
+  <a data-hz-secondary href="huntz://">OPEN HUNTZ</a>
+  <p style="margin:14px 0 0;font:400 14px/1.6 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759">
+    Opens the app if Huntz is installed on this device.
+  </p>
+
+</main>
+
+<aside style="max-width:620px;margin:0 auto;padding:0 clamp(20px,5vw,44px) 110px">
+  {{FOOTER_NAV}}
+</aside>
+
+{{NAV_JS}}
+</body>
+</html>

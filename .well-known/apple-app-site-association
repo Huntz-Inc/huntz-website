@@ -3,7 +3,7 @@
     "details": [
       {
         "appIDs": [
-          "GDRCC5G29F.ai.huntz.app"
+          "JVTW9DH25L.ai.huntz.app"
         ],
         "components": [
           {
@@ -13,6 +13,10 @@
           {
             "/": "/hunt",
             "comment": "The bare /hunt path, which /hunt/* does not match"
+          },
+          {
+            "/": "/auth/callback",
+            "comment": "Supabase email-confirmation return, with or without its ?code= query"
           }
         ]
       }

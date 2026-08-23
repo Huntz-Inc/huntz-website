@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/((?!\\.well-known/|apple-app-site-association$|hunt(?:/|$)|auth/callback$).*)",
+      "has": [{ "type": "host", "value": "^huntz\\.ai$" }],
+      "destination": "https://www.huntz.ai/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",

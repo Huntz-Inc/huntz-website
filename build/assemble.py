@@ -1451,18 +1451,22 @@ sitemap.append("</urlset>")
 # applinks"), so the file is written as a real static asset rather than served
 # by a function, and vercel.json gives it application/json.
 #
-# APPLE_TEAM_ID is the Team ID from the Apple Development certificate in the
-# founder's keychain (subject OU, O=Kingsley Nwankwu). It is a real identifier,
-# not a placeholder - but it has NOT been cross-checked against the signed
-# TestFlight build, so build/check.py refuses anything placeholder-shaped and
-# the PR holds deployment until it is confirmed against App Store Connect.
-APPLE_TEAM_ID = "GDRCC5G29F"
+# APPLE_TEAM_ID is confirmed from the signed Build 7 provisioning profile, whose
+# entitlement carries the BARE APEX domain (applinks:huntz.ai) - not www. That is
+# what forces the apex to serve this file directly; see the host-scoped redirect
+# in vercel.json.
+APPLE_TEAM_ID = "JVTW9DH25L"
 IOS_BUNDLE_ID = "ai.huntz.app"
 
-# One component matches both plain and referral invitations: in the modern
-# format the "?" key defaults to "*", so /hunt/* matches with or without a query
-# string. Nothing else on the site is associated - no marketing page, no article
-# and no bare "/" - so a tapped link only leaves the browser for a real Hunt.
+# Narrow on purpose. Two path families are associated and nothing else, so a
+# tapped marketing or blog link never leaves the browser:
+#
+#   /hunt/*        Hunt invitations. In the modern format the "?" key defaults to
+#                  matching any query, so this one entry covers ?ref=<token> too.
+#   /auth/callback The Supabase email-confirmation return. Associating it is what
+#                  lets an installed app take the confirmation instead of the web
+#                  page; the app's deep-link handler treats a /auth/callback URL
+#                  carrying ?code= as a PKCE auth return.
 AASA = {
     "applinks": {
         "details": [
@@ -1477,6 +1481,11 @@ AASA = {
                     {
                         "/": "/hunt",
                         "comment": "The bare /hunt path, which /hunt/* does not match",
+                    },
+                    {
+                        "/": "/auth/callback",
+                        "comment": "Supabase email-confirmation return, with or without "
+                                   "its ?code= query",
                     },
                 ],
             }
@@ -1518,6 +1527,36 @@ assert "{{" not in hunt_page, "unfilled placeholder in hunt.html"
 (ROOT / "hunt.html").write_text(hunt_page)
 
 
+# The /auth/callback browser fallback. Written as auth/callback.html and served
+# at /auth/callback by cleanUrls, the same way the blog articles are - no rewrite
+# needed. Like the /hunt page it is one constant static file, so a single-use
+# auth code cannot be rendered into it or reach any server code of ours.
+#
+# It exists because a Supabase email confirmation currently returns to a target
+# no browser can display, which is what produces the blank desktop page. On an
+# iPhone with Huntz installed the universal link wins and this page never
+# renders; it is the fallback for desktop, for other browsers, and for anyone
+# without the app.
+AUTH_TITLE_TAG = "Email confirmation | Huntz"
+AUTH_DESC = ("Your Huntz email confirmation result. Confirmation finishes in the Huntz app, "
+             "where you sign in.")
+auth_page = ((BUILD / "auth-callback-page.html").read_text()
+             .replace("{{TITLE_TAG}}", AUTH_TITLE_TAG)
+             .replace("{{DESC}}", AUTH_DESC)
+             .replace("{{SITE}}", SITE_URL)
+             .replace("{{ICONS}}", ICON_LINKS)
+             .replace("{{FONTS_HREF}}", FONTS_HREF)
+             .replace("{{NAV_CSS}}", NAV_CSS)
+             .replace("{{HEADER_NAV}}", header_nav("/auth/callback"))
+             .replace("{{MENU_BUTTON}}", MENU_BUTTON)
+             .replace("{{DRAWER}}", drawer("/auth/callback", "/#waitlist"))
+             .replace("{{FOOTER_NAV}}", footer_nav("/auth/callback"))
+             .replace("{{NAV_JS}}", NAV_JS))
+assert "{{" not in auth_page, "unfilled placeholder in auth/callback.html"
+(ROOT / "auth").mkdir(exist_ok=True)
+(ROOT / "auth" / "callback.html").write_text(auth_page)
+
+
 print(f"index.html  {(ROOT / 'index.html').stat().st_size:,} bytes")
 print(f"app js      {APP_HREF}")
 print(f"fonts css   {FONTS_HREF}")
@@ -1525,5 +1564,6 @@ print(f"pages       {', '.join(['terms', 'privacy'] + CONTENT_PAGES)}")
 print(f"blog        /blog + {len(ARTICLES)} articles")
 print(f"aasa        {APPLE_TEAM_ID}.{IOS_BUNDLE_ID} at {len(AASA_PATHS)} paths")
 print(f"hunt        /hunt/* -> hunt.html (noindex, unlisted)")
+print(f"auth        /auth/callback (noindex, unlisted)")
 print(f"sitemap     {len(SITEMAP_PATHS)} urls")
 print(f"artifact    {(BUILD / 'huntz-landing.artifact.html').stat().st_size:,} bytes")
