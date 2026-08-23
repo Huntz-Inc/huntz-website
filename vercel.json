@@ -4,7 +4,7 @@
   "trailingSlash": false,
   "redirects": [
     {
-      "source": "/((?!\\.well-known/|apple-app-site-association$|hunt(?:/|$)|auth/callback$).*)",
+      "source": "/((?!\\.well-known/|apple-app-site-association(?:/|$)|assets/|favicon|icon-\\d+\\.png|apple-touch-icon\\.png|hunt(?:/|$)|auth/callback(?:/|$)).*)",
       "has": [{ "type": "host", "value": "^huntz\\.ai$" }],
       "destination": "https://www.huntz.ai/$1",
       "permanent": true

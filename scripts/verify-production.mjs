@@ -111,6 +111,15 @@ async function main() {
       else pass(`${APEX}${p} 200`);
     }
 
+    console.log('\n== apex serves what those pages load (its CSP self is the apex) ==');
+    for (const p of ['/assets/fonts.601bc53b.css', '/favicon.ico', '/apple-touch-icon.png',
+                     '/icon-192.png']) {
+      const r = await head(APEX + p);
+      if (r.location) fail(`${APEX}${p} redirects to ${r.location}; /auth/callback's CSP will refuse it`);
+      else if (r.status !== 200) fail(`${APEX}${p} returned ${r.status}, expected 200`);
+    }
+    if (!failures.length) pass('apex serves the stylesheet and icons directly, no cross-origin hop');
+
     // The referral token must not survive into the page the browser renders.
     const withToken = await (await fetch(`${APEX}/hunt/test-hunt?ref=REDACTED_TEST_TOKEN`)).text();
     if (withToken.includes('REDACTED_TEST_TOKEN')) fail('the referral token appears in the rendered HTML');
@@ -118,6 +127,35 @@ async function main() {
     const cb = await (await fetch(`${APEX}/auth/callback?code=VERIFY_ONLY_CODE`)).text();
     if (cb.includes('VERIFY_ONLY_CODE')) fail('the auth code appears in the rendered HTML');
     else pass('auth code absent from the rendered HTML');
+  }
+
+  // What a device actually reads. iOS never fetches huntz.ai for this: it asks
+  // Apple's CDN, which pulls the origin within about 24 hours and then caches
+  // with no way to invalidate. A green origin therefore proves the file is
+  // publishable, not that any phone can see it yet - so this is reported
+  // separately, and only a WRONG cached file is treated as a failure.
+  console.log('\n== what Apple\'s CDN is serving to devices ==');
+  try {
+    const r = await fetch(`https://app-site-association.cdn-apple.com/a/v1/huntz.ai`);
+    if (r.status === 200) {
+      const body = await r.json();
+      const ids = body?.applinks?.details?.[0]?.appIDs;
+      const comps = (body?.applinks?.details?.[0]?.components || []).map((c) => c['/']);
+      if (ids?.[0] !== APP_ID) {
+        fail(`Apple's CDN is serving appIDs ${JSON.stringify(ids)}, expected ["${APP_ID}"] - ` +
+             `devices will use this for about a week and it cannot be invalidated`);
+      } else if (!['/hunt/*', '/hunt', '/auth/callback'].every((c) => comps.includes(c))) {
+        fail(`Apple's CDN has a stale component list: ${JSON.stringify(comps)}`);
+      } else {
+        pass(`Apple's CDN is serving ${APP_ID} with ${comps.length} components`);
+      }
+    } else {
+      console.log(`  note  Apple's CDN has not picked the file up yet (HTTP ${r.status}). ` +
+                  `It fetches within ~24h; re-run this tomorrow. Universal links will not ` +
+                  `work on any device until it does.`);
+    }
+  } catch (e) {
+    console.log(`  note  could not reach Apple's CDN: ${e.message}`);
   }
 
   console.log(failures.length ? `\nFAILED (${failures.length}) - roll back the domain setting\n`

@@ -11,6 +11,7 @@ import json
 import pathlib
 import re
 import sys
+import urllib.parse
 import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -634,17 +635,28 @@ if aasa_raw:
 
         # Evaluate the components the way Apple does, so the assertions below are
         # about real matching behaviour rather than the presence of a substring.
+        # Every omitted key defaults to "*", which matches everything - including
+        # an absent component. That is why a missing "/" has to match ANY path
+        # rather than be skipped: an entry like {"?": {"utm_source": "*"}} would
+        # associate the whole site, and skipping it would let that through.
+        def _glob(pat):
+            return "".join(".*" if ch == "*" else "." if ch == "?" else re.escape(ch)
+                           for ch in str(pat))
+
         def _matches(components, path, query=""):
+            parsed = dict(urllib.parse.parse_qsl(query, keep_blank_values=True))
             for c in components:
-                pat = c.get("/")
-                if pat is None:
-                    continue
-                rx = "".join(".*" if ch == "*" else "." if ch == "?" else re.escape(ch)
-                             for ch in pat)
-                if not re.fullmatch(rx, path):
+                if not re.fullmatch(_glob(c.get("/", "*")), path):
                     continue
                 q = c.get("?")
-                if q is not None and not query:
+                if isinstance(q, dict):
+                    if not all(k in parsed and re.fullmatch(_glob(v), parsed[k])
+                               for k, v in q.items()):
+                        continue
+                elif isinstance(q, str):
+                    if not re.fullmatch(_glob(q), query):
+                        continue
+                if not re.fullmatch(_glob(c.get("#", "*")), ""):
                     continue
                 return not c.get("exclude", False)
             return False
@@ -660,15 +672,19 @@ if aasa_raw:
                                 ("/auth/callback", "error=access_denied")]:
                 if not _matches(components, path, query):
                     fail(f"AASA does not associate /hunt path {path!r} (query {query!r})")
-            # Nothing else may leave the browser for the app.
+            # Nothing else may leave the browser for the app. Each is tried bare
+            # AND with a query, because a component can match on the query alone -
+            # {"?": {"utm_source": "*"}} with no "/" key would associate the whole
+            # site, and a bare-path check would never notice.
             for path in ["/", "/about", "/contact", "/faq", "/how-it-works",
                          "/accountability-challenges", "/blog",
                          "/blog/best-accountability-apps-2026", "/terms", "/privacy",
                          "/hunts/abc", "/.well-known/apple-app-site-association",
                          "/auth", "/auth/other", "/auth/callbackx", "/auth/reset",
                          "/authx/callback"]:
-                if _matches(components, path):
-                    fail(f"AASA associates unrelated route {path}")
+                for query in ["", "utm_source=x", "ref=y", "code=z", "a=1&b=2"]:
+                    if _matches(components, path, query):
+                        fail(f"AASA associates unrelated route {path} (query {query!r})")
 
 hunt_file = ROOT / "hunt.html"
 if not hunt_file.exists():
@@ -824,6 +840,9 @@ else:
                  "account-agnostic")
 
     # Copy: truthful about what actually happens next.
+    # A spent password-reset link must never be told its email was confirmed.
+    if "flow=recovery" not in cb:
+        fail("auth/callback.html cannot tell a password reset from a signup confirmation")
     if 'href="huntz://"' not in cb:
         fail("auth/callback.html does not offer the approved custom-scheme app fallback")
     if "sign in" not in cb.lower():
@@ -835,13 +854,13 @@ else:
     # Neutral is the no-JS default. "Confirmed" must never be what someone sees
     # without positive evidence in the URL: mail scanners prefetch these links
     # and burn the token, so a bare visit is not proof that anything worked.
-    for block in ("neutral", "ok", "error"):
+    for block in ("neutral", "ok", "error", "recovery"):
         if f'data-when="{block}"' not in cb:
             fail(f"auth/callback.html has no {block} branch")
     if "[data-when]{ display:none }" not in cb or \
        '[data-when="neutral"]{ display:block }' not in cb:
         fail("auth/callback.html does not default to the neutral branch")
-    for state in ("ok", "error"):
+    for state in ("ok", "error", "recovery"):
         if f'html[data-auth="{state}"] [data-when="{state}"]{{ display:block }}' not in cb:
             fail(f"auth/callback.html never reveals its {state} branch")
     if 'data-auth="ok"' in cb[:cb.index("<style")]:
@@ -898,6 +917,20 @@ else:
         (APEX, "/hunt/test-hunt", "SERVE"),
         (APEX, "/hunt/test-hunt/", "SERVE"),
         (APEX, "/auth/callback", "SERVE"),
+        # A trailing slash must not push a path back into the cross-host
+        # redirect - least of all the auth callback, which would carry its
+        # single-use code to another origin.
+        (APEX, "/auth/callback/", "SERVE"),
+        (APEX, "/apple-app-site-association/", "SERVE"),
+        # The two apex-served pages load these, and /auth/callback ships a CSP
+        # whose 'self' is the apex. Bounced to www they would be refused as
+        # cross-origin and the page would render unstyled.
+        (APEX, "/assets/fonts.601bc53b.css", "SERVE"),
+        (APEX, "/favicon.ico", "SERVE"),
+        (APEX, "/favicon-48x48.png", "SERVE"),
+        (APEX, "/icon-192.png", "SERVE"),
+        (APEX, "/icon-512.png", "SERVE"),
+        (APEX, "/apple-touch-icon.png", "SERVE"),
         # Ordinary apex marketing traffic still goes to the canonical www host.
         (APEX, "/", "https://www.huntz.ai/"),
         (APEX, "/about", "https://www.huntz.ai/about"),
@@ -918,6 +951,9 @@ else:
                "https://www.huntz.ai/apple-app-site-association-x"),
         (APEX, "/auth/callbackx", "https://www.huntz.ai/auth/callbackx"),
         (APEX, "/auth/other", "https://www.huntz.ai/auth/other"),
+        (APEX, "/assetsx/a.css", "https://www.huntz.ai/assetsx/a.css"),
+        (APEX, "/iconography.png", "https://www.huntz.ai/iconography.png"),
+        (APEX, "/api/contact", "https://www.huntz.ai/api/contact"),
         # THE LOOP TEST. www is the canonical host and must never be redirected,
         # whatever the path, under either matching semantics.
         (WWW, "/", "SERVE"),

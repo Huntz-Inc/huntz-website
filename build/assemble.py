@@ -1537,9 +1537,11 @@ assert "{{" not in hunt_page, "unfilled placeholder in hunt.html"
 # iPhone with Huntz installed the universal link wins and this page never
 # renders; it is the fallback for desktop, for other browsers, and for anyone
 # without the app.
-AUTH_TITLE_TAG = "Email confirmation | Huntz"
-AUTH_DESC = ("Your Huntz email confirmation result. Confirmation finishes in the Huntz app, "
-             "where you sign in.")
+# One static file serves confirmation, password-reset and expired-link arrivals
+# alike, so the title and description have to be true for all of them. Only the
+# body copy is allowed to name the specific outcome.
+AUTH_TITLE_TAG = "Continue in Huntz"
+AUTH_DESC = "Finish signing in to Huntz. Email links open in the Huntz app on your phone."
 auth_page = ((BUILD / "auth-callback-page.html").read_text()
              .replace("{{TITLE_TAG}}", AUTH_TITLE_TAG)
              .replace("{{DESC}}", AUTH_DESC)

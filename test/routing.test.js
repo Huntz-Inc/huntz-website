@@ -64,6 +64,18 @@ const MATRIX = [
   [APEX, '/hunt/test-hunt', 'SERVE'],
   [APEX, '/hunt/test-hunt/', 'SERVE'],
   [APEX, '/auth/callback', 'SERVE'],
+  // A trailing slash must not push a path back into the cross-host redirect -
+  // least of all the auth callback, which would carry its code to another origin.
+  [APEX, '/auth/callback/', 'SERVE'],
+  [APEX, '/apple-app-site-association/', 'SERVE'],
+  // The apex-served pages load these. /auth/callback ships a CSP whose 'self' is
+  // the apex, so bounced to www they are refused and the page renders unstyled.
+  [APEX, '/assets/fonts.601bc53b.css', 'SERVE'],
+  [APEX, '/favicon.ico', 'SERVE'],
+  [APEX, '/favicon-48x48.png', 'SERVE'],
+  [APEX, '/icon-192.png', 'SERVE'],
+  [APEX, '/icon-512.png', 'SERVE'],
+  [APEX, '/apple-touch-icon.png', 'SERVE'],
   // Ordinary apex marketing traffic still reaches the canonical host.
   [APEX, '/', 'https://www.huntz.ai/'],
   [APEX, '/about', 'https://www.huntz.ai/about'],
@@ -84,6 +96,9 @@ const MATRIX = [
   [APEX, '/apple-app-site-association-x', 'https://www.huntz.ai/apple-app-site-association-x'],
   [APEX, '/auth/callbackx', 'https://www.huntz.ai/auth/callbackx'],
   [APEX, '/auth/other', 'https://www.huntz.ai/auth/other'],
+  [APEX, '/assetsx/a.css', 'https://www.huntz.ai/assetsx/a.css'],
+  [APEX, '/iconography.png', 'https://www.huntz.ai/iconography.png'],
+  [APEX, '/api/contact', 'https://www.huntz.ai/api/contact'],
   // www is canonical and is never redirected, whatever the path.
   [WWW, '/', 'SERVE'],
   [WWW, '/about', 'SERVE'],

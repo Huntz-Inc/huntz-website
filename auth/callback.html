@@ -8,14 +8,14 @@
      ride along in the Referer header of every subresource request and land in
      the hosting access log. -->
 <meta name="referrer" content="no-referrer">
-<title>Email confirmation | Huntz</title>
-<meta name="description" content="Your Huntz email confirmation result. Confirmation finishes in the Huntz app, where you sign in.">
+<title>Continue in Huntz</title>
+<meta name="description" content="Finish signing in to Huntz. Email links open in the Huntz app on your phone.">
 <meta name="robots" content="noindex">
 <!-- Constant and account-agnostic: one file is served for every confirmation,
      so nothing here can carry a code or an address into a link preview. -->
 <meta property="og:site_name" content="Huntz">
-<meta property="og:title" content="Email confirmation | Huntz">
-<meta property="og:description" content="Your Huntz email confirmation result. Confirmation finishes in the Huntz app, where you sign in.">
+<meta property="og:title" content="Continue in Huntz">
+<meta property="og:description" content="Finish signing in to Huntz. Email links open in the Huntz app on your phone.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.huntz.ai/">
 <meta property="og:image" content="https://www.huntz.ai/og-image.jpg">
@@ -27,9 +27,13 @@
         ever read, and Supabase's human-readable error text is never rendered:
         it is attacker-controllable, and putting it on a Huntz-branded page
         would make a ready-made phishing surface.
-     2. Drop the query and fragment from the address bar and from this history
-        entry, so a single-use code is not left sitting in browser history,
-        in a screenshot, or in whatever the user pastes when asking for help.
+     2. Drop the query and fragment from the address bar and from this session
+        history entry, so a code does not end up in a screenshot, in the
+        back/forward list, or in whatever the user pastes when asking for help.
+        Note what this does NOT do: the navigation has already committed, so
+        the full URL is still recorded in the browser's own history database
+        and may sync across that user's devices. Treat that as part of the
+        threat model rather than something this line removes.
    This is the exact opposite of the /hunt page, which preserves its URL on
    purpose so an invitation can be reopened. An auth code must not survive;
    an invitation must. build/check.py asserts both directions.
@@ -45,6 +49,12 @@
    error_code with no error key at all. Matching the "error" prefix across
    query and fragment together catches all three.
 
+   A PKCE success carries no flow type - GoTrue sends the same bare code param
+   for signup, magic link, recovery and email change alike - so the caller has
+   to say which one it is. Password recovery must arrive as flow=recovery, or
+   on its own path; without that marker a spent reset link would be told its
+   email was confirmed, which is both wrong and unrecoverable.
+
    Success is recognised only from a PKCE code param. An implicit-flow arrival
    carries a session in the fragment instead, which would mean some sender
    upstream is not using PKCE - a bug to fix there, not here. Such an arrival
@@ -55,6 +65,7 @@
     var h = location.hash || "";
     var state = "";
     if (/[?&#]error/.test(s + h)) state = "error";
+    else if (/[?&]flow=recovery(?:&|$)/.test(s)) state = "recovery";
     else if (/[?&]code=/.test(s)) state = "ok";
     if (state) document.documentElement.setAttribute("data-auth", state);
     if (s || h) history.replaceState(null, "", location.pathname);
@@ -111,6 +122,7 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
 html[data-auth] [data-when="neutral"]{ display:none }
 html[data-auth="ok"] [data-when="ok"]{ display:block }
 html[data-auth="error"] [data-when="error"]{ display:block }
+html[data-auth="recovery"] [data-when="recovery"]{ display:block }
 [data-hz-mark]{ width:46px; height:46px; border-radius:50%; display:grid; place-items:center;
   background:#C24E1F; margin-bottom:20px }
 [data-hz-secondary]{ display:inline-block; font:700 12px 'Figtree',Arial,Helvetica,sans-serif;
@@ -168,6 +180,17 @@ html[data-auth="error"] [data-when="error"]{ display:block }
     </p>
     <p style="margin:0;font:400 15px/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759;text-wrap:pretty">
       If you were confirming your email address and it did not go through, ask for a new confirmation email from the app and use the newest one.
+    </p>
+  </div>
+
+  <div data-when="recovery">
+    <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759;margin-bottom:14px">PASSWORD RESET</div>
+    <h1 style="margin:0 0 16px;font:600 clamp(30px,4.4vw,44px)/1.1 'Playfair Display','Times New Roman',serif;letter-spacing:-.014em;color:#16130E;text-wrap:balance">Finish your reset in the app<span style="color:#C24E1F">.</span></h1>
+    <p style="margin:0 0 14px;font:400 clamp(16px,1.9vw,18px)/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">
+      Choosing a new password happens in Huntz on your phone, not on the web.
+    </p>
+    <p style="margin:0;font:400 15px/1.62 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759;text-wrap:pretty">
+      Reset links work once, and this one has now been opened here. Open Huntz, ask for a new password reset, and open that email on your phone.
     </p>
   </div>
 
