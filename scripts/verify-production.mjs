@@ -156,7 +156,16 @@ async function main() {
   // separately, and only a WRONG cached file is treated as a failure.
   console.log('\n== what Apple\'s CDN is serving to devices ==');
   try {
-    const r = await fetch(`https://app-site-association.cdn-apple.com/a/v1/huntz.ai`);
+    // The CDN is geo-distributed and propagates unevenly: while it is filling,
+    // consecutive requests land on different nodes and alternate between 200 and
+    // 404. One probe would report either answer at random, so probe until a node
+    // that has the file answers, and only then judge the contents.
+    let r = null;
+    for (let i = 0; i < 12; i++) {
+      r = await fetch(`https://app-site-association.cdn-apple.com/a/v1/huntz.ai`);
+      if (r.status === 200) break;
+      await new Promise((s) => setTimeout(s, 2500));
+    }
     if (r.status === 200) {
       const body = await r.json();
       const ids = body?.applinks?.details?.[0]?.appIDs;
@@ -170,9 +179,9 @@ async function main() {
         pass(`Apple's CDN is serving ${APP_ID} with ${comps.length} components`);
       }
     } else {
-      console.log(`  note  Apple's CDN has not picked the file up yet (HTTP ${r.status}). ` +
-                  `It fetches within ~24h; re-run this tomorrow. Universal links will not ` +
-                  `work on any device until it does.`);
+      console.log(`  note  no CDN node answered with the file (last HTTP ${r.status}). ` +
+                  `Apple fetches within ~24h and propagates unevenly; re-run later. ` +
+                  `Universal links will not work on a device until it has.`);
     }
   } catch (e) {
     console.log(`  note  could not reach Apple's CDN: ${e.message}`);
