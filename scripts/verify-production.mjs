@@ -45,6 +45,10 @@ async function checkAasa(origin, path) {
   if (!Array.isArray(ids) || ids[0] !== APP_ID) {
     return fail(`${label} appIDs is ${JSON.stringify(ids)}, expected ["${APP_ID}"]`);
   }
+  const credentialApps = body?.webcredentials?.apps;
+  if (!Array.isArray(credentialApps) || credentialApps.length !== 1 || credentialApps[0] !== APP_ID) {
+    return fail(`${label} webcredentials.apps is ${JSON.stringify(credentialApps)}, expected ["${APP_ID}"]`);
+  }
   const comps = (body.applinks.details[0].components || []).map((c) => c['/']);
   for (const want of ['/hunt/*', '/hunt', '/auth/callback']) {
     if (!comps.includes(want)) fail(`${label} does not associate ${want}`);
@@ -170,11 +174,14 @@ async function main() {
       const body = await r.json();
       const ids = body?.applinks?.details?.[0]?.appIDs;
       const comps = (body?.applinks?.details?.[0]?.components || []).map((c) => c['/']);
+      const credentialApps = body?.webcredentials?.apps;
       if (ids?.[0] !== APP_ID) {
         fail(`Apple's CDN is serving appIDs ${JSON.stringify(ids)}, expected ["${APP_ID}"] - ` +
              `devices will use this for about a week and it cannot be invalidated`);
       } else if (!['/hunt/*', '/hunt', '/auth/callback'].every((c) => comps.includes(c))) {
         fail(`Apple's CDN has a stale component list: ${JSON.stringify(comps)}`);
+      } else if (credentialApps?.length !== 1 || credentialApps[0] !== APP_ID) {
+        fail(`Apple's CDN has stale webcredentials apps: ${JSON.stringify(credentialApps)}`);
       } else {
         pass(`Apple's CDN is serving ${APP_ID} with ${comps.length} components`);
       }

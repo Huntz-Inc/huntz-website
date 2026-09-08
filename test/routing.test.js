@@ -156,6 +156,7 @@ test('the association file names the app identifier from the signed profile', ()
   const aasa = JSON.parse(copies[0]);
   const [detail] = aasa.applinks.details;
   assert.deepEqual(detail.appIDs, ['JVTW9DH25L.ai.huntz.app']);
+  assert.deepEqual(aasa.webcredentials, { apps: ['JVTW9DH25L.ai.huntz.app'] });
 
   // Evaluate the components the way Apple does rather than grepping, so this
   // asserts real matching behaviour. "*" spans any characters; a component with
