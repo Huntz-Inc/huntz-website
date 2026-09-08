@@ -1490,7 +1490,13 @@ AASA = {
                 ],
             }
         ]
-    }
+    },
+    # ASWebAuthenticationSession's HTTPS callback API requires the callback
+    # host to associate the calling app through the webcredentials service.
+    # This is association metadata only; Huntz stores no website passwords.
+    "webcredentials": {
+        "apps": [f"{APPLE_TEAM_ID}.{IOS_BUNDLE_ID}"]
+    },
 }
 
 AASA_JSON = json.dumps(AASA, indent=2) + "\n"

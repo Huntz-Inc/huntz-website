@@ -604,9 +604,10 @@ if aasa_raw:
             detail, = aasa["applinks"]["details"]
             app_ids = detail["appIDs"]
             components = detail["components"]
+            webcredential_apps = aasa["webcredentials"]["apps"]
         except (KeyError, TypeError, ValueError) as e:
-            detail = app_ids = components = None
-            fail(f"AASA is not in the expected applinks/details shape: {e}")
+            detail = app_ids = components = webcredential_apps = None
+            fail(f"AASA is not in the expected applinks/webcredentials shape: {e}")
 
         # A placeholder that reaches production breaks universal links with no
         # visible symptom, so the app id is pattern-checked, not eyeballed.
@@ -618,6 +619,9 @@ if aasa_raw:
         # development certificate) very nearly shipped, and a wrong team id
         # breaks universal links with no visible symptom.
         EXPECTED_APP_ID = "JVTW9DH25L.ai.huntz.app"
+        if webcredential_apps != [EXPECTED_APP_ID]:
+            fail(f"AASA: webcredentials apps is {webcredential_apps!r}, expected "
+                 f"[{EXPECTED_APP_ID!r}]")
         if app_ids is not None:
             if len(app_ids) != 1:
                 fail(f"AASA: expected exactly one appID, found {len(app_ids)}")
