@@ -67,6 +67,9 @@ const MATRIX = [
   // A trailing slash must not push a path back into the cross-host redirect -
   // least of all the auth callback, which would carry its code to another origin.
   [APEX, '/auth/callback/', 'SERVE'],
+  [APEX, '/mailbox/gmail-action/pair', 'SERVE'],
+  [APEX, '/mailbox/gmail-action/pair/', 'SERVE'],
+  [APEX, '/mailbox/gmail-action/pairx', 'https://www.huntz.ai/mailbox/gmail-action/pairx'],
   [APEX, '/apple-app-site-association/', 'SERVE'],
   // The apex-served pages load these. /auth/callback ships a CSP whose 'self' is
   // the apex, so bounced to www they are refused and the page renders unstyled.
@@ -167,12 +170,12 @@ test('the association file names the app identifier from the signed profile', ()
       return new RegExp(`^${rx}$`).test(pathname) && !c.exclude;
     });
 
-  for (const p of ['/hunt', '/hunt/abc123', '/hunt/01HZY9K3', '/auth/callback']) {
+  for (const p of ['/hunt', '/hunt/abc123', '/hunt/01HZY9K3', '/auth/callback', '/mailbox/gmail-action/pair']) {
     assert.equal(matches(p), true, `${p} must be associated`);
   }
   for (const p of ['/', '/about', '/blog', '/blog/best-accountability-apps-2026', '/contact',
                    '/faq', '/terms', '/privacy', '/hunts/abc', '/auth', '/auth/other',
-                   '/auth/callbackx', '/.well-known/apple-app-site-association']) {
+                   '/auth/callbackx', '/mailbox', '/mailbox/gmail-action/pairx', '/.well-known/apple-app-site-association']) {
     assert.equal(matches(p), false, `${p} must NOT be associated`);
   }
 });

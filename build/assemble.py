@@ -1458,7 +1458,7 @@ sitemap.append("</urlset>")
 APPLE_TEAM_ID = "JVTW9DH25L"
 IOS_BUNDLE_ID = "ai.huntz.app"
 
-# Narrow on purpose. Two path families are associated and nothing else, so a
+# Narrow on purpose. Only app-owned path families are associated, so a
 # tapped marketing or blog link never leaves the browser:
 #
 #   /hunt/*        Hunt invitations. In the modern format the "?" key defaults to
@@ -1486,6 +1486,10 @@ AASA = {
                         "/": "/auth/callback",
                         "comment": "Supabase email-confirmation return, with or without "
                                    "its ?code= query",
+                    },
+                    {
+                        "/": "/mailbox/gmail-action/pair",
+                        "comment": "Gmail account pairing; confirmation happens only in the app",
                     },
                 ],
             }
@@ -1563,6 +1567,12 @@ auth_page = ((BUILD / "auth-callback-page.html").read_text()
 assert "{{" not in auth_page, "unfilled placeholder in auth/callback.html"
 (ROOT / "auth").mkdir(exist_ok=True)
 (ROOT / "auth" / "callback.html").write_text(auth_page)
+
+# A browser fallback is required when Gmail's browser or Apple's association
+# cache does not hand the HTTPS link to the installed app. No third-party assets.
+gmail_pair_dir = ROOT / "mailbox" / "gmail-action"
+gmail_pair_dir.mkdir(parents=True, exist_ok=True)
+(gmail_pair_dir / "pair.html").write_text((BUILD / "gmail-pair-page.html").read_text())
 
 
 print(f"index.html  {(ROOT / 'index.html').stat().st_size:,} bytes")

@@ -673,6 +673,7 @@ if aasa_raw:
                                 ("/hunt", ""),
                                 ("/auth/callback", ""),
                                 ("/auth/callback", "code=SOMEPKCECODE"),
+                                ("/mailbox/gmail-action/pair", "pairingId=test&pairingCode=test&signature=test"),
                                 ("/auth/callback", "error=access_denied")]:
                 if not _matches(components, path, query):
                     fail(f"AASA does not associate /hunt path {path!r} (query {query!r})")
@@ -685,7 +686,7 @@ if aasa_raw:
                          "/blog/best-accountability-apps-2026", "/terms", "/privacy",
                          "/hunts/abc", "/.well-known/apple-app-site-association",
                          "/auth", "/auth/other", "/auth/callbackx", "/auth/reset",
-                         "/authx/callback"]:
+                         "/authx/callback", "/mailbox", "/mailbox/gmail-action/pairx"]:
                 for query in ["", "utm_source=x", "ref=y", "code=z", "a=1&b=2"]:
                     if _matches(components, path, query):
                         fail(f"AASA associates unrelated route {path} (query {query!r})")

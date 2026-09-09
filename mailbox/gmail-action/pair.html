@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>Connect Gmail · Huntz</title>
+<script>
+(function () {
+  'use strict';
+  var appLink = null;
+  try {
+    var params = new URLSearchParams(location.search);
+    // Remove credentials from this history entry before rendering. This cannot
+    // erase the initial request from browser/provider logs. Never log or store
+    // the values, load analytics, fetch, or redeem a pairing from this page.
+    history.replaceState(null, '', location.pathname);
+    var id = params.get('pairingId') || '';
+    var code = params.get('pairingCode') || '';
+    var signature = params.get('signature') || '';
+    if (params.getAll('pairingId').length === 1 &&
+        params.getAll('pairingCode').length === 1 &&
+        params.getAll('signature').length === 1 &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) &&
+        /^[A-Za-z0-9._~-]{16,128}$/.test(code) &&
+        /^[A-Za-z0-9_-]{40,64}$/.test(signature)) {
+      // Only the fixed native destination receives the signed bundle, and only
+      // after a tap. The app still asks for explicit account-link confirmation.
+      appLink = 'huntz:///mailbox/gmail-action/pair?' + new URLSearchParams({
+        pairingId: id, pairingCode: code, signature: signature
+      }).toString();
+    }
+  } catch (_) { /* Fail closed; a fresh link or fallback code remains available. */ }
+  document.addEventListener('DOMContentLoaded', function () {
+    var button = document.getElementById('open-huntz');
+    if (appLink) {
+      button.hidden = false;
+      button.addEventListener('click', function () { location.assign(appLink); });
+    } else {
+      document.getElementById('status').textContent =
+        'Open the Huntz add-on in Gmail and tap Connect to Huntz to get a fresh link.';
+    }
+  });
+})();
+</script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f2ec;color:#24211d;font:18px/1.6 system-ui,-apple-system,sans-serif}main{max-width:520px;margin:10vh auto;padding:32px 24px}.brand{font-weight:800;letter-spacing:.12em;color:#ad571c}h1{font-size:42px;line-height:1.12;letter-spacing:-.035em;margin:32px 0 20px}p{color:#716e66}button{width:100%;padding:19px 24px;border:0;border-radius:20px;background:#24211d;color:white;font:700 18px system-ui;cursor:pointer;margin:20px 0}button:focus-visible{outline:3px solid #ad571c;outline-offset:4px}.note{padding:20px;background:white;border:1px solid #e1ddd5;border-radius:20px;font-size:16px}a{color:#ad571c}
+</style>
+</head>
+<body><main>
+<div class="brand">HUNTZ</div>
+<h1>Finish connecting<br>in Huntz.</h1>
+<p id="status">Tap below to open the Huntz app, then confirm the Gmail account connection.</p>
+<button id="open-huntz" type="button" hidden>Open Huntz</button>
+<p class="note">App not opening? Return to the Huntz add-on in Gmail and copy its fallback code. In Huntz, go to Profile → Account → Integrations → Gmail and enter that code.</p>
+<noscript><p>Use the fallback code from the Gmail add-on to connect inside Huntz.</p></noscript>
+<p>Your Gmail account is connected only after you confirm in the app.</p>
+</main></body>
+</html>
