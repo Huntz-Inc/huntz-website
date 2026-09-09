@@ -50,7 +50,7 @@ async function checkAasa(origin, path) {
     return fail(`${label} webcredentials.apps is ${JSON.stringify(credentialApps)}, expected ["${APP_ID}"]`);
   }
   const comps = (body.applinks.details[0].components || []).map((c) => c['/']);
-  for (const want of ['/hunt/*', '/hunt', '/auth/callback']) {
+  for (const want of ['/hunt/*', '/hunt', '/auth/callback', '/mailbox/gmail-action/pair']) {
     if (!comps.includes(want)) fail(`${label} does not associate ${want}`);
   }
   pass(`${label} 200, no redirect, application/json, ${APP_ID}`);
@@ -69,6 +69,21 @@ const MARKETING = ['/', '/how-it-works', '/accountability-challenges', '/faq', '
                    '/about', '/contact', '/terms', '/privacy', '/sitemap.xml', '/robots.txt'];
 
 async function main() {
+  console.log('\n== Gmail pairing fallback ==');
+  for (const origin of PRE_ONLY ? [WWW] : [APEX, WWW]) {
+    const r = await head(origin + '/mailbox/gmail-action/pair');
+    if (r.status !== 200 || r.location) {
+      fail(`${origin} Gmail pairing must serve 200 without redirect`);
+      continue;
+    }
+    const html = await r.res.text();
+    for (const [key, value] of [['cache-control', 'no-store'], ['referrer-policy', 'no-referrer'], ['x-robots-tag', 'noindex']]) {
+      if (!(r.res.headers.get(key) || '').includes(value)) fail(`${origin} Gmail pairing missing ${key}: ${value}`);
+    }
+    if (!html.includes('huntz:///mailbox/gmail-action/pair?') || !html.includes('Open Huntz')) {
+      fail(`${origin} Gmail pairing missing native handoff`);
+    } else pass(`${origin} Gmail pairing fallback is live`);
+  }
   console.log(`\n== canonical host (${WWW}) must be untouched ==`);
   for (const p of MARKETING) {
     const r = await head(WWW + p);
@@ -102,7 +117,7 @@ async function main() {
   }
   for (const l of locs) {
     if (!l.startsWith(WWW + '/')) fail(`sitemap lists a non-canonical url: ${l}`);
-    if (/\/(hunt|auth)(\/|$)/.test(l)) fail(`sitemap leaks an unindexed route: ${l}`);
+    if (/\/(hunt|auth|mailbox)(\/|$)/.test(l)) fail(`sitemap leaks an unindexed route: ${l}`);
   }
   if (!failures.length) pass(`sitemap lists ${locs.length} canonical www urls, none unindexed`);
   const home = await (await fetch(`${WWW}/about`)).text();
@@ -184,6 +199,9 @@ async function main() {
         fail(`Apple's CDN has stale webcredentials apps: ${JSON.stringify(credentialApps)}`);
       } else {
         pass(`Apple's CDN is serving ${APP_ID} with ${comps.length} components`);
+        if (!comps.includes('/mailbox/gmail-action/pair')) {
+          console.log('  note  Apple CDN has not picked up Gmail pairing yet; browser fallback remains available.');
+        }
       }
     } else {
       console.log(`  note  no CDN node answered with the file (last HTTP ${r.status}). ` +
