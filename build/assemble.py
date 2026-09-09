@@ -1574,6 +1574,14 @@ gmail_pair_dir = ROOT / "mailbox" / "gmail-action"
 gmail_pair_dir.mkdir(parents=True, exist_ok=True)
 (gmail_pair_dir / "pair.html").write_text((BUILD / "gmail-pair-page.html").read_text())
 
+# Stripe requires HTTPS return/refresh destinations. These browser fallbacks
+# hand control to the fixed native route without forwarding provider input.
+payout_dir = ROOT / "payouts"
+payout_dir.mkdir(exist_ok=True)
+payout_page = (BUILD / "payout-return-page.html").read_text()
+(payout_dir / "return.html").write_text(payout_page)
+(payout_dir / "refresh.html").write_text(payout_page)
+
 
 print(f"index.html  {(ROOT / 'index.html').stat().st_size:,} bytes")
 print(f"app js      {APP_HREF}")

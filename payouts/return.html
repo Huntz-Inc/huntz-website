@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>Return to Huntz</title>
+<script>
+(function () {
+  'use strict';
+  try { history.replaceState(null, '', location.pathname); } catch (_) {}
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('open-huntz').addEventListener('click', function () {
+      // Fixed destination only. Stripe query parameters are never forwarded.
+      location.assign('huntz:///integrations/payouts/return');
+    });
+  });
+})();
+</script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f2ec;color:#24211d;font:18px/1.6 system-ui,-apple-system,sans-serif}main{max-width:520px;margin:10vh auto;padding:32px 24px}.brand{font-weight:800;letter-spacing:.12em;color:#ad571c}h1{font-size:42px;line-height:1.12;letter-spacing:-.035em;margin:32px 0 20px}p{color:#716e66}button{width:100%;padding:19px 24px;border:0;border-radius:20px;background:#24211d;color:white;font:700 18px system-ui;cursor:pointer;margin:20px 0}button:focus-visible{outline:3px solid #ad571c;outline-offset:4px}.note{padding:20px;background:white;border:1px solid #e1ddd5;border-radius:20px;font-size:16px}
+</style>
+</head>
+<body><main>
+<div class="brand">HUNTZ</div>
+<h1>Continue payout setup<br>in Huntz.</h1>
+<p>Return to Huntz to check your payout status or request a fresh secure setup link.</p>
+<button id="open-huntz" type="button">Open Huntz</button>
+<p class="note">Payout readiness comes from our payment provider. Returning to the app does not by itself mean setup is complete.</p>
+<noscript><p>Open the Huntz app and return to Profile → Account → Payouts.</p></noscript>
+</main></body>
+</html>
