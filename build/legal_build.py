@@ -30,8 +30,8 @@ SUBHEADS = {
     "Host Compensation", "Marketing", "Public Sharing",
     # Privacy
     "Information You Provide", "Information Collected Automatically",
-    "Information From Third Parties", "Information We Do Not Collect",
-    "AI-Assisted Verification", "AI Training", "California Residents",
+    "Information From Third Parties", "Apple Health", "Information We Do Not Collect",
+    "Analytics", "AI-Assisted Verification", "AI Training", "California Residents",
     "Other U.S. State Privacy Laws", "International Users",
     "Payment Providers", "Cloud Infrastructure Providers",
     "Analytics Providers", "Email and Communications Providers",
