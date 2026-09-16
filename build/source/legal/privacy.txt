@@ -1,6 +1,6 @@
 Huntz Privacy                  Policy
 
-Last Updated: July       30, 2026
+Last Updated: September 16, 2026
 
 Welcome to     Huntz ("Huntz," "we," "our," or "us"). This Privacy             Policy  explains how we collect, use,
 disclose, store, and   protect your personal information         when   you  use the Huntz mobile application, our
@@ -156,6 +156,10 @@ Service Providers
 We receive information      from vendors that help     us provide our services, including       analytics providers,
 cloud  hosting  providers, customer support platforms, and          security  providers.
 
+Apple Health
+
+If you join a Hunt that counts steps, Huntz reads step counts from Apple Health during your step sessions, with your permission, and stores the session totals and checkpoints as your proof. We never use Apple Health data for advertising or marketing, never sell it, and never share it with anyone other than the service providers that host Huntz. You can withdraw access at any time in the Health app.
+
 Information We Do                                   Not Collect
 
 Unless specifically    stated otherwise, Huntz does not collect:
@@ -163,7 +167,7 @@ Unless specifically    stated otherwise, Huntz does not collect:
     ●    Biometric identifiers such      as facial geometry    templates, fingerprints, or voiceprints
     ●    Precise GPS location
     ●    Contact lists from your device
-    ●    Health   information   from Apple Health, Google Health          Connect, or similar device health       APIs
+    ●    Health information from Apple Health beyond the step counts described above, or from Google Health Connect or similar device health APIs
 Although    users may   voluntarily   upload   photos or videos as proof for Hunt verification, Huntz does not
 use those images to     create or store biometric identifiers.
 
@@ -235,6 +239,10 @@ settings.
 
 Certain  transactional communications—such            as payment confirmations, dispute notices, proof reminders,
 and  security  notifications—cannot be disabled        while you    have an   active account or active Hunt.
+
+Analytics
+
+We use PostHog to understand how the app is used: the screens you open, the actions you take, your account id, name and email address, and session recordings in which text fields and images are masked. PostHog processes this data for us in the United States.
 
 4. Legal Bases for Processing
 
