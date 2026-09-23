@@ -1,6 +1,6 @@
 HUNTZ TERMS OF SERVICE
 
-Effective Date: July      30, 2026
+Effective Date: September 23, 2026
 
 1. Acceptance of These Terms
 
@@ -195,12 +195,7 @@ If your payment cannot be successfully          processed, your participation   
 
 We believe commitment should           be intentional rather than     impulsive.
 
-Unless a Hunt specifically      provides otherwise, you       may   withdraw from a Hunt within:
-
-    ●    forty-eight (48) hours after joining; or
-    ●    any   time before the Hunt officially      begins,
-
-whichever provides the longer withdrawal period.
+Unless a Hunt specifically provides otherwise, you may withdraw from a Hunt at any time before the Hunt officially begins (or before enrollment for that Hunt closes, if that is earlier). The Platform shows your exact withdrawal deadline for each Hunt you join. If a Host changes a Hunt's start date after you join, you will be notified and given a new withdrawal deadline.
 
 If you  withdraw during      this period:
 
@@ -340,10 +335,13 @@ provided.
 
 Payouts are generally       initiated  after:
 
-     ●    the Hunt concludes;
-     ●    applicable verification      has been    completed; and
-     ●    any  applicable dispute period        has expired.
-Processing    times may    vary  depending     upon  banking    networks and     payment providers.
+          ●    the Hunt concludes;
+     ●    applicable verification has been completed; and
+     ●    any applicable dispute period has expired.
+
+Unless otherwise disclosed for a Hunt, eligible payouts are generally initiated three (3) days after the Hunt concludes, provided applicable verification is complete and any timely disputes have been resolved. This three-day period allows participants to submit disputes before payouts are initiated. If a dispute remains pending, payouts for the affected Hunt may be delayed until the dispute is resolved.
+
+Processing times may vary depending upon banking networks and payment providers.
 
 17. Disputes
 
