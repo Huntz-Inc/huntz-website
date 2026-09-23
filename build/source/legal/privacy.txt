@@ -1,6 +1,6 @@
 Huntz Privacy                  Policy
 
-Last Updated: September 16, 2026
+Last Updated: September 23, 2026
 
 Welcome to     Huntz ("Huntz," "we," "our," or "us"). This Privacy             Policy  explains how we collect, use,
 disclose, store, and   protect your personal information         when   you  use the Huntz mobile application, our
@@ -44,7 +44,8 @@ When    creating   an account, we may       collect:
      ●    Username
      ●    Email address
      ●    Password
-     ●    Date of birth
+          ●    Date of birth
+     ●    Time zone, which we use to schedule your daily check-in deadlines
 
 We use this information       to  create and   secure your account, verify        your eligibility, and    personalize your
 experience.
@@ -242,7 +243,7 @@ and  security  notifications—cannot be disabled        while you    have an   
 
 Analytics
 
-We use PostHog to understand how the app is used: the screens you open, the actions you take, your account id, name and email address, and session recordings in which text fields and images are masked. PostHog processes this data for us in the United States.
+We use PostHog to understand how the app is used: the screens you open, the actions you take, your account id, name and email address, and session recordings in which text fields and images are masked. PostHog also receives error and crash reports from the app and our servers so we can find and fix problems. PostHog processes this data for us in the United States.
 
 4. Legal Bases for Processing
 
@@ -263,14 +264,16 @@ Proof submissions are visible only        to:
     ●    You
     ●    Authorized     Huntz personnel responsible for verification, moderation, fraud               prevention, or
          customer support
-    ●    Trusted    service providers assisting      us with  verification   and  fraud  detection
+         ●    Trusted service providers assisting us with verification and fraud detection
+     ●    A friend you have linked with in a Hunt, only if you turn on evidence sharing for that Hunt. Evidence sharing is off by default, covers only submissions made after you turn it on, and can be turned off at any time.
 
 Other Hunt participants may        see limited   profile information     associated    with  your participation, including:
 
     ●    Username
     ●    Profile photo
     ●    Hunt participation
-    ●    Completion      status
+         ●    Completion status
+     ●    Your daily check-in status and streak in a Hunt, shared only with a friend you have linked with by sending or accepting a challenge invitation for that Hunt
 
 Users control whether to       generate or publicly     share share-cards or similar social content.
 
