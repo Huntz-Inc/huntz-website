@@ -428,7 +428,13 @@ test('no credential is hard-coded anywhere in the endpoint', () => {
       if (e.isDirectory()) walk(f); else if (f.endsWith('.js')) files.push(f);
     }
   })(dir);
-  assert.equal(files.length, 2, 'the endpoint is two files: the route and its validator');
+  // Not just the contact endpoint: this walks the whole api/ directory, so it
+  // is the one place that keeps asserting no future function under api/ ships
+  // a hard-coded secret either. Named rather than counted, so an unexpected
+  // addition fails with a useful diff instead of a bare number.
+  const expected = ['contact.js', 'hunt.js', 'validate.js'];
+  assert.deepEqual(files.map((f) => path.basename(f)).sort(), expected,
+    'unexpected file set under api/ - update this list deliberately');
   for (const f of files) {
     const src = fs.readFileSync(f, 'utf8');
     assert.ok(!/pass\s*:\s*['"][^'"]+['"]/.test(src), f + ' hard-codes a password');

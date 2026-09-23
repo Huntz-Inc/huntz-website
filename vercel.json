@@ -68,6 +68,12 @@
     }
   ],
   "rewrites": [
-    { "source": "/hunt/:path+", "destination": "/hunt" }
-  ]
+    { "source": "/hunt", "destination": "/api/hunt" },
+    { "source": "/hunt/:path+", "destination": "/api/hunt" }
+  ],
+  "functions": {
+    "api/hunt.js": {
+      "includeFiles": "api/_lib/hunt-fallback.html"
+    }
+  }
 }
