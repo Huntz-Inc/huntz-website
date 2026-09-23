@@ -219,16 +219,134 @@ function formatDuration(duration, lengthLabel) {
   return null;
 }
 
-/** Host, start date in words, duration. Never the host-authored blurb (HuntDetailDto.description). */
-function buildDescription(detail) {
+/** The Y-M-D calendar parts of `date` as observed in `timeZone`, or null if either is unusable. */
+function localDateParts(date, timeZone) {
+  try {
+    const dtf = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
+    const get = (t) => {
+      const found = dtf.formatToParts(date).find((p) => p.type === t);
+      return found ? Number(found.value) : NaN;
+    };
+    const year = get('year');
+    const month = get('month');
+    const day = get('day');
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+    return { year, month, day };
+  } catch {
+    // Invalid IANA zone, or a `date` Intl cannot format.
+    return null;
+  }
+}
+
+/** Whole calendar days from `a` to `b` (both Y-M-D parts), independent of either instant's DST offset. */
+function daysBetween(a, b) {
+  const ua = Date.UTC(a.year, a.month - 1, a.day);
+  const ub = Date.UTC(b.year, b.month - 1, b.day);
+  return Math.round((ub - ua) / 86400000);
+}
+
+/**
+ * The 1-indexed local calendar day number of `at`, relative to startAt's own
+ * local calendar day in timeZone: day 1 is startAt's own local date, day 2 is
+ * the next local date, and so on. Mirrors the daily-calendar window
+ * generator's own day boundary (whole local days, not a fixed 24h offset), so
+ * it stays correct across a DST transition. Returns null when startAt/at
+ * cannot be parsed or timeZone cannot be resolved, which the caller treats as
+ * "too ambiguous to state a day number."
+ */
+function localDayNumber(startAt, timeZone, at) {
+  const start = new Date(startAt);
+  if (Number.isNaN(start.getTime())) return null;
+  const startParts = localDateParts(start, timeZone);
+  const atParts = localDateParts(at, timeZone);
+  if (!startParts || !atParts) return null;
+  return daysBetween(startParts, atParts) + 1;
+}
+
+/** Day n's own local date (start's local date plus n-1 days), in words. */
+function formatEndDate(startAt, timeZone, n) {
+  const start = new Date(startAt);
+  if (Number.isNaN(start.getTime())) return null;
+  const startParts = localDateParts(start, timeZone);
+  if (!startParts) return null;
+  // Anchored at UTC midnight of the target calendar date (Date.UTC rolls day
+  // overflow into the month/year correctly), then formatted back out in the
+  // UTC zone so no further zone conversion can shift the date it names.
+  const endDay = new Date(Date.UTC(startParts.year, startParts.month - 1, startParts.day + (n - 1)));
+  try {
+    return new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(
+      endDay,
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The day count (n) and cadence unit, preferring the frozen rule snapshot
+ * (HuntDetailDto.ruleSummary.proofWindowCount/windowUnitLabel) over the
+ * read-model's own duration.windowCount/windowUnitLabel, which mirror it.
+ */
+function dayCount(detail) {
+  const fromRules =
+    detail.ruleSummary && typeof detail.ruleSummary.proofWindowCount === 'number'
+      ? detail.ruleSummary.proofWindowCount
+      : null;
+  if (fromRules !== null) return fromRules;
+  return detail.duration && typeof detail.duration.windowCount === 'number' ? detail.duration.windowCount : null;
+}
+
+function cadenceUnit(detail) {
+  const fromRules =
+    detail.ruleSummary && typeof detail.ruleSummary.windowUnitLabel === 'string'
+      ? detail.ruleSummary.windowUnitLabel
+      : null;
+  if (fromRules) return fromRules;
+  return detail.duration && typeof detail.duration.windowUnitLabel === 'string' ? detail.duration.windowUnitLabel : null;
+}
+
+/**
+ * Tense-aware second sentence: before the start, while running, or after the
+ * end, compared against `now`. "Day k of n" is only ever shown for a strictly
+ * daily cadence (windowUnitLabel === "day"), where one calendar day is
+ * exactly one proof window and k is unambiguous; a check-in cadence has no
+ * fixed calendar length per window, so k could not be computed honestly.
+ * Whenever the day number itself cannot be trusted (a non-daily cadence, a
+ * missing day count, or a timeZone Intl cannot resolve), this falls back to
+ * restating the plain duration, which is true whether the Hunt is still
+ * running or has already ended.
+ */
+function buildTenseClause(detail, now) {
+  const dateWords = formatStartDate(detail.startAt, detail.timeZone);
+  if (!dateWords) return null;
+  const durationWords = formatDuration(detail.duration, detail.lengthLabel);
+
+  const start = new Date(detail.startAt);
+  const hasStarted = !Number.isNaN(start.getTime()) && now.getTime() >= start.getTime();
+  if (!hasStarted) {
+    return durationWords ? `Starts ${dateWords}. ${durationWords}.` : `Starts ${dateWords}.`;
+  }
+
+  const n = dayCount(detail);
+  if (cadenceUnit(detail) === 'day' && typeof n === 'number' && n > 0) {
+    const k = localDayNumber(detail.startAt, detail.timeZone, now);
+    if (k !== null && k >= 1 && k <= n) return `Started ${dateWords}. Day ${k} of ${n}.`;
+    if (k !== null && k > n) {
+      const endWords = formatEndDate(detail.startAt, detail.timeZone, n);
+      if (endWords) return `Ended ${endWords}.`;
+    }
+  }
+  return durationWords ? `Started ${dateWords}. ${durationWords}.` : `Started ${dateWords}.`;
+}
+
+/** Host, then the tense-aware start/running/end sentence. Never the host-authored blurb (HuntDetailDto.description). */
+function buildDescription(detail, now) {
   const parts = [];
   if (typeof detail.creatorDisplayName === 'string' && detail.creatorDisplayName.trim().length > 0) {
     parts.push('Hosted by ' + detail.creatorDisplayName.trim() + '.');
   }
-  const dateWords = formatStartDate(detail.startAt, detail.timeZone);
-  if (dateWords) parts.push('Starts ' + dateWords + '.');
-  const durationWords = formatDuration(detail.duration, detail.lengthLabel);
-  if (durationWords) parts.push(durationWords + '.');
+  const tense = buildTenseClause(detail, now);
+  if (tense) parts.push(tense);
   return parts.length > 0 ? parts.join(' ') : 'Open this Hunt in the Huntz app.';
 }
 
@@ -253,9 +371,9 @@ function replaceTag(html, pattern, value) {
   return html.replace(pattern, (_match, open, close) => open + value + close);
 }
 
-function renderHuntHtml(fallbackHtml, huntId, detail, apiOrigin) {
+function renderHuntHtml(fallbackHtml, huntId, detail, apiOrigin, now) {
   const title = escapeHtml(detail.title) + ' | Huntz';
-  const description = escapeHtml(buildDescription(detail));
+  const description = escapeHtml(buildDescription(detail, now));
   const ogUrl = escapeHtml(SITE_URL + '/hunt/' + encodeURIComponent(huntId));
   const coverArt = buildCoverArtUrl(detail.coverArtUrl, apiOrigin);
 
@@ -298,7 +416,8 @@ async function handle(req, res, deps = {}) {
       return;
     }
     const apiOrigin = deps.apiOrigin || API_ORIGIN;
-    const html = renderHuntHtml((deps && deps.fallbackHtml) || loadFallbackHtml(), huntId, detail, apiOrigin);
+    const now = deps.now instanceof Date ? deps.now : new Date();
+    const html = renderHuntHtml((deps && deps.fallbackHtml) || loadFallbackHtml(), huntId, detail, apiOrigin, now);
     sendHtml(res, html, 'public, s-maxage=300, stale-while-revalidate=600');
   } catch (e) {
     console.error('hunt: unexpected error, serving the fallback', { message: e && e.message });
@@ -319,5 +438,9 @@ module.exports.escapeHtml = escapeHtml;
 module.exports.buildDescription = buildDescription;
 module.exports.buildCoverArtUrl = buildCoverArtUrl;
 module.exports.renderHuntHtml = renderHuntHtml;
+module.exports.localDayNumber = localDayNumber;
+module.exports.formatEndDate = formatEndDate;
+module.exports.dayCount = dayCount;
+module.exports.cadenceUnit = cadenceUnit;
 module.exports.API_ORIGIN = API_ORIGIN;
 module.exports.SITE_URL = SITE_URL;

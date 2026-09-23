@@ -23,8 +23,19 @@ const VALID_DETAIL = Object.freeze({
   timeZone: 'America/New_York',
   duration: { windowCount: 14, windowUnitLabel: 'day' },
   lengthLabel: null,
+  ruleSummary: Object.freeze({ proofWindowCount: 14, windowUnitLabel: 'day' }),
   coverArtUrl: '/v1/hunts/read-12-books/cover-art?v=asset-1',
 });
+
+// All relative to VALID_DETAIL.startAt (2026-10-05T15:00:00.000Z in America/New_York,
+// i.e. 11:00 local on Oct 5) and its 14-day window. Verified independently with
+// huntFn.localDayNumber/formatEndDate before being hard-coded here.
+const NOW_BEFORE_START = new Date('2026-10-01T00:00:00.000Z');
+const NOW_AT_START = new Date(VALID_DETAIL.startAt);
+const NOW_SAME_LOCAL_DAY_BEFORE_START = new Date('2026-10-05T14:59:00.000Z'); // 1 minute before start, same local day
+const NOW_DAY_5 = new Date('2026-10-09T18:00:00.000Z'); // 14:00 local on Oct 9 = day 5
+const NOW_DAY_15_JUST_ENDED = new Date('2026-10-19T12:00:00.000Z'); // 08:00 local on Oct 19 = day 15, one past day 14
+const NOW_WELL_AFTER_END = new Date('2026-11-01T12:00:00.000Z');
 
 function jsonResponse(status, body) {
   return { status, json: async () => body };
@@ -194,6 +205,7 @@ test('when api/_lib/hunt-fallback.html cannot be read, an embedded safe fallback
 test('a resolved Hunt gets per-Hunt meta; everything past <body> is untouched', async () => {
   const calls = [];
   const server = await startServer({
+    now: NOW_BEFORE_START,
     fetchImpl: async (url) => {
       calls.push(url);
       return jsonResponse(200, VALID_DETAIL);
@@ -349,30 +361,135 @@ test('buildCoverArtUrl resolves a relative path against the API origin, cache-bu
 
 test('duration falls back to windowCount + pluralized windowUnitLabel when lengthLabel is absent', () => {
   assert.equal(
-    huntFn.buildDescription({ ...VALID_DETAIL, lengthLabel: null, duration: { windowCount: 1, windowUnitLabel: 'day' } })
+    huntFn
+      .buildDescription(
+        { ...VALID_DETAIL, lengthLabel: null, duration: { windowCount: 1, windowUnitLabel: 'day' } },
+        NOW_BEFORE_START,
+      )
       .endsWith('1 day.'),
     true,
   );
   assert.equal(
-    huntFn.buildDescription({ ...VALID_DETAIL, lengthLabel: null, duration: { windowCount: 6, windowUnitLabel: 'check-in' } })
+    huntFn
+      .buildDescription(
+        { ...VALID_DETAIL, lengthLabel: null, duration: { windowCount: 6, windowUnitLabel: 'check-in' } },
+        NOW_BEFORE_START,
+      )
       .endsWith('6 check-ins.'),
     true,
   );
 });
 
 test('lengthLabel wins over a raw windowCount when both are present', () => {
-  const desc = huntFn.buildDescription({
-    ...VALID_DETAIL,
-    lengthLabel: '4 weeks',
-    duration: { windowCount: 12, windowUnitLabel: 'check-in' },
-  });
+  const desc = huntFn.buildDescription(
+    { ...VALID_DETAIL, lengthLabel: '4 weeks', duration: { windowCount: 12, windowUnitLabel: 'check-in' } },
+    NOW_BEFORE_START,
+  );
   assert.match(desc, /4 weeks\.$/);
   assert.doesNotMatch(desc, /check-in/);
 });
 
 test('a null duration and null lengthLabel omit the duration clause without breaking the sentence', () => {
-  const desc = huntFn.buildDescription({ ...VALID_DETAIL, duration: null, lengthLabel: null });
+  const desc = huntFn.buildDescription({ ...VALID_DETAIL, duration: null, lengthLabel: null }, NOW_BEFORE_START);
   assert.equal(desc, 'Hosted by Jordan. Starts October 5, 2026.');
+});
+
+// ------------------------------------------------------------------ tense
+
+test('before the start: "Starts {date}. {n} days."', () => {
+  const desc = huntFn.buildDescription(VALID_DETAIL, NOW_BEFORE_START);
+  assert.equal(desc, 'Hosted by Jordan. Starts October 5, 2026. 14 days.');
+});
+
+test('one minute before the start, on the same local day, is still "Starts", not "Started"', () => {
+  const desc = huntFn.buildDescription(VALID_DETAIL, NOW_SAME_LOCAL_DAY_BEFORE_START);
+  assert.equal(desc, 'Hosted by Jordan. Starts October 5, 2026. 14 days.');
+});
+
+test('boundary: at the exact start instant, the Hunt has started and reads Day 1', () => {
+  const desc = huntFn.buildDescription(VALID_DETAIL, NOW_AT_START);
+  assert.equal(desc, 'Hosted by Jordan. Started October 5, 2026. Day 1 of 14.');
+});
+
+test('while running: "Started {date}. Day {k} of {n}." for a daily cadence', () => {
+  const desc = huntFn.buildDescription(VALID_DETAIL, NOW_DAY_5);
+  assert.equal(desc, 'Hosted by Jordan. Started October 5, 2026. Day 5 of 14.');
+});
+
+test('after the end: "Ended {date}.", with no duration clause appended', () => {
+  const atEnd = huntFn.buildDescription(VALID_DETAIL, NOW_DAY_15_JUST_ENDED);
+  const wellAfter = huntFn.buildDescription(VALID_DETAIL, NOW_WELL_AFTER_END);
+  assert.equal(atEnd, 'Hosted by Jordan. Ended October 18, 2026.');
+  assert.equal(wellAfter, 'Hosted by Jordan. Ended October 18, 2026.');
+});
+
+test('a running check-in (non-daily) cadence falls back to the plain duration sentence, not a guessed Day k', () => {
+  const checkin = {
+    ...VALID_DETAIL,
+    duration: { windowCount: 6, windowUnitLabel: 'check-in' },
+    ruleSummary: { proofWindowCount: 6, windowUnitLabel: 'check-in' },
+    lengthLabel: '6 weeks',
+  };
+  const desc = huntFn.buildDescription(checkin, NOW_DAY_5);
+  assert.equal(desc, 'Hosted by Jordan. Started October 5, 2026. 6 weeks.');
+  assert.doesNotMatch(desc, /Day \d/);
+});
+
+test('a running check-in cadence with no lengthLabel falls back to windowCount + pluralized unit', () => {
+  const checkin = {
+    ...VALID_DETAIL,
+    duration: { windowCount: 6, windowUnitLabel: 'check-in' },
+    ruleSummary: { proofWindowCount: 6, windowUnitLabel: 'check-in' },
+    lengthLabel: null,
+  };
+  const desc = huntFn.buildDescription(checkin, NOW_DAY_5);
+  assert.equal(desc, 'Hosted by Jordan. Started October 5, 2026. 6 check-ins.');
+});
+
+test('a running daily Hunt with an unresolvable time zone falls back rather than guessing a day number', () => {
+  const desc = huntFn.buildDescription({ ...VALID_DETAIL, timeZone: 'Not/AZone' }, NOW_DAY_5);
+  assert.equal(desc, 'Hosted by Jordan. Started October 5, 2026. 14 days.');
+});
+
+test('a running Hunt with no day count anywhere still names the start, without a false Day k or duration claim', () => {
+  const noCount = { ...VALID_DETAIL, duration: null, lengthLabel: null, ruleSummary: { ...VALID_DETAIL.ruleSummary, proofWindowCount: null } };
+  const desc = huntFn.buildDescription(noCount, NOW_DAY_5);
+  assert.equal(desc, 'Hosted by Jordan. Started October 5, 2026.');
+});
+
+test('dayCount and cadenceUnit prefer ruleSummary over duration when both are present', () => {
+  const detail = { ruleSummary: { proofWindowCount: 14, windowUnitLabel: 'day' }, duration: { windowCount: 99, windowUnitLabel: 'check-in' } };
+  assert.equal(huntFn.dayCount(detail), 14);
+  assert.equal(huntFn.cadenceUnit(detail), 'day');
+});
+
+test('localDayNumber is DST-safe: whole local calendar days, not a fixed 24h offset', () => {
+  // America/New_York falls back from EDT to EST on 2026-11-01. A fixed 24h
+  // step across that boundary would land on the wrong local calendar day.
+  const start = '2026-10-31T04:00:00.000Z'; // Oct 31, 00:00 EDT (day 1)
+  const nextLocalMidnight = '2026-11-01T05:00:00.000Z'; // Nov 1, 00:00 EST (day 2, 25h later in UTC)
+  assert.equal(huntFn.localDayNumber(start, 'America/New_York', new Date(nextLocalMidnight)), 2);
+});
+
+test('an end-to-end request for a running Hunt reflects Day k of n in the served meta', async () => {
+  const server = await startServer({ now: NOW_DAY_5, fetchImpl: async () => jsonResponse(200, VALID_DETAIL) });
+  try {
+    const r = await server.get('/hunt/read-12-books');
+    assert.match(r.text, /<meta name="description" content="Hosted by Jordan\. Started October 5, 2026\. Day 5 of 14\.">/);
+    assert.match(r.text, /<meta property="og:description" content="Hosted by Jordan\. Started October 5, 2026\. Day 5 of 14\.">/);
+  } finally {
+    await server.close();
+  }
+});
+
+test('an end-to-end request for an ended Hunt reflects "Ended {date}." in the served meta', async () => {
+  const server = await startServer({ now: NOW_WELL_AFTER_END, fetchImpl: async () => jsonResponse(200, VALID_DETAIL) });
+  try {
+    const r = await server.get('/hunt/read-12-books');
+    assert.match(r.text, /<meta name="description" content="Hosted by Jordan\. Ended October 18, 2026\.">/);
+  } finally {
+    await server.close();
+  }
 });
 
 // ------------------------------------------------------------ AASA safety
