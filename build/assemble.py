@@ -1512,12 +1512,15 @@ for rel in AASA_PATHS:
     out.write_text(AASA_JSON)
 
 
-# The /hunt fallback. Deliberately a flat static file behind a rewrite rather
-# than a function: one identical byte stream is served for every invitation, so
-# a referral token provably cannot be rendered into the HTML, reach any server
-# code, or land in a hosting log line that has a body. The Hunt id is recovered
-# from the path in the browser; ?ref= is never read. "/hunt" is not in ROUTES,
-# so it stays out of the nav, and not in SITEMAP_PATHS, so it stays unindexed.
+# The /hunt fallback. This exact byte stream is what api/hunt.js (2026-09-23)
+# serves verbatim whenever it cannot resolve a per-Hunt preview - API non-200,
+# unreachable, slow, or no id in the URL at all - and it is also what a
+# per-Hunt response starts from: only its <title>/description/og:* values get
+# replaced, so the rest of the page (nav, waitlist CTA, the id-display script)
+# is guaranteed byte-identical in every case. ?ref=/?via= are still never read
+# server-side beyond api/hunt.js's own id/code parsing; neither ever reaches
+# this template, a request, or a log line. "/hunt" is not in ROUTES, so it
+# stays out of the nav, and not in SITEMAP_PATHS, so it stays unindexed.
 HUNT_TITLE_TAG = "Hunt invitation | Huntz"
 HUNT_DESC = ("This Hunt invitation opens in the Huntz app. Huntz is in limited beta - "
              "join the waitlist, then reopen your invitation once you have the app.")
@@ -1533,8 +1536,19 @@ hunt_page = ((BUILD / "hunt-page.html").read_text()
              .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist"))
              .replace("{{FOOTER_NAV}}", footer_nav("/hunt"))
              .replace("{{NAV_JS}}", NAV_JS))
-assert "{{" not in hunt_page, "unfilled placeholder in hunt.html"
-(ROOT / "hunt.html").write_text(hunt_page)
+assert "{{" not in hunt_page, "unfilled placeholder in hunt-fallback.html"
+# Written under api/_lib, NOT the repo root. api/hunt.js now owns /hunt and
+# /hunt/:path+ (vercel.json rewrites both there ahead of the filesystem), and
+# Vercel gives an existing static file precedence over a rewrite that targets
+# its own clean URL - a same-named file at the repo root would keep answering
+# /hunt directly via cleanUrls and silently shadow the function for every
+# invitation link. The leading _lib keeps this off the function router, the
+# same as api/_lib/validate.js, while still shipping in the deployment so
+# api/hunt.js can read these exact bytes at runtime (vercel.json's
+# functions["api/hunt.js"].includeFiles).
+HUNT_FALLBACK_PATH = ROOT / "api" / "_lib" / "hunt-fallback.html"
+HUNT_FALLBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
+HUNT_FALLBACK_PATH.write_text(hunt_page)
 
 
 # The /auth/callback browser fallback. Written as auth/callback.html and served
@@ -1589,7 +1603,8 @@ print(f"fonts css   {FONTS_HREF}")
 print(f"pages       {', '.join(['terms', 'privacy'] + CONTENT_PAGES)}")
 print(f"blog        /blog + {len(ARTICLES)} articles")
 print(f"aasa        {APPLE_TEAM_ID}.{IOS_BUNDLE_ID} at {len(AASA_PATHS)} paths")
-print(f"hunt        /hunt/* -> hunt.html (noindex, unlisted)")
+print(f"hunt        /hunt, /hunt/* -> api/hunt.js (noindex, unlisted; "
+      f"falls back to api/_lib/hunt-fallback.html)")
 print(f"auth        /auth/callback (noindex, unlisted)")
 print(f"sitemap     {len(SITEMAP_PATHS)} urls")
 print(f"artifact    {(BUILD / 'huntz-landing.artifact.html').stat().st_size:,} bytes")

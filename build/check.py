@@ -456,8 +456,10 @@ for f in [ROOT / v for v in PAGES.values()] + sorted(ROOT.glob("assets/*")):
         fail(f"{f.name}: SMTP details leaked into a client artifact")
 if API.exists():
     js = sorted(API.rglob("*.js"))
-    if len(js) != 2:
-        fail(f"api/: expected 2 files (the endpoint and its validator), found {len(js)}")
+    EXPECTED_API_JS = {"contact.js", "hunt.js", "validate.js"}
+    got_names = {f.name for f in js}
+    if got_names != EXPECTED_API_JS:
+        fail(f"api/: expected exactly {sorted(EXPECTED_API_JS)}, found {sorted(got_names)}")
     for f in js:
         t = f.read_text()
         for n in SECRET_NAMES:
@@ -691,14 +693,24 @@ if aasa_raw:
                     if _matches(components, path, query):
                         fail(f"AASA associates unrelated route {path} (query {query!r})")
 
-hunt_file = ROOT / "hunt.html"
+# The generic invitation content used to live at the repo root (hunt.html),
+# reachable directly at the /hunt clean URL. It now lives under api/_lib
+# (2026-09-23) so api/hunt.js - which owns /hunt and /hunt/:path+ via the
+# rewrites checked below - can read it at runtime as the byte-identical
+# fallback for every case it cannot serve a per-Hunt preview. A file at the
+# repo root would resolve at /hunt through cleanUrls before any rewrite is
+# even considered (Vercel gives the filesystem precedence over rewrites),
+# silently shadowing the function for every invitation link, so its absence
+# there is asserted explicitly further down.
+hunt_file = ROOT / "api" / "_lib" / "hunt-fallback.html"
 if not hunt_file.exists():
-    fail("hunt.html was not generated")
+    fail("api/_lib/hunt-fallback.html was not generated")
 else:
     hunt = hunt_file.read_text()
 
-    # The page is one static file served for every invitation. Nothing in it may
-    # read the query string, and nothing may carry an id or token into a request.
+    # This is the fallback served for every invitation api/hunt.js cannot
+    # resolve. Nothing in it may read the query string, and nothing may carry
+    # an id or token into a request.
     for banned, why in [
         ("location.search", "reads the query string"),
         ("URLSearchParams", "parses the query string"),
@@ -722,43 +734,63 @@ else:
         ("history.pushState", "rewrites the URL, so the invitation could not be reopened"),
     ]:
         if banned in hunt:
-            fail(f"hunt.html {why} ({banned!r}) - referral tokens must never be read")
+            fail(f"hunt-fallback.html {why} ({banned!r}) - referral tokens must never be read")
 
     # No hunt id or referral token can be baked in: the file is constant.
     for leak in ["?ref=", "&ref=", "abc123"]:
         if leak in hunt:
-            fail(f"hunt.html contains {leak!r} - the served bytes must be invitation-agnostic")
+            fail(f"hunt-fallback.html contains {leak!r} - the served bytes must be invitation-agnostic")
 
     if '<meta name="robots" content="noindex">' not in hunt:
-        fail("hunt.html is not noindex")
+        fail("hunt-fallback.html is not noindex")
     if "<link rel=\"canonical\"" in hunt:
-        fail("hunt.html declares a canonical - it is one file for many URLs")
+        fail("hunt-fallback.html declares a canonical - it is one file for many URLs")
     if 'href="/#waitlist"' not in hunt:
-        fail("hunt.html does not offer the real waitlist CTA")
+        fail("hunt-fallback.html does not offer the real waitlist CTA")
     if "limited beta" not in hunt:
-        fail("hunt.html does not explain that Huntz is in limited beta")
+        fail("hunt-fallback.html does not explain that Huntz is in limited beta")
     if "reopen" not in hunt.lower() and "open the original invitation" not in hunt.lower():
-        fail("hunt.html does not tell the recipient to reopen the invitation after installing")
+        fail("hunt-fallback.html does not tell the recipient to reopen the invitation after installing")
 
     # Claims Huntz cannot make yet.
     for phrase in ["App Store", "apps.apple.com", "TestFlight", "testflight.apple.com",
                    "Download the app", "automatically join", "automatically added"]:
         if phrase.lower() in hunt.lower():
-            fail(f"hunt.html claims {phrase!r}, which is not true of a limited beta")
+            fail(f"hunt-fallback.html claims {phrase!r}, which is not true of a limited beta")
 
     if f"<loc>{SITE}/hunt" in (ROOT / "sitemap.xml").read_text():
         fail("sitemap lists a /hunt URL - invitation pages must stay unindexed")
 
-# Hosting wiring. Vercel reserves /.well-known from redirects and rewrites, so
-# the file has to be a real static asset; assert nothing has started routing it.
+# A static file at the repo root would shadow api/hunt.js for the bare /hunt
+# path (see the comment above hunt_file): assert it genuinely does not exist,
+# rather than trusting that nothing ever re-adds it.
+if (ROOT / "hunt.html").exists():
+    fail("hunt.html exists at the repo root - it would resolve at /hunt through "
+         "cleanUrls before vercel.json's rewrite is ever considered, silently "
+         "shadowing api/hunt.js for every invitation link. The fallback content "
+         "belongs at api/_lib/hunt-fallback.html only")
+
+# Hosting wiring.
 vercel = json.loads((ROOT / "vercel.json").read_text())
 rewrites = vercel.get("rewrites", [])
-# The destination is the clean URL, not hunt.html: cleanUrls serves the file at
-# /hunt and 308s the .html path, so /hunt.html does not resolve as a rewrite
-# target. ":path+" rather than ":path*" keeps /hunt from matching its own rewrite.
-if not any(r.get("source") == "/hunt/:path+" and r.get("destination") == "/hunt"
+# api/hunt.js, not the static page: both /hunt and /hunt/:path+ must resolve
+# a per-Hunt preview when they can, so both are rewritten to the function
+# (ahead of the filesystem check that used to serve hunt.html directly).
+# ":path+" rather than ":path*" keeps /hunt from matching its own rewrite.
+if not any(r.get("source") == "/hunt" and r.get("destination") == "/api/hunt"
            for r in rewrites):
-    fail("vercel.json does not rewrite /hunt/<id> to the /hunt page")
+    fail("vercel.json does not rewrite the bare /hunt path to api/hunt.js")
+if not any(r.get("source") == "/hunt/:path+" and r.get("destination") == "/api/hunt"
+           for r in rewrites):
+    fail("vercel.json does not rewrite /hunt/<id> to api/hunt.js")
+
+if not (ROOT / "api" / "hunt.js").exists():
+    fail("api/hunt.js was not found")
+
+fn_config = vercel.get("functions", {}).get("api/hunt.js", {})
+if "hunt-fallback.html" not in str(fn_config.get("includeFiles", "")):
+    fail("vercel.json does not bundle api/_lib/hunt-fallback.html with api/hunt.js "
+         "(functions[\"api/hunt.js\"].includeFiles)")
 # Vercel reserves /.well-known from redirects and rewrites. Whether a rule would
 # actually move the file is asserted behaviourally by the routing matrix further
 # down; here we only bar a REWRITE from targeting it, which the matrix does not
