@@ -17,6 +17,7 @@
 <meta name="twitter:title" content="Huntz · Put your money where your goals are.">
 <meta name="twitter:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back.">
 <meta name="twitter:image" content="https://www.huntz.ai/og-image.jpg">
+<meta name="apple-itunes-app" content="app-id=6802558635">
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="icon" href="/favicon-48x48.png" type="image/png" sizes="48x48">
 <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
@@ -52,7 +53,7 @@
   [data-hz-footernav] > span{ display:contents !important }
   [data-hz-footernav] a{ display:flex; align-items:center; min-height:44px; margin-left:0 !important }
 }
-@media (max-width:640px){#hz-nav a[href="#waitlist"]{display:none !important}}
+@media (max-width:640px){#hz-nav a[href="#waitlist"],#hz-nav a[href="https://apps.apple.com/app/id6802558635"]{display:none !important}}
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="/assets/app.6078d20e.js" defer></script>
@@ -96,7 +97,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
     <a href="#mechanic" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HOW IT WORKS</a>
     <a href="#hunts" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HUNTS</a>
     <a href="#why" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">FAQ</a>
-    <a href="#waitlist" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>
+    <sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}"><a href="#waitlist" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">JOIN THE WAITLIST</a></sc-if><sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><a href="{{ appStoreUrl }}" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">{{ appStoreLabel }}</a></sc-if>
     <button type="button" data-hz-menu-btn aria-controls="hz-menu" aria-expanded="false" aria-label="Menu" style="align-items:center;justify-content:center;flex-direction:column;gap:5px;width:44px;height:44px;margin:-5px 0;padding:0;border:0;background:transparent;cursor:pointer;color:#16130E"><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span></button>
   </div>
 </div>
@@ -115,7 +116,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
         <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.56s both;font-style:italic">are<span style="color:#C24E1F;font-style:normal">.</span></span>
       </h1>
       <p style="margin: 0 0 34px; max-width: 520px; font: 400 clamp(15px,1.4vw,18px)/1.6 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; animation: hzRise .7s ease .62s both; font-family:'Figtree',Arial,Helvetica,sans-serif">Stake $50–$500 of your own money on your own goal. Post proof every day. Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.</p>
-      <div id="waitlist" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">
+      <sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}"><div id="waitlist" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">
         <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
           <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
             <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
@@ -127,7 +128,10 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
           <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN WE LAUNCH.</div>
         </sc-if>
       </div>
-      <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; animation: hzRise .7s ease .84s both; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>
+      <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; animation: hzRise .7s ease .84s both; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div></sc-if>
+      <sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><div style="animation:hzRise .7s ease .74s both">
+        <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; text-decoration: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ appStoreLabel }}</a>
+      </div></sc-if>
     </div>
     <div style="flex:0 1 330px;display:flex;justify-content:center;animation:hzRise .9s ease .5s both">
       <div style="animation:hzFloat 7s ease-in-out infinite">
@@ -353,7 +357,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
       </div>
     </div>
     <div id="ch-rail" style="display:flex;gap:clamp(12px,1.6vw,20px);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px 0 20px;scrollbar-width:none">
-        <div data-plate="" onClick="{{ pick0 }}" onKeyDown="{{ pickkey0 }}" role="button" tabIndex="0" aria-label="Join the waitlist: interested in Apply to jobs" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div data-plate="" onClick="{{ pick0 }}" onKeyDown="{{ pickkey0 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria0 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
           <div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
               <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 01</span>
@@ -367,7 +371,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
             <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>
           </div>
         </div>
-        <div data-plate="" onClick="{{ pick1 }}" onKeyDown="{{ pickkey1 }}" role="button" tabIndex="0" aria-label="Join the waitlist: interested in Post content" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div data-plate="" onClick="{{ pick1 }}" onKeyDown="{{ pickkey1 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria1 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
           <div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
               <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 02</span>
@@ -381,7 +385,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
             <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>
           </div>
         </div>
-        <div data-plate="" onClick="{{ pick2 }}" onKeyDown="{{ pickkey2 }}" role="button" tabIndex="0" aria-label="Join the waitlist: interested in Read books" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div data-plate="" onClick="{{ pick2 }}" onKeyDown="{{ pickkey2 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria2 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
           <div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
               <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 03</span>
@@ -395,7 +399,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
             <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>
           </div>
         </div>
-        <div data-plate="" onClick="{{ pick3 }}" onKeyDown="{{ pickkey3 }}" role="button" tabIndex="0" aria-label="Join the waitlist: interested in Stay fit" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div data-plate="" onClick="{{ pick3 }}" onKeyDown="{{ pickkey3 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria3 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
           <div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
               <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 04</span>
@@ -409,7 +413,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
             <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>
           </div>
         </div>
-        <div data-plate="" onClick="{{ pick4 }}" onKeyDown="{{ pickkey4 }}" role="button" tabIndex="0" aria-label="Join the waitlist: interested in Live stream" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div data-plate="" onClick="{{ pick4 }}" onKeyDown="{{ pickkey4 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria4 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
           <div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
               <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 05</span>
@@ -496,7 +500,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
           <br>
           <span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic">Stop&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic">hiding<span style="color:#C24E1F;font-style:normal">.</span></span>
         </h2>
-        <div id="fin-form" style="opacity:0;transform:translateY(20px)">
+        <div id="fin-form" style="opacity:0;transform:translateY(20px)"><sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">
           <sc-if value="{{ interest }}"><div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:14px;padding:6px 8px 6px 12px;border:1px solid rgba(194,78,31,.45);border-radius:20px;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#C24E1F;text-transform:uppercase">Joining for: {{ interest }}<button type="button" onClick="{{ clearInterest }}" aria-label="Remove this interest" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:rgba(194,78,31,.12);color:#C24E1F;font:400 11px 'Figtree',Arial,Helvetica,sans-serif;cursor:pointer;padding:0" style-hover="background:#C24E1F;color:#F3EFE7">&#10005;</button></div></sc-if>
           <sc-if value="{{ finalIdle }}" hint-placeholder-val="{{ true }}">
             <form onSubmit="{{ submitFinal }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
@@ -509,7 +513,9 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
             <div style="display:inline-block;border:2px solid #C24E1F;border-radius:14px;color:#C24E1F;padding:17px 24px;font:700 clamp(13px,1.4vw,17px) 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN.</div>
           </sc-if>
           <div style="margin-top:16px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759">NO SPAM · ONE EMAIL WHEN WE LAUNCH</div>
-        </div>
+        </sc-if><sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">
+          <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:14px;color:#F3EFE7;font:700 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,transform .15s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ appStoreLabel }}</a>
+        </sc-if></div>
       </div>
       <div data-plate="" style="flex:0 1 380px;min-width:280px;padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));box-shadow:0 1px 0 rgba(255,255,255,.85) inset,0 26px 44px -34px rgba(22,19,14,.6)">
         <div style="font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:#6E6759;margin-bottom:16px">WHAT HAPPENS NEXT</div>
@@ -530,6 +536,23 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
     </div>
   </div>
 </section>
+
+<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><section id="waitlist" data-screen-label="Android Waitlist" style="position:relative;border-top:1px solid rgba(22,19,14,.16);padding:clamp(40px,6vh,64px) clamp(20px,5vw,64px);scroll-margin-top:110px">
+  <div style="max-width:1220px;margin:0 auto">
+    <h2 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h2>
+    <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
+      <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
+        <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
+        <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ notifyBtn }}</button>
+        <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>
+      </form>
+    </sc-if>
+    <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN WE LAUNCH.</div>
+    </sc-if>
+    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>
+  </div>
+</section></sc-if>
 
 <footer data-screen-label="Footer" style="border-top:1px solid rgba(22,19,14,.16);padding:clamp(34px,5vh,52px) clamp(20px,5vw,64px) 34px">
   <div style="max-width:1220px;margin:0 auto">
@@ -800,6 +823,14 @@ class Component extends DCLogic {
   WAITLIST_ENDPOINT = 'https://huntz.us18.list-manage.com/subscribe/post?u=b7144d02c740628b3280ff55f&id=3ee28a30af&f_id=000baee6f0';
   // Mailchimp's bot-trap field from the embedded form; must be sent empty.
   WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';
+  // App Store launch switch. Empty = default site (waitlist everywhere,
+  // as today). On approval day, set this to the live App Store listing
+  // (https://apps.apple.com/app/id6802558635) to flip the nav, hero and
+  // closing CTA to App Store links; the Android waitlist survives,
+  // relocated to the bottom of the page. Keep in sync with
+  // HOME_NAV_CSS's mobile nav-hide rule (build/assemble.py), which
+  // cannot read this constant at runtime.
+  APP_STORE_URL = '';
   emailOk(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
   submit(e, n) {
     e.preventDefault();
@@ -874,6 +905,7 @@ class Component extends DCLogic {
       this._picks = names.map(n => () => this.pickHunt(n));
       this._pickKeys = names.map(n => (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.pickHunt(n); } });
     }
+    const appStoreMode = !!this.APP_STORE_URL;
     return {
       setRoot: this.setRoot, submitHero: this.submitHero, submitFinal: this.submitFinal,
       sub1: this.state.sub1, sub2: this.state.sub2,
@@ -882,12 +914,20 @@ class Component extends DCLogic {
       chPrev: this._chNav.prev, chNext: this._chNav.next,
       toggle0: this._faqToggles[0], toggle1: this._faqToggles[1], toggle2: this._faqToggles[2], toggle3: this._faqToggles[3], toggle4: this._faqToggles[4],
       faqkey0: this._faqKeys[0], faqkey1: this._faqKeys[1], faqkey2: this._faqKeys[2], faqkey3: this._faqKeys[3], faqkey4: this._faqKeys[4],
-      pick0: this._picks[0], pick1: this._picks[1], pick2: this._picks[2], pick3: this._picks[3], pick4: this._picks[4],
-      pickkey0: this._pickKeys[0], pickkey1: this._pickKeys[1], pickkey2: this._pickKeys[2], pickkey3: this._pickKeys[3], pickkey4: this._pickKeys[4],
+      pick0: appStoreMode ? undefined : this._picks[0], pick1: appStoreMode ? undefined : this._picks[1], pick2: appStoreMode ? undefined : this._picks[2], pick3: appStoreMode ? undefined : this._picks[3], pick4: appStoreMode ? undefined : this._picks[4],
+      pickkey0: appStoreMode ? undefined : this._pickKeys[0], pickkey1: appStoreMode ? undefined : this._pickKeys[1], pickkey2: appStoreMode ? undefined : this._pickKeys[2], pickkey3: appStoreMode ? undefined : this._pickKeys[3], pickkey4: appStoreMode ? undefined : this._pickKeys[4],
       err1: this.state.err1, err2: this.state.err2, busy1: this.state.busy1, busy2: this.state.busy2,
       interest: this.state.interest, clearInterest: this.clearInterest,
       heroBtn: this.state.busy1 ? 'JOINING…' : 'JOIN THE WAITLIST',
-      finalBtn: this.state.busy2 ? 'JOINING…' : 'JOIN THE WAITLIST'
+      finalBtn: this.state.busy2 ? 'JOINING…' : 'JOIN THE WAITLIST',
+      appStoreMode: appStoreMode, appStoreUrl: this.APP_STORE_URL, appStoreLabel: 'DOWNLOAD ON THE APP STORE',
+      notifyBtn: this.state.busy1 ? 'JOINING…' : 'NOTIFY ME',
+      plateRole: appStoreMode ? undefined : 'button', plateTabIndex: appStoreMode ? undefined : '0',
+      pickAria0: appStoreMode ? undefined : 'Join the waitlist: interested in Apply to jobs',
+      pickAria1: appStoreMode ? undefined : 'Join the waitlist: interested in Post content',
+      pickAria2: appStoreMode ? undefined : 'Join the waitlist: interested in Read books',
+      pickAria3: appStoreMode ? undefined : 'Join the waitlist: interested in Stay fit',
+      pickAria4: appStoreMode ? undefined : 'Join the waitlist: interested in Live stream'
     };
   }
 }

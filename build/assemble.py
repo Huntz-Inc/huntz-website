@@ -157,8 +157,12 @@ _card_i = {"i": 0}
 def _card_attrs(m):
     i = _card_i["i"]; _card_i["i"] += 1
     n = HUNT_NAMES[i]
-    return ('<div data-plate="" onClick="{{ pick%d }}" onKeyDown="{{ pickkey%d }}" role="button" tabIndex="0" '
-            'aria-label="Join the waitlist: interested in %s" style="cursor:pointer;scroll-snap-align:start;' % (i, i, n))
+    # role/tabIndex/aria-label are launch-switch-aware (App Store section
+    # below): plateRole/plateTabIndex/pickAria<i> resolve to undefined once
+    # the App Store link is live, so the runtime drops the attributes and the
+    # card goes inert without a template fork.
+    return ('<div data-plate="" onClick="{{ pick%d }}" onKeyDown="{{ pickkey%d }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" '
+            'aria-label="{{ pickAria%d }}" style="cursor:pointer;scroll-snap-align:start;' % (i, i, i))
 html, n = re.subn(r'<div data-plate="" style="scroll-snap-align:start;', _card_attrs, html)
 assert n == 5, f"expected 5 hunt cards, patched {n}"
 
@@ -671,9 +675,164 @@ old = 'style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>'
 assert html.count(old) == 1, "nav CTA not found"
 html = html.replace(old, old + "\n    " + MENU_BUTTON)
 
+# ---- 2f. App Store launch switch (2026-09-25, founder decision) ----
+# One constant flips the home page from "join the waitlist" to "download on
+# the App Store". Empty (default) leaves every existing waitlist piece exactly
+# as it renders today: each patch below has its own untouched default branch.
+# Set to the live App Store listing and: the nav CTA, the hero button and the
+# closing CTA become plain App Store links; the five interest plates go inert
+# (no click handler, no button role, no aria-label); and the waitlist form
+# survives as a relocated, retitled Android fallback at the bottom of the
+# page. See README.md, "App Store launch switch", for the day-of-approval
+# steps. This literal seeds HOME_NAV_CSS below and the Component class field
+# comment further down: CSS can't read a JS constant, so the actual switch is
+# the class field's own default value (patched below), which must be kept
+# equal to this literal once it goes live.
+APP_STORE_URL_LITERAL = "https://apps.apple.com/app/id6802558635"
+
 # Below 641px the bar is logo + menu button: the three section anchors were
-# already hidden by (I-4b), and the CTA moves into the sheet.
-HOME_NAV_CSS = '@media (max-width:640px){#hz-nav a[href="#waitlist"]{display:none !important}}\n'
+# already hidden by (I-4b), and the CTA moves into the sheet. The second
+# selector is the App Store switch above: CSS can't read the JS field, so it
+# matches the literal URL directly.
+HOME_NAV_CSS = ('@media (max-width:640px){#hz-nav a[href="#waitlist"],'
+                 f'#hz-nav a[href="{APP_STORE_URL_LITERAL}"]'
+                 '{display:none !important}}\n')
+
+# (AS-1) Nav CTA: the default anchor is left completely untouched in its own
+# branch; a second branch swaps in the App Store link with identical styling.
+old = ('<a href="#waitlist" style="font: 700 11px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; '
+       'color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; '
+       'font-family:\'Figtree\',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" '
+       'style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>')
+assert html.count(old) == 1, "home nav CTA not found"
+nav_appstore = old.replace('href="#waitlist"', 'href="{{ appStoreUrl }}"').replace(
+    '>JOIN THE WAITLIST<', '>{{ appStoreLabel }}<')
+html = html.replace(old,
+    '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + old + '</sc-if>'
+    '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + nav_appstore + '</sc-if>')
+
+# (AS-2) Hero CTA: default form/confirmation/"no spam" note is left untouched
+# in its own branch; a second branch renders one App Store link in their
+# place. #waitlist itself only exists in the default branch: the id moves to
+# the relocated section below once appStoreMode is on, so it is never
+# duplicated in the live DOM.
+old = ('<div id="waitlist" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">\n        <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">\n          <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">\n            <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px \'Figtree\',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">\n            <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ heroBtn }}</button>\n            <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>\n          </form>\n        </sc-if>\n        <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">\n          <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU\'RE IN. WE\'LL EMAIL YOU WHEN WE LAUNCH.</div>\n        </sc-if>\n      </div>\n      <div style="margin-top: 20px; font: 500 11px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; animation: hzRise .7s ease .84s both; font-family:\'Figtree\',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>')
+assert html.count(old) == 1, "hero waitlist block not found"
+hero_appstore = (
+    '<div style="animation:hzRise .7s ease .74s both">\n'
+    '        <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
+    'padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; '
+    'font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; text-decoration: none; '
+    'border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, '
+    'border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" '
+    'style-active="transform:translateY(2px)">{{ appStoreLabel }}</a>\n'
+    '      </div>'
+)
+html = html.replace(old,
+    '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + old + '</sc-if>\n'
+    '      <sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + hero_appstore + '</sc-if>')
+
+# (AS-3) Closing CTA: id="fin-form" stays put in both branches, since the
+# scroll-reveal animation (componentDidMount's finBits) targets it by id
+# regardless of mode. Only the content inside it swaps.
+fin_open = '<div id="fin-form" style="opacity:0;transform:translateY(20px)">'
+fin_close = '</div>'
+old = (fin_open + '\n          <sc-if value="{{ interest }}"><div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:14px;padding:6px 8px 6px 12px;border:1px solid rgba(194,78,31,.45);border-radius:20px;font:700 9.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#C24E1F;text-transform:uppercase">Joining for: {{ interest }}<button type="button" onClick="{{ clearInterest }}" aria-label="Remove this interest" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:rgba(194,78,31,.12);color:#C24E1F;font:400 11px \'Figtree\',Arial,Helvetica,sans-serif;cursor:pointer;padding:0" style-hover="background:#C24E1F;color:#F3EFE7">&#10005;</button></div></sc-if>\n          <sc-if value="{{ finalIdle }}" hint-placeholder-val="{{ true }}">\n            <form onSubmit="{{ submitFinal }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">\n              <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex:1 1 220px;padding:17px 18px;border:1px solid rgba(22,19,14,.28);border-radius:14px;background:rgba(255,255,255,.6);font:500 15px \'Figtree\',Arial,Helvetica,sans-serif;color:#16130E;outline:none" style-focus="border-color:#C24E1F">\n              <button type="submit" disabled="{{ busy2 }}" style="padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:14px;color:#F3EFE7;font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;cursor:pointer;box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,transform .15s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ finalBtn }}</button>\n              <sc-if value="{{ err2 }}"><div style="flex:1 1 100%;font:600 11.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err2 }}</div></sc-if>\n            </form>\n          </sc-if>\n          <sc-if value="{{ sub2 }}" hint-placeholder-val="{{ false }}">\n            <div style="display:inline-block;border:2px solid #C24E1F;border-radius:14px;color:#C24E1F;padding:17px 24px;font:700 clamp(13px,1.4vw,17px) \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU\'RE IN.</div>\n          </sc-if>\n          <div style="margin-top:16px;font:500 10.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759">NO SPAM · ONE EMAIL WHEN WE LAUNCH</div>\n        </div>')
+assert html.count(old) == 1, "closing CTA fin-form block not found"
+assert old.startswith(fin_open) and old.endswith(fin_close)
+fin_inner_default = old[len(fin_open):-len(fin_close)]
+fin_appstore = (
+    '\n          <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
+    'padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:14px;color:#F3EFE7;'
+    'font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;'
+    'box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,'
+    'transform .15s ease" style-hover="background:#16130E;border-color:#16130E" '
+    'style-active="transform:translateY(2px)">{{ appStoreLabel }}</a>\n        '
+)
+html = html.replace(old,
+    fin_open
+    + '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + fin_inner_default + '</sc-if>'
+    + '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + fin_appstore + '</sc-if>'
+    + fin_close)
+
+# (AS-4) New section: the waitlist survives here, relocated and retitled for
+# Android, once the App Store link is live. Reuses the hero's own form
+# state/handler (heroIdle/sub1/err1/busy1/submitHero): the two are mutually
+# exclusive, since the hero is a plain link whenever this section renders,
+# rather than adding a second, redundant set of fields.
+old = '</section>\n\n<footer data-screen-label="Footer"'
+assert html.count(old) == 1, "footer anchor not found"
+android_section = '''<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><section id="waitlist" data-screen-label="Android Waitlist" style="position:relative;border-top:1px solid rgba(22,19,14,.16);padding:clamp(40px,6vh,64px) clamp(20px,5vw,64px);scroll-margin-top:110px">
+  <div style="max-width:1220px;margin:0 auto">
+    <h2 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h2>
+    <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
+      <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
+        <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
+        <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ notifyBtn }}</button>
+        <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>
+      </form>
+    </sc-if>
+    <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN WE LAUNCH.</div>
+    </sc-if>
+    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>
+  </div>
+</section></sc-if>
+
+'''
+html = html.replace(old, '</section>\n\n' + android_section + '<footer data-screen-label="Footer"')
+
+# (AS-5) Component class: the launch-switch constant itself, alongside
+# WAITLIST_ENDPOINT/WAITLIST_HONEYPOT so all three "flip this to go live"
+# knobs live in one place.
+old = "WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';\n  emailOk(v)"
+assert html.count(old) == 1, "honeypot field not found"
+html = html.replace(old,
+    "WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';\n"
+    "  // App Store launch switch. Empty = default site (waitlist everywhere,\n"
+    "  // as today). On approval day, set this to the live App Store listing\n"
+    f"  // ({APP_STORE_URL_LITERAL}) to flip the nav, hero and\n"
+    "  // closing CTA to App Store links; the Android waitlist survives,\n"
+    "  // relocated to the bottom of the page. Keep in sync with\n"
+    "  // HOME_NAV_CSS's mobile nav-hide rule (build/assemble.py), which\n"
+    "  // cannot read this constant at runtime.\n"
+    "  APP_STORE_URL = '';\n"
+    "  emailOk(v)")
+
+# (AS-6) Component class: pick0..pick4/pickkey0..pickkey4 become launch-switch
+# aware in place (same keys, no duplicate object-literal entries) so the five
+# plates lose their handlers, and, via plateRole/plateTabIndex/pickAria<i>
+# below, their button semantics, the instant the switch is on.
+old = "pick0: this._picks[0], pick1: this._picks[1], pick2: this._picks[2], pick3: this._picks[3], pick4: this._picks[4],\n      pickkey0: this._pickKeys[0], pickkey1: this._pickKeys[1], pickkey2: this._pickKeys[2], pickkey3: this._pickKeys[3], pickkey4: this._pickKeys[4],"
+assert html.count(old) == 1, "pick0..pickkey4 fields not found"
+html = html.replace(old,
+    "pick0: appStoreMode ? undefined : this._picks[0], pick1: appStoreMode ? undefined : this._picks[1], "
+    "pick2: appStoreMode ? undefined : this._picks[2], pick3: appStoreMode ? undefined : this._picks[3], "
+    "pick4: appStoreMode ? undefined : this._picks[4],\n"
+    "      pickkey0: appStoreMode ? undefined : this._pickKeys[0], pickkey1: appStoreMode ? undefined : this._pickKeys[1], "
+    "pickkey2: appStoreMode ? undefined : this._pickKeys[2], pickkey3: appStoreMode ? undefined : this._pickKeys[3], "
+    "pickkey4: appStoreMode ? undefined : this._pickKeys[4],")
+
+# (AS-7) Component class: appStoreMode is computed once per render, right
+# before the values it gates are assembled.
+old = "    }\n    return {"
+assert html.count(old) == 1, "renderVals return statement not found"
+html = html.replace(old, "    }\n    const appStoreMode = !!this.APP_STORE_URL;\n    return {")
+
+# (AS-8) Component class: the remaining launch-switch values: the two link
+# labels, the plates' now-conditional role/tabIndex/aria-label, and the
+# relocated form's own button text.
+old = "heroBtn: this.state.busy1 ? 'JOINING…' : 'JOIN THE WAITLIST',\n      finalBtn: this.state.busy2 ? 'JOINING…' : 'JOIN THE WAITLIST'"
+assert html.count(old) == 1, "renderVals heroBtn/finalBtn tail not found"
+html = html.replace(old, old + """,
+      appStoreMode: appStoreMode, appStoreUrl: this.APP_STORE_URL, appStoreLabel: 'DOWNLOAD ON THE APP STORE',
+      notifyBtn: this.state.busy1 ? 'JOINING…' : 'NOTIFY ME',
+      plateRole: appStoreMode ? undefined : 'button', plateTabIndex: appStoreMode ? undefined : '0',
+      pickAria0: appStoreMode ? undefined : 'Join the waitlist: interested in Apply to jobs',
+      pickAria1: appStoreMode ? undefined : 'Join the waitlist: interested in Post content',
+      pickAria2: appStoreMode ? undefined : 'Join the waitlist: interested in Read books',
+      pickAria3: appStoreMode ? undefined : 'Join the waitlist: interested in Stay fit',
+      pickAria4: appStoreMode ? undefined : 'Join the waitlist: interested in Live stream'""")
 
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
@@ -793,6 +952,7 @@ HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</
 <meta name="twitter:title" content="Huntz · Put your money where your goals are.">
 <meta name="twitter:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back.">
 <meta name="twitter:image" content="{SITE_URL}/og-image.jpg">
+<meta name="apple-itunes-app" content="app-id=6802558635">
 {ICON_LINKS}
 <link rel="preload" href="{FONTS_HREF}" as="style">
 <link rel="stylesheet" href="{FONTS_HREF}">

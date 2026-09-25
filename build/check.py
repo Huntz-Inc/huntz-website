@@ -103,12 +103,20 @@ for path, fname in PAGES.items():
         if not (ROOT / asset.lstrip("/")).exists():
             fail(f"{path}: references missing asset {asset}")
 
+    # Smart App Banner (2026-09-25): every public page, safe to ship ahead of
+    # approval since Safari only shows the banner once the id resolves.
+    if '<meta name="apple-itunes-app" content="app-id=6802558635">' not in t:
+        fail(f"{path}: apple-itunes-app Smart App Banner meta tag missing")
+
 # Home-specific: legal documents must NOT be embedded, labels must exist.
 home = (ROOT / "index.html").read_text()
 for marker in ("Governing law", "BINDING", "Arbitration Association", "hz-terms-doc"):
     if marker in home:
         fail(f"/: legal-document marker {marker!r} still embedded in home")
-if home.count('aria-label="Email address"') != 2:
+# 2 today (hero + closing CTA) plus 1 more (2026-09-25): the App Store launch
+# switch's relocated Android form, present in the source year-round behind
+# sc-if and only ever rendered instead of the hero, never alongside it.
+if home.count('aria-label="Email address"') != 3:
     fail("/: email inputs missing aria-label")
 if "Example outcome. Each Hunt's rules and verification method are shown before you join." not in home:
     fail("/: example-outcome caption missing")
@@ -350,9 +358,11 @@ for path in ("/terms", "/privacy"):
 MC_ENDPOINT = "huntz.us18.list-manage.com/subscribe/post"
 if home.count(MC_ENDPOINT) != 1:
     fail(f"/: expected 1 Mailchimp endpoint, found {home.count(MC_ENDPOINT)}")
+# 3 since the App Store launch switch (2026-09-25) added the relocated
+# Android form; see the aria-label count above.
 n_email = home.count('type="email"')
-if n_email != 2:
-    fail(f"/: expected the 2 existing waitlist email inputs, found {n_email}")
+if n_email != 3:
+    fail(f"/: expected the 3 existing waitlist email inputs, found {n_email}")
 if "b_b7144d02c740628b3280ff55f_3ee28a30af" not in home:
     fail("/: Mailchimp honeypot field missing")
 if "INTEREST" not in home:
@@ -745,6 +755,8 @@ else:
         fail("hunt-fallback.html is not noindex")
     if "<link rel=\"canonical\"" in hunt:
         fail("hunt-fallback.html declares a canonical - it is one file for many URLs")
+    if "apple-itunes-app" in hunt:
+        fail("hunt-fallback.html is a noindex utility page - it must not carry the Smart App Banner")
     if 'href="/#waitlist"' not in hunt:
         fail("hunt-fallback.html does not offer the real waitlist CTA")
     if "limited beta" not in hunt:
@@ -877,6 +889,8 @@ else:
         fail("auth/callback.html is not noindex")
     if '<link rel="canonical"' in cb:
         fail("auth/callback.html declares a canonical - it is one file for many URLs")
+    if "apple-itunes-app" in cb:
+        fail("auth/callback.html is a noindex utility page - it must not carry the Smart App Banner")
 
     # No specimen auth value may be baked into the served bytes.
     for leak in ["?code=", "&code=", "access_token", "refresh_token", "token_hash",
