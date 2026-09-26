@@ -41,11 +41,23 @@
 //      observed by reading any committed HTML file; the tests for it read
 //      build/assemble.py's own source instead, the same way techniques 1 and
 //      2 already treat index.html's source as ground truth for a build.
+//   4. 2026-09-25 founder follow-up: how-it-works, faq, about, contact,
+//      accountability-challenges, the blog hub and both articles each carry
+//      their own copy of the same desktop nav pill and closing CTA block as
+//      index.html and the drawer (build/assemble.py's
+//      apply_content_app_store_switch(), applied to build/content-page.html,
+//      build/article-page.html and build/blog-index.html), and four of them
+//      also carry their own in-copy waitlist sentence (CONTENT_LIVE_COPY).
+//      None of this is reactive, so exactly like technique 3, the live-state
+//      markup cannot be observed from any committed HTML file; those tests
+//      read build/assemble.py's source, while the default-state tests read
+//      the real committed pages (this build's actual, current state).
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 
 const ROOT = path.join(__dirname, '..');
 const APP_STORE_URL = 'https://apps.apple.com/app/id6802558635';
@@ -460,6 +472,136 @@ test('default: build/assemble.py\'s drawer() default branch stays plain "JOIN TH
   // No icon means no icon-to-label gap: the exact same style this branch
   // has always had, with nothing added for this feature.
   assert.doesNotMatch(defaultBranch, /gap:/);
+});
+
+// ------------------------------------------ content pages + blog (technique 4)
+
+const SHARED_CHROME_PAGES = [
+  'how-it-works.html', 'faq.html', 'about.html', 'contact.html',
+  'accountability-challenges.html', 'blog.html',
+  'blog/best-accountability-apps-2026.html', 'blog/why-you-dont-achieve-your-goals.html',
+];
+
+for (const rel of SHARED_CHROME_PAGES) {
+  test(`default: ${rel} still carries the shared waitlist nav pill and closing CTA block`, () => {
+    const t = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    assert.match(t, /<a data-hz-desknav href="\/#waitlist" style="font:700 11px[^>]*>JOIN THE WAITLIST<\/a>/,
+      'desktop nav pill missing or changed');
+    assert.match(t, /Ready when you are<span style="color:#C24E1F">\.<\/span>/, 'closing heading missing or changed');
+    assert.match(t, /Join the waitlist and we'll email you when the first Hunts open\./, 'closing paragraph missing or changed');
+    assert.match(t, /<a href="\/#waitlist" style="display:inline-block[^>]*>JOIN THE WAITLIST &#8594;<\/a>/,
+      'closing button missing or changed');
+    assert.doesNotMatch(t, /Huntz is on the App Store/);
+    assert.doesNotMatch(t, /Download app/);
+    assert.doesNotMatch(t, APPLE_MARK_RE);
+  });
+}
+
+// Each of these four pages also carries its own in-copy waitlist sentence
+// (build/pages/<slug>.json), separate from the shared chrome above.
+test('default: about.html\'s in-copy sentence still points at the waitlist', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'about.html'), 'utf8');
+  assert.match(t, /Self-service tools for creators to launch Hunts independently are planned for later\. The <a href="\/#waitlist"[^>]*>waitlist<\/a> is the way in\./);
+});
+
+test('default: faq.html\'s "Is Huntz available right now?" answer still says "Not yet."', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'faq.html'), 'utf8');
+  assert.match(t, /Not yet\. The first Hunts are being developed now with our first creators\. <a href="\/#waitlist"[^>]*>Join the waitlist<\/a> and we will email you when they open\./);
+});
+
+test('default: how-it-works.html\'s in-copy sentence still points at the waitlist', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'how-it-works.html'), 'utf8');
+  assert.match(t, /The first Hunts are being developed now, directly with our first creators\. <a href="\/#waitlist"[^>]*>Join the waitlist<\/a> and we will email you when they open\./);
+});
+
+test('default: contact.html\'s troubleshooting bullet still says "the waitlist"', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'contact.html'), 'utf8');
+  assert.match(t, /Problems with the waitlist or this website: tell us what broke and on what device\./);
+});
+
+// The explicit byte-for-byte guarantee (README/build/assemble.py's own
+// promise, section 1 of this feature): pinned as a hash rather than a huge
+// inline literal, so any change at all to the default-state page, however
+// small, fails this test rather than only the broader checks above.
+test('default: about.html is byte-for-byte the committed page (sha256 pin)', () => {
+  const bytes = fs.readFileSync(path.join(ROOT, 'about.html'));
+  const hash = crypto.createHash('sha256').update(bytes).digest('hex');
+  assert.equal(hash, '51749417cfb8b0985b8e058d8fe12c5fc983905dbcd4f20991b0612cf15f6109',
+    'about.html changed: the default (empty APP_STORE_URL) state must stay byte-for-byte identical to the committed page');
+});
+
+// ---- live state: build/assemble.py source (content pages cannot show a
+// second state from one committed build; see the header comment above) ----
+
+// Sliced up to the next comment/assignment, not all the way to the next
+// constant, so neither slice picks up build/assemble.py's own prose (which
+// legitimately says "waitlist" while explaining the switch).
+const navPillLiveSrc = assemblePy.slice(assemblePy.indexOf('NAV_PILL_LIVE = ('),
+  assemblePy.indexOf("# The heading's own margin-bottom"));
+const closingBlockLiveSrc = assemblePy.slice(assemblePy.indexOf('CLOSING_BLOCK_LIVE = ('), assemblePy.indexOf('def apply_content_app_store_switch'));
+
+test('live: build/assemble.py\'s NAV_PILL_LIVE carries the 15px Apple mark, "Download app", a pill radius and the App Store href', () => {
+  assert.match(navPillLiveSrc, /apple_mark\(15\)/);
+  assert.match(navPillLiveSrc, /Download app/);
+  assert.match(navPillLiveSrc, /href="\{APP_STORE_URL\}"/);
+  assert.match(navPillLiveSrc, /border-radius:999px/);
+  assert.doesNotMatch(navPillLiveSrc, /JOIN THE WAITLIST/);
+});
+
+test('live: build/assemble.py\'s CLOSING_BLOCK_LIVE reads "Huntz is on the App Store.", carries the 18px mark, and no longer buttons to /#waitlist', () => {
+  assert.match(closingBlockLiveSrc, /Huntz is on the App Store/);
+  assert.match(closingBlockLiveSrc, /apple_mark\(18\)/);
+  assert.match(closingBlockLiveSrc, /Download app/);
+  assert.match(closingBlockLiveSrc, /href="\{APP_STORE_URL\}"/);
+  // The main CTA button no longer points at /#waitlist; only the small
+  // Android fallback link below it does. Sliced up to that link's own
+  // wrapper div, i.e. before its href, not up to its inner text.
+  const ctaOnly = closingBlockLiveSrc.slice(0, closingBlockLiveSrc.indexOf('margin-top:14px'));
+  assert.doesNotMatch(ctaOnly, /href="\/#waitlist"/, 'the main CTA button should not still point at #waitlist');
+  // Two separate checks, not one spanning regex: build/assemble.py wraps
+  // this string across several Python literals, so the raw source has a
+  // quote/newline seam between the style attribute and the link text.
+  assert.match(closingBlockLiveSrc, /href="\/#waitlist" style="font:600 11px/);
+  assert.match(closingBlockLiveSrc, /Not on iPhone\? Get notified for Android\.<\/a><\/div>/);
+});
+
+test('live: no leftover "waitlist" wording in NAV_PILL_LIVE or CLOSING_BLOCK_LIVE, except the Android link\'s href', () => {
+  for (const [name, src] of [['NAV_PILL_LIVE', navPillLiveSrc], ['CLOSING_BLOCK_LIVE', closingBlockLiveSrc]]) {
+    const withoutAndroidHref = src.split('href="/#waitlist"').join('');
+    assert.doesNotMatch(withoutAndroidHref, /waitlist/i, `${name}: unexpected leftover "waitlist" wording`);
+  }
+});
+
+test('live: apply_content_app_store_switch() is wired to all three page shells (content, article, blog hub)', () => {
+  for (const tplFile of ['content-page.html', 'article-page.html', 'blog-index.html']) {
+    const pattern = new RegExp(`apply_content_app_store_switch\\(\\(BUILD / "${escapeRe(tplFile)}"\\)\\.read_text\\(\\)\\)`);
+    assert.match(assemblePy, pattern, `build/assemble.py: ${tplFile} is not wrapped in apply_content_app_store_switch()`);
+  }
+});
+
+test('live: about.json gets a launch-state in-copy sentence and meta description', () => {
+  assert.match(assemblePy, />app<\/a> is the way in\.<\/p>/, 'about: expected "...the app is the way in." sentence not found');
+  assert.match(assemblePy, /Built in Oakland by Huntz, Inc\. Available now on the App Store\./);
+});
+
+test('live: accountability-challenges.json gets a launch-state meta description', () => {
+  assert.match(assemblePy, /stakes and published rules\. Available now on the App Store\./);
+});
+
+test('live: contact.json gets a launch-state meta description and troubleshooting bullet', () => {
+  assert.match(assemblePy, /Questions about accountability challenges, the app, privacy, or partnerships:/);
+  assert.match(assemblePy, /Problems with the app or this website:/);
+});
+
+test('live: faq.json\'s "Is Huntz available right now?" answer becomes "Yes." with a download link, and the meta description drops "waitlist"', () => {
+  assert.match(assemblePy, /Huntz is live: the iOS app is available/);
+  assert.match(assemblePy, /Yes\. Huntz is live on the App Store, with the first Hunts developed directly with/);
+  assert.match(assemblePy, />Download the app<\/a> to join one\./);
+});
+
+test('live: how-it-works.json\'s in-copy sentence becomes "The first Hunts are live in the app."', () => {
+  assert.match(assemblePy, /The first Hunts are live in /);
+  assert.match(assemblePy, />the app<\/a>\.<\/p>/);
 });
 
 // -------------------------------------------------------------- meta tag

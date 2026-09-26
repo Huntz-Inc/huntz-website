@@ -884,6 +884,65 @@ html = html.replace(old, old + """,
       pickAria3: appStoreMode ? undefined : 'Join the waitlist: interested in Stay fit',
       pickAria4: appStoreMode ? undefined : 'Join the waitlist: interested in Live stream'""")
 
+# ---- 2g. Content-page + blog App Store launch switch (2026-09-25, founder
+# follow-up) ----
+# 2f only covered index.html. how-it-works, faq, about, contact,
+# accountability-challenges, the blog hub and both articles each carry their
+# own copy of the same desktop nav pill and closing CTA block, byte-identical
+# across build/content-page.html, build/article-page.html and
+# build/blog-index.html (some also carry a waitlist sentence inside the
+# page's own copy, handled per page in section 6 below, near the
+# build/pages/*.json loop). None of this is reactive like index.html's
+# Component: these are plain static pages, so the switch applies once, at
+# Python build time, from the same APP_STORE_URL constant, the same way
+# drawer()'s own app_store branch (2e above) already does.
+NAV_PILL_OLD = ('<a data-hz-desknav href="/#waitlist" style="font:700 11px \'Figtree\',Arial,Helvetica,sans-serif;'
+                 'letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;'
+                 'white-space:nowrap">JOIN THE WAITLIST</a>')
+NAV_PILL_LIVE = (f'<a data-hz-desknav href="{APP_STORE_URL}" style="display:inline-flex;align-items:center;'
+                  'gap:10px;border-radius:999px;font:700 11px \'Figtree\',Arial,Helvetica,sans-serif;'
+                  'letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;'
+                  f'white-space:nowrap">{apple_mark(15)}<span>Download app</span></a>')
+
+# The heading's own margin-bottom grows in the live variant since the
+# supporting waitlist paragraph is dropped entirely (matching index.html's
+# own hero/closing CTA, which drop their "NO SPAM" note once live) rather
+# than rewritten: once the app is out, there is nothing left to explain.
+CLOSING_BLOCK_OLD = (
+    '<div style="font:600 clamp(20px,2.4vw,27px)/1.25 \'Playfair Display\',\'Times New Roman\',serif;'
+    'letter-spacing:-.012em;color:#16130E;margin-bottom:8px">Ready when you are'
+    '<span style="color:#C24E1F">.</span></div>\n'
+    '    <p style="margin:0 0 16px;font:400 15px/1.65 \'Figtree\',Arial,Helvetica,sans-serif;'
+    'color:#4A453C">Join the waitlist and we\'ll email you when the first Hunts open.</p>\n'
+    '    <a href="/#waitlist" style="display:inline-block;font:700 12px \'Figtree\',Arial,'
+    'Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:14px 22px;'
+    'text-decoration:none">JOIN THE WAITLIST &#8594;</a>'
+)
+CLOSING_BLOCK_LIVE = (
+    '<div style="font:600 clamp(20px,2.4vw,27px)/1.25 \'Playfair Display\',\'Times New Roman\',serif;'
+    'letter-spacing:-.012em;color:#16130E;margin-bottom:16px">Huntz is on the App Store'
+    f'<span style="color:#C24E1F">.</span></div>\n'
+    f'    <a href="{APP_STORE_URL}" style="display:inline-flex;align-items:center;gap:10px;'
+    'border-radius:999px;font:700 12px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;'
+    f'color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none">{apple_mark(18)}'
+    '<span>Download app</span></a>\n'
+    '    <div style="margin-top:14px"><a href="/#waitlist" style="font:600 11px \'Figtree\','
+    'Arial,Helvetica,sans-serif;letter-spacing:.06em;color:#6E6759;text-decoration:underline">'
+    'Not on iPhone? Get notified for Android.</a></div>'
+)
+
+def apply_content_app_store_switch(tpl: str) -> str:
+    """Applies the nav-pill/closing-block half of the launch switch to a page
+    shell's raw template text. The two assertions run unconditionally, so an
+    upstream template edit is still caught while APP_STORE_URL is empty and
+    this function is otherwise a no-op; the replacement itself only happens
+    once the switch is actually on."""
+    assert tpl.count(NAV_PILL_OLD) == 1, "desktop nav pill not found"
+    assert tpl.count(CLOSING_BLOCK_OLD) == 1, "closing CTA block not found"
+    if APP_STORE_URL:
+        tpl = tpl.replace(NAV_PILL_OLD, NAV_PILL_LIVE).replace(CLOSING_BLOCK_OLD, CLOSING_BLOCK_LIVE)
+    return tpl
+
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
     # keep inline <script> content safe; \/ == / inside JS strings/regexes
@@ -1387,18 +1446,118 @@ CONTACT_JS = CONTACT_JS.replace("FAILURE", "'" + CONTACT_FAILURE + "'")
 assert "SUCCESS" not in CONTACT_JS, "success copy belongs in the markup, not the script"
 
 
-content_tpl = (BUILD / "content-page.html").read_text()
+content_tpl = apply_content_app_store_switch((BUILD / "content-page.html").read_text())
+
+# Per-page in-copy waitlist sentences (build/pages/*.json), each rewritten by
+# hand for its own paragraph rather than a single generic swap, since none of
+# them read the same. "meta" covers the <meta name="description">/og:description
+# pair (both filled from the same spec["meta_description"], so one substitution
+# on the rendered text covers both); "body" covers rendered <p>/<li> fragments
+# inside the page's own copy (matched post render_blocks(), i.e. as real HTML,
+# not the {a:href|text} source syntax). A slug with no waitlist mention in its
+# body, or none in its meta description, simply omits that key.
+CONTENT_LIVE_COPY = {
+    "about": {
+        "meta": (
+            "Huntz is the marketplace for accountability: stake-backed challenges with rules published up front. "
+            "Built in Oakland by Huntz, Inc. Pre-launch, waitlist open.",
+            "Huntz is the marketplace for accountability: stake-backed challenges with rules published up front. "
+            "Built in Oakland by Huntz, Inc. Available now on the App Store.",
+        ),
+        "body": [(
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">The first Hunts are being developed now, directly with selected creators for their '
+            'communities. Self-service tools for creators to launch Hunts independently are planned for later. The '
+            '<a href="/#waitlist" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">waitlist</a> is the way in.</p>',
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">The first Hunts are being developed now, directly with selected creators for their '
+            'communities. Self-service tools for creators to launch Hunts independently are planned for later. The '
+            f'<a href="{APP_STORE_URL}" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">app</a> is the way in.</p>',
+        )],
+    },
+    "accountability-challenges": {
+        "meta": (
+            "What accountability challenges are, what good rules look like, and how Huntz runs them with real "
+            "stakes and published rules. Pre-launch; iOS waitlist open.",
+            "What accountability challenges are, what good rules look like, and how Huntz runs them with real "
+            "stakes and published rules. Available now on the App Store.",
+        ),
+    },
+    "contact": {
+        "meta": (
+            "Reach the Huntz team. Questions about accountability challenges, the waitlist, privacy, or "
+            "partnerships: team@huntz.ai. Based in Oakland, California.",
+            "Reach the Huntz team. Questions about accountability challenges, the app, privacy, or partnerships: "
+            "team@huntz.ai. Based in Oakland, California.",
+        ),
+        "body": [(
+            '<li style="position:relative;font:400 15.5px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;'
+            'border-radius:50%;background:#C24E1F;opacity:.55"></span>Problems with the waitlist or this website: '
+            'tell us what broke and on what device.</li>',
+            '<li style="position:relative;font:400 15.5px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;'
+            'border-radius:50%;background:#C24E1F;opacity:.55"></span>Problems with the app or this website: '
+            'tell us what broke and on what device.</li>',
+        )],
+    },
+    "faq": {
+        "meta": (
+            "Plain answers on Hunts, stakes, proof, fees, and privacy. Huntz is pre-launch: the iOS app is in "
+            "development and the waitlist at huntz.ai is open.",
+            "Plain answers on Hunts, stakes, proof, fees, and privacy. Huntz is live: the iOS app is available "
+            "now on the App Store.",
+        ),
+        "body": [(
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">Not yet. The first Hunts are being developed now with our first creators. '
+            '<a href="/#waitlist" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">Join the waitlist</a> and we will email you when they open. Huntz is for adults '
+            '18 and up.</p>',
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">Yes. Huntz is live on the App Store, with the first Hunts developed directly with '
+            f'our first creators. <a href="{APP_STORE_URL}" style="color:#C24E1F;text-decoration:none;'
+            'border-bottom:1px solid rgba(194,78,31,.4)">Download the app</a> to join one. Huntz is for adults '
+            '18 and up.</p>',
+        )],
+    },
+    "how-it-works": {
+        "body": [(
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">The first Hunts are being developed now, directly with our first creators. '
+            '<a href="/#waitlist" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">Join the waitlist</a> and we will email you when they open.</p>',
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">The first Hunts are live in '
+            f'<a href="{APP_STORE_URL}" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">the app</a>.</p>',
+        )],
+    },
+}
+
 PAGES_DIR = BUILD / "pages"
 CONTENT_PAGES = []
 for spec_path in sorted(PAGES_DIR.glob("*.json")):
     spec = json.loads(spec_path.read_text())
     slug = spec_path.stem
     body = render_blocks(spec["blocks"])
+    meta_description = spec["meta_description"]
+    if APP_STORE_URL:
+        live_copy = CONTENT_LIVE_COPY.get(slug, {})
+        if live_copy.get("meta"):
+            old_desc, new_desc = live_copy["meta"]
+            assert meta_description == old_desc, f"{slug}: meta description drifted from CONTENT_LIVE_COPY's source"
+            meta_description = new_desc
+        for old_frag, new_frag in live_copy.get("body", []):
+            assert body.count(old_frag) == 1, f"{slug}: expected in-copy waitlist sentence not found"
+            body = body.replace(old_frag, new_frag)
     page = (content_tpl
             .replace("{{TITLE_TAG}}", spec["title_tag"])
             .replace("{{TITLE}}", spec["h1"])
             .replace("{{EYEBROW}}", spec.get("eyebrow", "HUNTZ"))
-            .replace("{{DESC}}", spec["meta_description"])
+            .replace("{{DESC}}", meta_description)
             .replace("{{CANONICAL}}", f"{SITE_URL}/{slug}")
             .replace("{{SITE}}", SITE_URL)
             .replace("{{ICONS}}", ICON_LINKS)
@@ -1532,8 +1691,8 @@ def toc_of(blocks) -> str:
             f"{items}</ul></nav>")
 
 
-article_tpl = (BUILD / "article-page.html").read_text()
-index_tpl = (BUILD / "blog-index.html").read_text()
+article_tpl = apply_content_app_store_switch((BUILD / "article-page.html").read_text())
+index_tpl = apply_content_app_store_switch((BUILD / "blog-index.html").read_text())
 ARTICLES = []
 
 for spec_path in sorted(BLOG_DIR.glob("*.json")):

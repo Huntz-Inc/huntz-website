@@ -110,6 +110,15 @@ for path, fname in PAGES.items():
 
 # Home-specific: legal documents must NOT be embedded, labels must exist.
 home = (ROOT / "index.html").read_text()
+
+# Whether this build was generated with APP_STORE_URL set (2026-09-25):
+# detected once from a content page's own static nav pill rather than from
+# index.html, since index.html's Component is reactive and always carries
+# both states' copy as JS literals (see test/app-store-launch.test.js's own
+# header comment for why), while a content page carries only whichever
+# branch build/assemble.py's apply_content_app_store_switch() baked in.
+# Checks below that differ between the two states branch on this.
+APP_STORE_LIVE = 'data-hz-desknav href="https://apps.apple.com/app/id6802558635"' in (ROOT / "about.html").read_text()
 for marker in ("Governing law", "BINDING", "Arbitration Association", "hz-terms-doc"):
     if marker in home:
         fail(f"/: legal-document marker {marker!r} still embedded in home")
@@ -194,7 +203,15 @@ for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-cha
         if marker in body:
             fail(f"{path}: status-strip language {marker!r} still in body")
     full = (ROOT / PAGES[path]).read_text()
-    if "Join the waitlist and we'll email you when the first Hunts open." not in full:
+    # 2026-09-25: the closing CTA reads differently once APP_STORE_URL is
+    # live (build/assemble.py's CLOSING_BLOCK_LIVE), so this checks whichever
+    # sentence the current build actually shipped, not always the pre-launch one.
+    if APP_STORE_LIVE:
+        # The trailing period is styled in its own <span> (the site's usual
+        # heading treatment), so the marker stops short of it.
+        if "Huntz is on the App Store<span" not in full:
+            fail(f"{path}: launch-state closing CTA missing")
+    elif "Join the waitlist and we'll email you when the first Hunts open." not in full:
         fail(f"{path}: corrected CTA sentence missing")
 
 # ---- icons and share images ----
@@ -314,8 +331,14 @@ for path, fname in NAV_PAGES.items():
     for r in ROUTES:
         if f'<a href="{r}" data-hz-drawerlink' not in t:
             fail(f"{path}: mobile menu missing {r}")
-    if t.count("JOIN THE WAITLIST") < 1:
-        fail(f"{path}: mobile menu missing the waitlist action")
+    # 2026-09-25: index.html's Component is reactive and always keeps both
+    # states' copy as source (see APP_STORE_LIVE's own comment above), so
+    # "JOIN THE WAITLIST" is always present there regardless of build state;
+    # a content/blog page's static drawer carries only whichever one build
+    # produced, so this still has to branch for those.
+    action_text = "Download app" if APP_STORE_LIVE else "JOIN THE WAITLIST"
+    if t.count(action_text) < 1:
+        fail(f"{path}: mobile menu missing the {action_text!r} action")
     # Active route is baked in at build time: no JS, no flash, works with JS off.
     marked = re.findall(r'<a href="([^"]+)"[^>]*aria-current="page"', t)
     # An article has no navigation entry of its own, so the nav marks the
