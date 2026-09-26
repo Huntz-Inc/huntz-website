@@ -157,8 +157,12 @@ _card_i = {"i": 0}
 def _card_attrs(m):
     i = _card_i["i"]; _card_i["i"] += 1
     n = HUNT_NAMES[i]
-    return ('<div data-plate="" onClick="{{ pick%d }}" onKeyDown="{{ pickkey%d }}" role="button" tabIndex="0" '
-            'aria-label="Join the waitlist: interested in %s" style="cursor:pointer;scroll-snap-align:start;' % (i, i, n))
+    # role/tabIndex/aria-label are launch-switch-aware (App Store section
+    # below): plateRole/plateTabIndex/pickAria<i> resolve to undefined once
+    # the App Store link is live, so the runtime drops the attributes and the
+    # card goes inert without a template fork.
+    return ('<div data-plate="" onClick="{{ pick%d }}" onKeyDown="{{ pickkey%d }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" '
+            'aria-label="{{ pickAria%d }}" style="cursor:pointer;scroll-snap-align:start;' % (i, i, i))
 html, n = re.subn(r'<div data-plate="" style="scroll-snap-align:start;', _card_attrs, html)
 assert n == 5, f"expected 5 hunt cards, patched {n}"
 
@@ -533,8 +537,17 @@ def header_nav(current: str) -> str:
     return "\n    ".join(out)
 
 
-def drawer(current: str, waitlist_href: str) -> str:
-    """Full-height sheet: every route plus the waitlist action, one tap each."""
+def drawer(current: str, waitlist_href: str, *, app_store: bool = True) -> str:
+    """Full-height sheet: every route plus the waitlist action, one tap each.
+    The waitlist/App Store choice is the module-level APP_STORE_URL switch
+    (defined with the rest of the App Store launch switch patch, in 2f below),
+    so this one shared function renders the right thing on every page from a
+    single build-time constant, with no parameter threaded through most call
+    sites. app_store=False overrides that for the couple of routes that must
+    never claim App Store availability regardless of the site-wide switch
+    (hunt-fallback.html's limited-beta copy, auth/callback.html's account-
+    agnostic copy - see their own build/check.py rules): they keep this link
+    reading "JOIN THE WAITLIST" even once APP_STORE_URL is live."""
     links = []
     for href, _label, head_label, _in_head, _wide in ROUTES:
         on = href == current
@@ -544,6 +557,14 @@ def drawer(current: str, waitlist_href: str) -> str:
                     if on else f"padding-left:0;color:{INK}"))
         links.append(f'<a href="{href}" data-hz-drawerlink{_cur(href, current)} '
                      f'style="{style}">{head_label}</a>')
+    if APP_STORE_URL and app_store:
+        cta = (f'<a href="{APP_STORE_URL}" style="display:flex;align-items:center;justify-content:center;'
+               f'gap:10px;min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};'
+               f'letter-spacing:.12em;text-decoration:none">{apple_mark(18)}<span>Download app</span></a>')
+    else:
+        cta = (f'<a href="{waitlist_href}" style="display:flex;align-items:center;justify-content:center;'
+               f'min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};'
+               f'letter-spacing:.12em;text-decoration:none">JOIN THE WAITLIST</a>')
     return f"""<div id="hz-menu" hidden tabindex="-1" role="dialog" aria-modal="true" aria-label="Site menu" style="position:fixed;inset:0;z-index:90;outline:0">
   <div data-hz-scrim style="position:absolute;inset:0;background:rgba(22,19,14,.5)"></div>
   <nav data-hz-panel aria-label="Site" style="position:absolute;top:0;left:0;right:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:{CREAM};border-bottom:1px solid rgba(22,19,14,.14);padding:0 clamp(20px,5vw,44px) 24px">
@@ -554,7 +575,7 @@ def drawer(current: str, waitlist_href: str) -> str:
     <div style="display:flex;flex-direction:column">
       {chr(10).join("      " + l for l in links).strip()}
     </div>
-    <a href="{waitlist_href}" style="display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};letter-spacing:.12em;text-decoration:none">JOIN THE WAITLIST</a>
+    {cta}
   </nav>
 </div>"""
 
@@ -671,9 +692,265 @@ old = 'style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>'
 assert html.count(old) == 1, "nav CTA not found"
 html = html.replace(old, old + "\n    " + MENU_BUTTON)
 
+# ---- 2f. App Store launch switch (2026-09-25, founder decision) ----
+# ONE constant flips the home page, and the shared mobile drawer on every
+# page, from "join the waitlist" to "download on the App Store". Empty
+# (default) leaves every existing waitlist piece exactly as it renders today:
+# each patch below has its own untouched default branch. Set APP_STORE_URL to
+# the live App Store listing and: the nav CTA, the hero button, the closing
+# CTA and the drawer's own link (2e above) all become "Download app" links,
+# with the Apple mark below, to that URL; the five interest plates go inert
+# (no click handler, no button role, no aria-label); and the waitlist form
+# survives as a relocated, retitled Android fallback at the bottom of the
+# page. See README.md, "App Store launch switch", for the day-of-approval
+# steps.
+#
+# This is the one value to change on launch day: it feeds the Component
+# class field directly (AS-5 below) and drawer() reads it too, so both
+# surfaces flip together from this single assignment.
+APP_STORE_URL = ""
+
+# The known App Store listing URL, independent of the switch above: CSS can't
+# read a JS/Python constant, so HOME_NAV_CSS (below) matches this literal
+# directly to pre-hide the nav's live link on mobile, whether or not the
+# switch is on yet. Change it only if the listing URL itself ever changes,
+# and keep it equal to APP_STORE_URL's own value once that goes live.
+APP_STORE_URL_LITERAL = "https://apps.apple.com/app/id6802558635"
+
+# Single-path Apple logo mark for the three App Store buttons and the
+# drawer's own link, once APP_STORE_URL is live. No external asset: fill is
+# currentColor, so it always matches its own link's text colour with no
+# colour of its own, and vertically centred by their flex styling. A function
+# rather than a constant because the nav link (smaller text) and the hero/
+# closing-CTA/drawer links (larger text) each need a different fixed pixel
+# size (2026-09-25 founder feedback: the original 0.8em read as "super tiny"
+# at ~10px, so this is sized in px against each button's actual rendered
+# size instead of scaling off font-size again) - the viewBox keeps the glyph
+# itself proportioned, so only width/height change per call site.
+def apple_mark(px: int) -> str:
+    return (f'<svg aria-hidden="true" viewBox="0 0 384 512" width="{px}px" height="{px}px" '
+            'style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg">'
+            '<path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>')
+
 # Below 641px the bar is logo + menu button: the three section anchors were
-# already hidden by (I-4b), and the CTA moves into the sheet.
-HOME_NAV_CSS = '@media (max-width:640px){#hz-nav a[href="#waitlist"]{display:none !important}}\n'
+# already hidden by (I-4b), and the CTA moves into the sheet. The second
+# selector is the App Store switch above: CSS can't read the JS field, so it
+# matches the literal URL directly.
+HOME_NAV_CSS = ('@media (max-width:640px){#hz-nav a[href="#waitlist"],'
+                 f'#hz-nav a[href="{APP_STORE_URL_LITERAL}"]'
+                 '{display:none !important}}\n')
+
+# (AS-1) Nav CTA: the default anchor is left completely untouched in its own
+# branch; a second branch swaps in the App Store link with identical font,
+# colour and size, plus a pill radius, the Apple mark, and a small icon-text
+# gap.
+old = ('<a href="#waitlist" style="font: 700 11px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; '
+       'color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; '
+       'font-family:\'Figtree\',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" '
+       'style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>')
+assert html.count(old) == 1, "home nav CTA not found"
+nav_appstore = (old
+    .replace('href="#waitlist"', 'href="{{ appStoreUrl }}"')
+    .replace('style="font: 700 11px',
+             'style="display:inline-flex;align-items:center;gap:10px;border-radius:999px;font: 700 11px')
+    .replace('>JOIN THE WAITLIST<', '>' + apple_mark(15) + '<span>{{ appStoreLabel }}</span><'))
+html = html.replace(old,
+    '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + old + '</sc-if>'
+    '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + nav_appstore + '</sc-if>')
+
+# (AS-2) Hero CTA: default form/confirmation/"no spam" note is left untouched
+# in its own branch; a second branch renders one App Store link in their
+# place. #waitlist itself only exists in the default branch: the id moves to
+# the relocated section below once appStoreMode is on, so it is never
+# duplicated in the live DOM.
+old = ('<div id="waitlist" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">\n        <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">\n          <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">\n            <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px \'Figtree\',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">\n            <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ heroBtn }}</button>\n            <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>\n          </form>\n        </sc-if>\n        <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">\n          <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU\'RE IN. WE\'LL EMAIL YOU WHEN WE LAUNCH.</div>\n        </sc-if>\n      </div>\n      <div style="margin-top: 20px; font: 500 11px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; animation: hzRise .7s ease .84s both; font-family:\'Figtree\',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>')
+assert html.count(old) == 1, "hero waitlist block not found"
+hero_appstore = (
+    '<div style="animation:hzRise .7s ease .74s both">\n'
+    '        <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
+    'gap:10px;padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; '
+    'font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; text-decoration: none; '
+    'border-radius: 999px; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, '
+    'border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" '
+    'style-active="transform:translateY(2px)">' + apple_mark(18) + '<span>{{ appStoreLabel }}</span></a>\n'
+    '      </div>'
+)
+html = html.replace(old,
+    '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + old + '</sc-if>\n'
+    '      <sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + hero_appstore + '</sc-if>')
+
+# (AS-3) Closing CTA: id="fin-form" stays put in both branches, since the
+# scroll-reveal animation (componentDidMount's finBits) targets it by id
+# regardless of mode. Only the content inside it swaps.
+fin_open = '<div id="fin-form" style="opacity:0;transform:translateY(20px)">'
+fin_close = '</div>'
+old = (fin_open + '\n          <sc-if value="{{ interest }}"><div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:14px;padding:6px 8px 6px 12px;border:1px solid rgba(194,78,31,.45);border-radius:20px;font:700 9.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#C24E1F;text-transform:uppercase">Joining for: {{ interest }}<button type="button" onClick="{{ clearInterest }}" aria-label="Remove this interest" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:rgba(194,78,31,.12);color:#C24E1F;font:400 11px \'Figtree\',Arial,Helvetica,sans-serif;cursor:pointer;padding:0" style-hover="background:#C24E1F;color:#F3EFE7">&#10005;</button></div></sc-if>\n          <sc-if value="{{ finalIdle }}" hint-placeholder-val="{{ true }}">\n            <form onSubmit="{{ submitFinal }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">\n              <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex:1 1 220px;padding:17px 18px;border:1px solid rgba(22,19,14,.28);border-radius:14px;background:rgba(255,255,255,.6);font:500 15px \'Figtree\',Arial,Helvetica,sans-serif;color:#16130E;outline:none" style-focus="border-color:#C24E1F">\n              <button type="submit" disabled="{{ busy2 }}" style="padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:14px;color:#F3EFE7;font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;cursor:pointer;box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,transform .15s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ finalBtn }}</button>\n              <sc-if value="{{ err2 }}"><div style="flex:1 1 100%;font:600 11.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err2 }}</div></sc-if>\n            </form>\n          </sc-if>\n          <sc-if value="{{ sub2 }}" hint-placeholder-val="{{ false }}">\n            <div style="display:inline-block;border:2px solid #C24E1F;border-radius:14px;color:#C24E1F;padding:17px 24px;font:700 clamp(13px,1.4vw,17px) \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU\'RE IN.</div>\n          </sc-if>\n          <div style="margin-top:16px;font:500 10.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759">NO SPAM · ONE EMAIL WHEN WE LAUNCH</div>\n        </div>')
+assert html.count(old) == 1, "closing CTA fin-form block not found"
+assert old.startswith(fin_open) and old.endswith(fin_close)
+fin_inner_default = old[len(fin_open):-len(fin_close)]
+fin_appstore = (
+    '\n          <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
+    'gap:10px;padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:999px;color:#F3EFE7;'
+    'font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;'
+    'box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,'
+    'transform .15s ease" style-hover="background:#16130E;border-color:#16130E" '
+    'style-active="transform:translateY(2px)">' + apple_mark(18) + '<span>{{ appStoreLabel }}</span></a>\n        '
+)
+html = html.replace(old,
+    fin_open
+    + '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + fin_inner_default + '</sc-if>'
+    + '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + fin_appstore + '</sc-if>'
+    + fin_close)
+
+# (AS-4) New section: the waitlist survives here, relocated and retitled for
+# Android, once the App Store link is live. Reuses the hero's own form
+# state/handler (heroIdle/sub1/err1/busy1/submitHero): the two are mutually
+# exclusive, since the hero is a plain link whenever this section renders,
+# rather than adding a second, redundant set of fields.
+old = '</section>\n\n<footer data-screen-label="Footer"'
+assert html.count(old) == 1, "footer anchor not found"
+android_section = '''<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><section id="waitlist" data-screen-label="Android Waitlist" style="position:relative;border-top:1px solid rgba(22,19,14,.16);padding:clamp(40px,6vh,64px) clamp(20px,5vw,64px);scroll-margin-top:110px">
+  <div style="max-width:1220px;margin:0 auto">
+    <h2 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h2>
+    <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
+      <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
+        <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
+        <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ notifyBtn }}</button>
+        <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>
+      </form>
+    </sc-if>
+    <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN WE LAUNCH.</div>
+    </sc-if>
+    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>
+  </div>
+</section></sc-if>
+
+'''
+html = html.replace(old, '</section>\n\n' + android_section + '<footer data-screen-label="Footer"')
+
+# (AS-5) Component class: the launch-switch constant itself, alongside
+# WAITLIST_ENDPOINT/WAITLIST_HONEYPOT so all three "flip this to go live"
+# knobs live in one place. Its default is generated straight from the
+# module-level APP_STORE_URL above, so that one Python constant is the real
+# switch and this field is just its compiled-in copy, not a second place to
+# edit.
+old = "WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';\n  emailOk(v)"
+assert html.count(old) == 1, "honeypot field not found"
+html = html.replace(old,
+    "WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';\n"
+    "  // App Store launch switch, generated from APP_STORE_URL in\n"
+    "  // build/assemble.py. Empty = default site (waitlist everywhere, as\n"
+    "  // today); set to flip the nav, hero, closing CTA and mobile drawer to\n"
+    "  // App Store links; the Android waitlist survives, relocated to the\n"
+    "  // bottom of the page. Kept in sync with HOME_NAV_CSS's mobile\n"
+    "  // nav-hide rule (build/assemble.py), which cannot read this constant\n"
+    "  // at runtime.\n"
+    f"  APP_STORE_URL = '{APP_STORE_URL}';\n"
+    "  emailOk(v)")
+
+# (AS-6) Component class: pick0..pick4/pickkey0..pickkey4 become launch-switch
+# aware in place (same keys, no duplicate object-literal entries) so the five
+# plates lose their handlers, and, via plateRole/plateTabIndex/pickAria<i>
+# below, their button semantics, the instant the switch is on.
+old = "pick0: this._picks[0], pick1: this._picks[1], pick2: this._picks[2], pick3: this._picks[3], pick4: this._picks[4],\n      pickkey0: this._pickKeys[0], pickkey1: this._pickKeys[1], pickkey2: this._pickKeys[2], pickkey3: this._pickKeys[3], pickkey4: this._pickKeys[4],"
+assert html.count(old) == 1, "pick0..pickkey4 fields not found"
+html = html.replace(old,
+    "pick0: appStoreMode ? undefined : this._picks[0], pick1: appStoreMode ? undefined : this._picks[1], "
+    "pick2: appStoreMode ? undefined : this._picks[2], pick3: appStoreMode ? undefined : this._picks[3], "
+    "pick4: appStoreMode ? undefined : this._picks[4],\n"
+    "      pickkey0: appStoreMode ? undefined : this._pickKeys[0], pickkey1: appStoreMode ? undefined : this._pickKeys[1], "
+    "pickkey2: appStoreMode ? undefined : this._pickKeys[2], pickkey3: appStoreMode ? undefined : this._pickKeys[3], "
+    "pickkey4: appStoreMode ? undefined : this._pickKeys[4],")
+
+# (AS-7) Component class: appStoreMode is computed once per render, right
+# before the values it gates are assembled.
+old = "    }\n    return {"
+assert html.count(old) == 1, "renderVals return statement not found"
+html = html.replace(old, "    }\n    const appStoreMode = !!this.APP_STORE_URL;\n    return {")
+
+# (AS-8) Component class: the remaining launch-switch values: the two link
+# labels, the plates' now-conditional role/tabIndex/aria-label, and the
+# relocated form's own button text.
+old = "heroBtn: this.state.busy1 ? 'JOINING…' : 'JOIN THE WAITLIST',\n      finalBtn: this.state.busy2 ? 'JOINING…' : 'JOIN THE WAITLIST'"
+assert html.count(old) == 1, "renderVals heroBtn/finalBtn tail not found"
+html = html.replace(old, old + """,
+      appStoreMode: appStoreMode, appStoreUrl: this.APP_STORE_URL, appStoreLabel: 'Download app',
+      notifyBtn: this.state.busy1 ? 'JOINING…' : 'NOTIFY ME',
+      plateRole: appStoreMode ? undefined : 'button', plateTabIndex: appStoreMode ? undefined : '0',
+      pickAria0: appStoreMode ? undefined : 'Join the waitlist: interested in Apply to jobs',
+      pickAria1: appStoreMode ? undefined : 'Join the waitlist: interested in Post content',
+      pickAria2: appStoreMode ? undefined : 'Join the waitlist: interested in Read books',
+      pickAria3: appStoreMode ? undefined : 'Join the waitlist: interested in Stay fit',
+      pickAria4: appStoreMode ? undefined : 'Join the waitlist: interested in Live stream'""")
+
+# ---- 2g. Content-page + blog App Store launch switch (2026-09-25, founder
+# follow-up) ----
+# 2f only covered index.html. how-it-works, faq, about, contact,
+# accountability-challenges, the blog hub and both articles each carry their
+# own copy of the same desktop nav pill and closing CTA block, byte-identical
+# across build/content-page.html, build/article-page.html and
+# build/blog-index.html (some also carry a waitlist sentence inside the
+# page's own copy, handled per page in section 6 below, near the
+# build/pages/*.json loop). None of this is reactive like index.html's
+# Component: these are plain static pages, so the switch applies once, at
+# Python build time, from the same APP_STORE_URL constant, the same way
+# drawer()'s own app_store branch (2e above) already does.
+NAV_PILL_OLD = ('<a data-hz-desknav href="/#waitlist" style="font:700 11px \'Figtree\',Arial,Helvetica,sans-serif;'
+                 'letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;'
+                 'white-space:nowrap">JOIN THE WAITLIST</a>')
+NAV_PILL_LIVE = (f'<a data-hz-desknav href="{APP_STORE_URL}" style="display:inline-flex;align-items:center;'
+                  'gap:10px;border-radius:999px;font:700 11px \'Figtree\',Arial,Helvetica,sans-serif;'
+                  'letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;'
+                  f'white-space:nowrap">{apple_mark(15)}<span>Download app</span></a>')
+
+# The heading's own margin-bottom grows in the live variant since the
+# supporting waitlist paragraph is dropped entirely (matching index.html's
+# own hero/closing CTA, which drop their "NO SPAM" note once live) rather
+# than rewritten: once the app is out, there is nothing left to explain.
+CLOSING_BLOCK_OLD = (
+    '<div style="font:600 clamp(20px,2.4vw,27px)/1.25 \'Playfair Display\',\'Times New Roman\',serif;'
+    'letter-spacing:-.012em;color:#16130E;margin-bottom:8px">Ready when you are'
+    '<span style="color:#C24E1F">.</span></div>\n'
+    '    <p style="margin:0 0 16px;font:400 15px/1.65 \'Figtree\',Arial,Helvetica,sans-serif;'
+    'color:#4A453C">Join the waitlist and we\'ll email you when the first Hunts open.</p>\n'
+    '    <a href="/#waitlist" style="display:inline-block;font:700 12px \'Figtree\',Arial,'
+    'Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:14px 22px;'
+    'text-decoration:none">JOIN THE WAITLIST &#8594;</a>'
+)
+CLOSING_BLOCK_LIVE = (
+    # Founder review 2026-09-25: heading on the left, the store button on the
+    # right of the same row (space-between), vertically centred. flex-wrap lets
+    # a phone-width card stack the button under the text with no media query,
+    # matching the inline-style-only convention of the rest of the shell.
+    '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;'
+    'gap:18px 28px">\n'
+    '      <div style="flex:1 1 300px">\n'
+    '        <div style="font:600 clamp(20px,2.4vw,27px)/1.25 \'Playfair Display\',\'Times New Roman\',serif;'
+    'letter-spacing:-.012em;color:#16130E">Huntz is on the App Store'
+    '<span style="color:#C24E1F">.</span></div>\n'
+    '        <div style="margin-top:14px"><a href="/#waitlist" style="font:600 11px \'Figtree\','
+    'Arial,Helvetica,sans-serif;letter-spacing:.06em;color:#6E6759;text-decoration:underline">'
+    'Not on iPhone? Get notified for Android.</a></div>\n'
+    '      </div>\n'
+    f'      <a href="{APP_STORE_URL}" style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;'
+    'border-radius:999px;font:700 12px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;'
+    f'color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none">{apple_mark(18)}'
+    '<span>Download app</span></a>\n'
+    '    </div>'
+)
+
+def apply_content_app_store_switch(tpl: str) -> str:
+    """Applies the nav-pill/closing-block half of the launch switch to a page
+    shell's raw template text. The two assertions run unconditionally, so an
+    upstream template edit is still caught while APP_STORE_URL is empty and
+    this function is otherwise a no-op; the replacement itself only happens
+    once the switch is actually on."""
+    assert tpl.count(NAV_PILL_OLD) == 1, "desktop nav pill not found"
+    assert tpl.count(CLOSING_BLOCK_OLD) == 1, "closing CTA block not found"
+    if APP_STORE_URL:
+        tpl = tpl.replace(NAV_PILL_OLD, NAV_PILL_LIVE).replace(CLOSING_BLOCK_OLD, CLOSING_BLOCK_LIVE)
+    return tpl
 
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
@@ -793,6 +1070,7 @@ HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</
 <meta name="twitter:title" content="Huntz · Put your money where your goals are.">
 <meta name="twitter:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back.">
 <meta name="twitter:image" content="{SITE_URL}/og-image.jpg">
+<meta name="apple-itunes-app" content="app-id=6802558635">
 {ICON_LINKS}
 <link rel="preload" href="{FONTS_HREF}" as="style">
 <link rel="stylesheet" href="{FONTS_HREF}">
@@ -1177,18 +1455,118 @@ CONTACT_JS = CONTACT_JS.replace("FAILURE", "'" + CONTACT_FAILURE + "'")
 assert "SUCCESS" not in CONTACT_JS, "success copy belongs in the markup, not the script"
 
 
-content_tpl = (BUILD / "content-page.html").read_text()
+content_tpl = apply_content_app_store_switch((BUILD / "content-page.html").read_text())
+
+# Per-page in-copy waitlist sentences (build/pages/*.json), each rewritten by
+# hand for its own paragraph rather than a single generic swap, since none of
+# them read the same. "meta" covers the <meta name="description">/og:description
+# pair (both filled from the same spec["meta_description"], so one substitution
+# on the rendered text covers both); "body" covers rendered <p>/<li> fragments
+# inside the page's own copy (matched post render_blocks(), i.e. as real HTML,
+# not the {a:href|text} source syntax). A slug with no waitlist mention in its
+# body, or none in its meta description, simply omits that key.
+CONTENT_LIVE_COPY = {
+    "about": {
+        "meta": (
+            "Huntz is the marketplace for accountability: stake-backed challenges with rules published up front. "
+            "Built in Oakland by Huntz, Inc. Pre-launch, waitlist open.",
+            "Huntz is the marketplace for accountability: stake-backed challenges with rules published up front. "
+            "Built in Oakland by Huntz, Inc. Available now on the App Store.",
+        ),
+        "body": [(
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">The first Hunts are being developed now, directly with selected creators for their '
+            'communities. Self-service tools for creators to launch Hunts independently are planned for later. The '
+            '<a href="/#waitlist" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">waitlist</a> is the way in.</p>',
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">The first Hunts are being developed now, directly with selected creators for their '
+            'communities. Self-service tools for creators to launch Hunts independently are planned for later. The '
+            f'<a href="{APP_STORE_URL}" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">app</a> is the way in.</p>',
+        )],
+    },
+    "accountability-challenges": {
+        "meta": (
+            "What accountability challenges are, what good rules look like, and how Huntz runs them with real "
+            "stakes and published rules. Pre-launch; iOS waitlist open.",
+            "What accountability challenges are, what good rules look like, and how Huntz runs them with real "
+            "stakes and published rules. Available now on the App Store.",
+        ),
+    },
+    "contact": {
+        "meta": (
+            "Reach the Huntz team. Questions about accountability challenges, the waitlist, privacy, or "
+            "partnerships: team@huntz.ai. Based in Oakland, California.",
+            "Reach the Huntz team. Questions about accountability challenges, the app, privacy, or partnerships: "
+            "team@huntz.ai. Based in Oakland, California.",
+        ),
+        "body": [(
+            '<li style="position:relative;font:400 15.5px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;'
+            'border-radius:50%;background:#C24E1F;opacity:.55"></span>Problems with the waitlist or this website: '
+            'tell us what broke and on what device.</li>',
+            '<li style="position:relative;font:400 15.5px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;'
+            'border-radius:50%;background:#C24E1F;opacity:.55"></span>Problems with the app or this website: '
+            'tell us what broke and on what device.</li>',
+        )],
+    },
+    "faq": {
+        "meta": (
+            "Plain answers on Hunts, stakes, proof, fees, and privacy. Huntz is pre-launch: the iOS app is in "
+            "development and the waitlist at huntz.ai is open.",
+            "Plain answers on Hunts, stakes, proof, fees, and privacy. Huntz is live: the iOS app is available "
+            "now on the App Store.",
+        ),
+        "body": [(
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">Not yet. The first Hunts are being developed now with our first creators. '
+            '<a href="/#waitlist" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">Join the waitlist</a> and we will email you when they open. Huntz is for adults '
+            '18 and up.</p>',
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">Yes. Huntz is live on the App Store, with the first Hunts developed directly with '
+            f'our first creators. <a href="{APP_STORE_URL}" style="color:#C24E1F;text-decoration:none;'
+            'border-bottom:1px solid rgba(194,78,31,.4)">Download the app</a> to join one. Huntz is for adults '
+            '18 and up.</p>',
+        )],
+    },
+    "how-it-works": {
+        "body": [(
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">The first Hunts are being developed now, directly with our first creators. '
+            '<a href="/#waitlist" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">Join the waitlist</a> and we will email you when they open.</p>',
+            '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
+            'text-wrap:pretty">The first Hunts are live in '
+            f'<a href="{APP_STORE_URL}" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
+            'rgba(194,78,31,.4)">the app</a>.</p>',
+        )],
+    },
+}
+
 PAGES_DIR = BUILD / "pages"
 CONTENT_PAGES = []
 for spec_path in sorted(PAGES_DIR.glob("*.json")):
     spec = json.loads(spec_path.read_text())
     slug = spec_path.stem
     body = render_blocks(spec["blocks"])
+    meta_description = spec["meta_description"]
+    if APP_STORE_URL:
+        live_copy = CONTENT_LIVE_COPY.get(slug, {})
+        if live_copy.get("meta"):
+            old_desc, new_desc = live_copy["meta"]
+            assert meta_description == old_desc, f"{slug}: meta description drifted from CONTENT_LIVE_COPY's source"
+            meta_description = new_desc
+        for old_frag, new_frag in live_copy.get("body", []):
+            assert body.count(old_frag) == 1, f"{slug}: expected in-copy waitlist sentence not found"
+            body = body.replace(old_frag, new_frag)
     page = (content_tpl
             .replace("{{TITLE_TAG}}", spec["title_tag"])
             .replace("{{TITLE}}", spec["h1"])
             .replace("{{EYEBROW}}", spec.get("eyebrow", "HUNTZ"))
-            .replace("{{DESC}}", spec["meta_description"])
+            .replace("{{DESC}}", meta_description)
             .replace("{{CANONICAL}}", f"{SITE_URL}/{slug}")
             .replace("{{SITE}}", SITE_URL)
             .replace("{{ICONS}}", ICON_LINKS)
@@ -1322,8 +1700,8 @@ def toc_of(blocks) -> str:
             f"{items}</ul></nav>")
 
 
-article_tpl = (BUILD / "article-page.html").read_text()
-index_tpl = (BUILD / "blog-index.html").read_text()
+article_tpl = apply_content_app_store_switch((BUILD / "article-page.html").read_text())
+index_tpl = apply_content_app_store_switch((BUILD / "blog-index.html").read_text())
 ARTICLES = []
 
 for spec_path in sorted(BLOG_DIR.glob("*.json")):
@@ -1533,7 +1911,10 @@ hunt_page = ((BUILD / "hunt-page.html").read_text()
              .replace("{{NAV_CSS}}", NAV_CSS)
              .replace("{{HEADER_NAV}}", header_nav("/hunt"))
              .replace("{{MENU_BUTTON}}", MENU_BUTTON)
-             .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist"))
+             # app_store=False: this page must stay "limited beta" and never
+             # claim App Store availability (build/check.py), regardless of
+             # the marketing site's own APP_STORE_URL switch.
+             .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist", app_store=False))
              .replace("{{FOOTER_NAV}}", footer_nav("/hunt"))
              .replace("{{NAV_JS}}", NAV_JS))
 assert "{{" not in hunt_page, "unfilled placeholder in hunt-fallback.html"
@@ -1575,7 +1956,10 @@ auth_page = ((BUILD / "auth-callback-page.html").read_text()
              .replace("{{NAV_CSS}}", NAV_CSS)
              .replace("{{HEADER_NAV}}", header_nav("/auth/callback"))
              .replace("{{MENU_BUTTON}}", MENU_BUTTON)
-             .replace("{{DRAWER}}", drawer("/auth/callback", "/#waitlist"))
+             # app_store=False: this page's copy must stay account-agnostic
+             # and never claim App Store availability (build/check.py),
+             # regardless of the marketing site's own APP_STORE_URL switch.
+             .replace("{{DRAWER}}", drawer("/auth/callback", "/#waitlist", app_store=False))
              .replace("{{FOOTER_NAV}}", footer_nav("/auth/callback"))
              .replace("{{NAV_JS}}", NAV_JS))
 assert "{{" not in auth_page, "unfilled placeholder in auth/callback.html"

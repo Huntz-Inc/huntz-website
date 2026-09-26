@@ -78,6 +78,60 @@ Behaviour worth knowing:
   is best set up *after* sending-domain authentication so it comes from
   `@huntz.ai` rather than via Mailchimp's domain.
 
+## App Store launch switch
+
+*(2026-09-25, founder decision)* One constant flips the home page, and the
+shared mobile drawer on every page, from "join the waitlist" to "download on
+the App Store": `APP_STORE_URL` in `build/assemble.py`, defined with the rest
+of the App Store launch switch patch. It is empty by default, which renders
+every page exactly as it does today. Like the rest of `index.html`, nothing
+here is hand-edited: `APP_STORE_URL` feeds both `index.html`'s `Component`
+class field (sitting next to `WAITLIST_ENDPOINT`) and the shared drawer
+(`build/assemble.py`'s `drawer()`) directly, so one rebuild keeps both in
+sync.
+
+On approval day:
+
+1. In `build/assemble.py`'s App Store launch switch patch, set
+   `APP_STORE_URL = ""` to
+   `APP_STORE_URL = "https://apps.apple.com/app/id6802558635"` (the live
+   listing). This is the one on/off switch.
+2. Rebuild and verify: `python3 build/assemble.py`, then `python3
+   build/check.py` and `npm test`. `index.html` is generated; do not
+   hand-edit it.
+3. Commit the regenerated pages.
+4. Deploy.
+5. Run `node scripts/verify-production.mjs` as the post-deploy check.
+
+`APP_STORE_URL_LITERAL`, defined right above `HOME_NAV_CSS` in that same
+patch, holds that same listing URL independently of the switch: it is what
+lets the mobile nav-hide rule match the App Store link without reading a JS
+constant (CSS cannot), and it is already set correctly, so it needs no change
+on launch day. Only touch it if the listing URL itself ever changes, and keep
+it equal to `APP_STORE_URL`'s own value once that is live.
+
+With `APP_STORE_URL` set: the nav link, the hero button and the closing CTA
+become pill-shaped "Download app" links to that URL, each with a small inline
+Apple mark ahead of the label (a single SVG path, no external asset or badge
+artwork; the site's existing button font, colours and size are otherwise
+unchanged); the five interest plates under **Upcoming** stop being click
+targets (their look and copy are unchanged); and the waitlist form survives
+as a fallback, relocated to the bottom of the page and retitled "Not on
+iPhone? Get notified for Android.", with its button reading "NOTIFY ME" and
+posting to the same Mailchimp audience and honeypot as before.
+
+The mobile hamburger drawer's own link (`build/assemble.py`'s `drawer()`,
+static markup shared with every other page, outside `index.html`'s reactive
+template) is generated from this same `APP_STORE_URL` constant at build time:
+empty, it keeps reading "JOIN THE WAITLIST" and targeting `#waitlist` exactly
+as today; set, it reads "Download app" with the same Apple mark, pointing at
+the App Store URL, on every page, on phones only.
+
+The Smart App Banner (`<meta name="apple-itunes-app"
+content="app-id=6802558635">`) is unconditional and already ships on every
+public page: Safari only shows it once the app is actually live on the App
+Store, so shipping the tag ahead of approval is safe.
+
 ## The contact form
 
 `/contact` posts to `api/contact.js`, a zero-config Vercel Function that mails
