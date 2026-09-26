@@ -537,8 +537,17 @@ def header_nav(current: str) -> str:
     return "\n    ".join(out)
 
 
-def drawer(current: str, waitlist_href: str) -> str:
-    """Full-height sheet: every route plus the waitlist action, one tap each."""
+def drawer(current: str, waitlist_href: str, *, app_store: bool = True) -> str:
+    """Full-height sheet: every route plus the waitlist action, one tap each.
+    The waitlist/App Store choice is the module-level APP_STORE_URL switch
+    (defined with the rest of the App Store launch switch patch, in 2f below),
+    so this one shared function renders the right thing on every page from a
+    single build-time constant, with no parameter threaded through most call
+    sites. app_store=False overrides that for the couple of routes that must
+    never claim App Store availability regardless of the site-wide switch
+    (hunt-fallback.html's limited-beta copy, auth/callback.html's account-
+    agnostic copy - see their own build/check.py rules): they keep this link
+    reading "JOIN THE WAITLIST" even once APP_STORE_URL is live."""
     links = []
     for href, _label, head_label, _in_head, _wide in ROUTES:
         on = href == current
@@ -548,6 +557,14 @@ def drawer(current: str, waitlist_href: str) -> str:
                     if on else f"padding-left:0;color:{INK}"))
         links.append(f'<a href="{href}" data-hz-drawerlink{_cur(href, current)} '
                      f'style="{style}">{head_label}</a>')
+    if APP_STORE_URL and app_store:
+        cta = (f'<a href="{APP_STORE_URL}" style="display:flex;align-items:center;justify-content:center;'
+               f'gap:6px;min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};'
+               f'letter-spacing:.12em;text-decoration:none">{APPLE_MARK}<span>Download app</span></a>')
+    else:
+        cta = (f'<a href="{waitlist_href}" style="display:flex;align-items:center;justify-content:center;'
+               f'min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};'
+               f'letter-spacing:.12em;text-decoration:none">JOIN THE WAITLIST</a>')
     return f"""<div id="hz-menu" hidden tabindex="-1" role="dialog" aria-modal="true" aria-label="Site menu" style="position:fixed;inset:0;z-index:90;outline:0">
   <div data-hz-scrim style="position:absolute;inset:0;background:rgba(22,19,14,.5)"></div>
   <nav data-hz-panel aria-label="Site" style="position:absolute;top:0;left:0;right:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:{CREAM};border-bottom:1px solid rgba(22,19,14,.14);padding:0 clamp(20px,5vw,44px) 24px">
@@ -558,7 +575,7 @@ def drawer(current: str, waitlist_href: str) -> str:
     <div style="display:flex;flex-direction:column">
       {chr(10).join("      " + l for l in links).strip()}
     </div>
-    <a href="{waitlist_href}" style="display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};letter-spacing:.12em;text-decoration:none">JOIN THE WAITLIST</a>
+    {cta}
   </nav>
 </div>"""
 
@@ -676,19 +693,38 @@ assert html.count(old) == 1, "nav CTA not found"
 html = html.replace(old, old + "\n    " + MENU_BUTTON)
 
 # ---- 2f. App Store launch switch (2026-09-25, founder decision) ----
-# One constant flips the home page from "join the waitlist" to "download on
-# the App Store". Empty (default) leaves every existing waitlist piece exactly
-# as it renders today: each patch below has its own untouched default branch.
-# Set to the live App Store listing and: the nav CTA, the hero button and the
-# closing CTA become plain App Store links; the five interest plates go inert
+# ONE constant flips the home page, and the shared mobile drawer on every
+# page, from "join the waitlist" to "download on the App Store". Empty
+# (default) leaves every existing waitlist piece exactly as it renders today:
+# each patch below has its own untouched default branch. Set APP_STORE_URL to
+# the live App Store listing and: the nav CTA, the hero button, the closing
+# CTA and the drawer's own link (2e above) all become "Download app" links,
+# with the Apple mark below, to that URL; the five interest plates go inert
 # (no click handler, no button role, no aria-label); and the waitlist form
 # survives as a relocated, retitled Android fallback at the bottom of the
 # page. See README.md, "App Store launch switch", for the day-of-approval
-# steps. This literal seeds HOME_NAV_CSS below and the Component class field
-# comment further down: CSS can't read a JS constant, so the actual switch is
-# the class field's own default value (patched below), which must be kept
-# equal to this literal once it goes live.
+# steps.
+#
+# This is the one value to change on launch day: it feeds the Component
+# class field directly (AS-5 below) and drawer() reads it too, so both
+# surfaces flip together from this single assignment.
+APP_STORE_URL = ""
+
+# The known App Store listing URL, independent of the switch above: CSS can't
+# read a JS/Python constant, so HOME_NAV_CSS (below) matches this literal
+# directly to pre-hide the nav's live link on mobile, whether or not the
+# switch is on yet. Change it only if the listing URL itself ever changes,
+# and keep it equal to APP_STORE_URL's own value once that goes live.
 APP_STORE_URL_LITERAL = "https://apps.apple.com/app/id6802558635"
+
+# Single-path Apple logo mark for the three App Store buttons and the
+# drawer's own link, once APP_STORE_URL is live. No external asset: fill is
+# currentColor, so it always matches its own link's text colour with no
+# colour of its own. Sized in em so it scales with each button's own font
+# size, and vertically centred by their flex styling.
+APPLE_MARK = ('<svg aria-hidden="true" viewBox="0 0 384 512" width="0.8em" height="0.8em" '
+              'style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg">'
+              '<path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>')
 
 # Below 641px the bar is logo + menu button: the three section anchors were
 # already hidden by (I-4b), and the CTA moves into the sheet. The second
@@ -699,14 +735,19 @@ HOME_NAV_CSS = ('@media (max-width:640px){#hz-nav a[href="#waitlist"],'
                  '{display:none !important}}\n')
 
 # (AS-1) Nav CTA: the default anchor is left completely untouched in its own
-# branch; a second branch swaps in the App Store link with identical styling.
+# branch; a second branch swaps in the App Store link with identical font,
+# colour and size, plus a pill radius, the Apple mark, and a small icon-text
+# gap.
 old = ('<a href="#waitlist" style="font: 700 11px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; '
        'color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; '
        'font-family:\'Figtree\',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" '
        'style-active="transform:translateY(1px)">JOIN THE WAITLIST</a>')
 assert html.count(old) == 1, "home nav CTA not found"
-nav_appstore = old.replace('href="#waitlist"', 'href="{{ appStoreUrl }}"').replace(
-    '>JOIN THE WAITLIST<', '>{{ appStoreLabel }}<')
+nav_appstore = (old
+    .replace('href="#waitlist"', 'href="{{ appStoreUrl }}"')
+    .replace('style="font: 700 11px',
+             'style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;font: 700 11px')
+    .replace('>JOIN THE WAITLIST<', '>' + APPLE_MARK + '<span>{{ appStoreLabel }}</span><'))
 html = html.replace(old,
     '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + old + '</sc-if>'
     '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + nav_appstore + '</sc-if>')
@@ -721,11 +762,11 @@ assert html.count(old) == 1, "hero waitlist block not found"
 hero_appstore = (
     '<div style="animation:hzRise .7s ease .74s both">\n'
     '        <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
-    'padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; '
+    'gap:8px;padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; '
     'font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; text-decoration: none; '
-    'border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, '
+    'border-radius: 999px; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, '
     'border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" '
-    'style-active="transform:translateY(2px)">{{ appStoreLabel }}</a>\n'
+    'style-active="transform:translateY(2px)">' + APPLE_MARK + '<span>{{ appStoreLabel }}</span></a>\n'
     '      </div>'
 )
 html = html.replace(old,
@@ -743,11 +784,11 @@ assert old.startswith(fin_open) and old.endswith(fin_close)
 fin_inner_default = old[len(fin_open):-len(fin_close)]
 fin_appstore = (
     '\n          <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
-    'padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:14px;color:#F3EFE7;'
+    'gap:8px;padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:999px;color:#F3EFE7;'
     'font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;'
     'box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,'
     'transform .15s ease" style-hover="background:#16130E;border-color:#16130E" '
-    'style-active="transform:translateY(2px)">{{ appStoreLabel }}</a>\n        '
+    'style-active="transform:translateY(2px)">' + APPLE_MARK + '<span>{{ appStoreLabel }}</span></a>\n        '
 )
 html = html.replace(old,
     fin_open
@@ -784,19 +825,22 @@ html = html.replace(old, '</section>\n\n' + android_section + '<footer data-scre
 
 # (AS-5) Component class: the launch-switch constant itself, alongside
 # WAITLIST_ENDPOINT/WAITLIST_HONEYPOT so all three "flip this to go live"
-# knobs live in one place.
+# knobs live in one place. Its default is generated straight from the
+# module-level APP_STORE_URL above, so that one Python constant is the real
+# switch and this field is just its compiled-in copy, not a second place to
+# edit.
 old = "WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';\n  emailOk(v)"
 assert html.count(old) == 1, "honeypot field not found"
 html = html.replace(old,
     "WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';\n"
-    "  // App Store launch switch. Empty = default site (waitlist everywhere,\n"
-    "  // as today). On approval day, set this to the live App Store listing\n"
-    f"  // ({APP_STORE_URL_LITERAL}) to flip the nav, hero and\n"
-    "  // closing CTA to App Store links; the Android waitlist survives,\n"
-    "  // relocated to the bottom of the page. Keep in sync with\n"
-    "  // HOME_NAV_CSS's mobile nav-hide rule (build/assemble.py), which\n"
-    "  // cannot read this constant at runtime.\n"
-    "  APP_STORE_URL = '';\n"
+    "  // App Store launch switch, generated from APP_STORE_URL in\n"
+    "  // build/assemble.py. Empty = default site (waitlist everywhere, as\n"
+    "  // today); set to flip the nav, hero, closing CTA and mobile drawer to\n"
+    "  // App Store links; the Android waitlist survives, relocated to the\n"
+    "  // bottom of the page. Kept in sync with HOME_NAV_CSS's mobile\n"
+    "  // nav-hide rule (build/assemble.py), which cannot read this constant\n"
+    "  // at runtime.\n"
+    f"  APP_STORE_URL = '{APP_STORE_URL}';\n"
     "  emailOk(v)")
 
 # (AS-6) Component class: pick0..pick4/pickkey0..pickkey4 become launch-switch
@@ -825,7 +869,7 @@ html = html.replace(old, "    }\n    const appStoreMode = !!this.APP_STORE_URL;\
 old = "heroBtn: this.state.busy1 ? 'JOINING…' : 'JOIN THE WAITLIST',\n      finalBtn: this.state.busy2 ? 'JOINING…' : 'JOIN THE WAITLIST'"
 assert html.count(old) == 1, "renderVals heroBtn/finalBtn tail not found"
 html = html.replace(old, old + """,
-      appStoreMode: appStoreMode, appStoreUrl: this.APP_STORE_URL, appStoreLabel: 'DOWNLOAD ON THE APP STORE',
+      appStoreMode: appStoreMode, appStoreUrl: this.APP_STORE_URL, appStoreLabel: 'Download app',
       notifyBtn: this.state.busy1 ? 'JOINING…' : 'NOTIFY ME',
       plateRole: appStoreMode ? undefined : 'button', plateTabIndex: appStoreMode ? undefined : '0',
       pickAria0: appStoreMode ? undefined : 'Join the waitlist: interested in Apply to jobs',
@@ -1693,7 +1737,10 @@ hunt_page = ((BUILD / "hunt-page.html").read_text()
              .replace("{{NAV_CSS}}", NAV_CSS)
              .replace("{{HEADER_NAV}}", header_nav("/hunt"))
              .replace("{{MENU_BUTTON}}", MENU_BUTTON)
-             .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist"))
+             # app_store=False: this page must stay "limited beta" and never
+             # claim App Store availability (build/check.py), regardless of
+             # the marketing site's own APP_STORE_URL switch.
+             .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist", app_store=False))
              .replace("{{FOOTER_NAV}}", footer_nav("/hunt"))
              .replace("{{NAV_JS}}", NAV_JS))
 assert "{{" not in hunt_page, "unfilled placeholder in hunt-fallback.html"
@@ -1735,7 +1782,10 @@ auth_page = ((BUILD / "auth-callback-page.html").read_text()
              .replace("{{NAV_CSS}}", NAV_CSS)
              .replace("{{HEADER_NAV}}", header_nav("/auth/callback"))
              .replace("{{MENU_BUTTON}}", MENU_BUTTON)
-             .replace("{{DRAWER}}", drawer("/auth/callback", "/#waitlist"))
+             # app_store=False: this page's copy must stay account-agnostic
+             # and never claim App Store availability (build/check.py),
+             # regardless of the marketing site's own APP_STORE_URL switch.
+             .replace("{{DRAWER}}", drawer("/auth/callback", "/#waitlist", app_store=False))
              .replace("{{FOOTER_NAV}}", footer_nav("/auth/callback"))
              .replace("{{NAV_JS}}", NAV_JS))
 assert "{{" not in auth_page, "unfilled placeholder in auth/callback.html"

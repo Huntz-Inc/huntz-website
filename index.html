@@ -97,7 +97,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
     <a href="#mechanic" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HOW IT WORKS</a>
     <a href="#hunts" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">HUNTS</a>
     <a href="#why" style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .14em; color: #6E6759; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="color:#16130E">FAQ</a>
-    <sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}"><a href="#waitlist" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">JOIN THE WAITLIST</a></sc-if><sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><a href="{{ appStoreUrl }}" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">{{ appStoreLabel }}</a></sc-if>
+    <sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}"><a href="#waitlist" style="font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)">JOIN THE WAITLIST</a></sc-if><sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;font: 700 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; color: #F3EFE7; background: #C24E1F; padding: 11px 18px; text-decoration: none; font-family:'Figtree',Arial,Helvetica,sans-serif" style-hover="background:#16130E;color:#F3EFE7" style-active="transform:translateY(1px)"><svg aria-hidden="true" viewBox="0 0 384 512" width="0.8em" height="0.8em" style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg><span>{{ appStoreLabel }}</span></a></sc-if>
     <button type="button" data-hz-menu-btn aria-controls="hz-menu" aria-expanded="false" aria-label="Menu" style="align-items:center;justify-content:center;flex-direction:column;gap:5px;width:44px;height:44px;margin:-5px 0;padding:0;border:0;background:transparent;cursor:pointer;color:#16130E"><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span></button>
   </div>
 </div>
@@ -130,7 +130,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
       </div>
       <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; animation: hzRise .7s ease .84s both; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div></sc-if>
       <sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><div style="animation:hzRise .7s ease .74s both">
-        <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; text-decoration: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ appStoreLabel }}</a>
+        <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; text-decoration: none; border-radius: 999px; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)"><svg aria-hidden="true" viewBox="0 0 384 512" width="0.8em" height="0.8em" style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg><span>{{ appStoreLabel }}</span></a>
       </div></sc-if>
     </div>
     <div style="flex:0 1 330px;display:flex;justify-content:center;animation:hzRise .9s ease .5s both">
@@ -514,7 +514,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
           </sc-if>
           <div style="margin-top:16px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759">NO SPAM · ONE EMAIL WHEN WE LAUNCH</div>
         </sc-if><sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">
-          <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:14px;color:#F3EFE7;font:700 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,transform .15s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ appStoreLabel }}</a>
+          <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:999px;color:#F3EFE7;font:700 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,transform .15s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)"><svg aria-hidden="true" viewBox="0 0 384 512" width="0.8em" height="0.8em" style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg><span>{{ appStoreLabel }}</span></a>
         </sc-if></div>
       </div>
       <div data-plate="" style="flex:0 1 380px;min-width:280px;padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));box-shadow:0 1px 0 rgba(255,255,255,.85) inset,0 26px 44px -34px rgba(22,19,14,.6)">
@@ -823,13 +823,13 @@ class Component extends DCLogic {
   WAITLIST_ENDPOINT = 'https://huntz.us18.list-manage.com/subscribe/post?u=b7144d02c740628b3280ff55f&id=3ee28a30af&f_id=000baee6f0';
   // Mailchimp's bot-trap field from the embedded form; must be sent empty.
   WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';
-  // App Store launch switch. Empty = default site (waitlist everywhere,
-  // as today). On approval day, set this to the live App Store listing
-  // (https://apps.apple.com/app/id6802558635) to flip the nav, hero and
-  // closing CTA to App Store links; the Android waitlist survives,
-  // relocated to the bottom of the page. Keep in sync with
-  // HOME_NAV_CSS's mobile nav-hide rule (build/assemble.py), which
-  // cannot read this constant at runtime.
+  // App Store launch switch, generated from APP_STORE_URL in
+  // build/assemble.py. Empty = default site (waitlist everywhere, as
+  // today); set to flip the nav, hero, closing CTA and mobile drawer to
+  // App Store links; the Android waitlist survives, relocated to the
+  // bottom of the page. Kept in sync with HOME_NAV_CSS's mobile
+  // nav-hide rule (build/assemble.py), which cannot read this constant
+  // at runtime.
   APP_STORE_URL = '';
   emailOk(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
   submit(e, n) {
@@ -920,7 +920,7 @@ class Component extends DCLogic {
       interest: this.state.interest, clearInterest: this.clearInterest,
       heroBtn: this.state.busy1 ? 'JOINING…' : 'JOIN THE WAITLIST',
       finalBtn: this.state.busy2 ? 'JOINING…' : 'JOIN THE WAITLIST',
-      appStoreMode: appStoreMode, appStoreUrl: this.APP_STORE_URL, appStoreLabel: 'DOWNLOAD ON THE APP STORE',
+      appStoreMode: appStoreMode, appStoreUrl: this.APP_STORE_URL, appStoreLabel: 'Download app',
       notifyBtn: this.state.busy1 ? 'JOINING…' : 'NOTIFY ME',
       plateRole: appStoreMode ? undefined : 'button', plateTabIndex: appStoreMode ? undefined : '0',
       pickAria0: appStoreMode ? undefined : 'Join the waitlist: interested in Apply to jobs',

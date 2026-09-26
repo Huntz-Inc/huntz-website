@@ -546,9 +546,14 @@ for route in ARTICLES:
     if 'href="/#waitlist"' not in t:
         fail(f"{route}: does not use the real waitlist CTA")
 
-    # External citations open safely and are absolute.
-    for href in re.findall(r'<a href="(https://[^"]+)"[^>]*>', t):
-        tag = re.search(r'<a href="' + re.escape(href) + r'"[^>]*>', t).group(0)
+    # External citations open safely and are absolute. Scoped to <article>,
+    # not the whole page: shared chrome (header/drawer/footer) can itself
+    # carry an absolute https link once the App Store launch switch is live
+    # (the drawer's own "Download app" link, build/assemble.py's drawer()),
+    # and that same-site, same-tab download link is not a citation.
+    article_body = t[t.index("<article>"):t.index("</article>")]
+    for href in re.findall(r'<a href="(https://[^"]+)"[^>]*>', article_body):
+        tag = re.search(r'<a href="' + re.escape(href) + r'"[^>]*>', article_body).group(0)
         if 'rel="noopener noreferrer"' not in tag or 'target="_blank"' not in tag:
             fail(f"{route}: external link {href} is not target=_blank + rel=noopener noreferrer")
 

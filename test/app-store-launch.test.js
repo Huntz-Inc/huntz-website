@@ -2,8 +2,11 @@
 // Tests for the App Store launch switch (2026-09-25 founder decision):
 // index.html's Component class gains an APP_STORE_URL config field, next to
 // WAITLIST_ENDPOINT, that flips the home page from "join the waitlist" to
-// "download on the App Store" once set. See README.md, "App Store launch
-// switch".
+// "download on the App Store" once set: the nav link, hero button and
+// closing CTA become pill-shaped "Download app" links carrying an inline
+// Apple mark. The same build-time APP_STORE_URL constant also drives the
+// shared mobile drawer (build/assemble.py's drawer()). See README.md, "App
+// Store launch switch".
 //
 //     npm test          (or: node --test "test/*.test.js")
 //
@@ -11,8 +14,8 @@
 // "unfilled build placeholder" rule) and is not hand-edited, so these tests
 // read the committed file the same way build/check.py does.
 //
-// Two complementary techniques evaluate the page in both states without a
-// browser:
+// Three complementary techniques evaluate the feature in both states without
+// a browser:
 //
 //   1. The Component class is a plain, DOM-free-at-render JS class (its
 //      renderVals() touches no DOM), so it is extracted from its
@@ -29,6 +32,15 @@
 //      the static markup against those same computed values, so assertions
 //      read like "what's on the page" rather than "what's in the template
 //      source". It does not need sc-for (unused by the pieces under test).
+//   3. The mobile drawer is different from techniques 1 and 2: it is static
+//      markup baked once per build by build/assemble.py's drawer(), entirely
+//      outside index.html's reactive template (no <sc-if>, no renderVals()),
+//      so a single committed build can only ever show the branch that was
+//      active when it was built. This repo's committed build was generated
+//      with APP_STORE_URL empty, so the drawer's live branch cannot be
+//      observed by reading any committed HTML file; the tests for it read
+//      build/assemble.py's own source instead, the same way techniques 1 and
+//      2 already treat index.html's source as ground truth for a build.
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -37,6 +49,18 @@ const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
 const APP_STORE_URL = 'https://apps.apple.com/app/id6802558635';
+
+/** Escapes a string for safe use inside a RegExp built at runtime. */
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Matches the inline Apple logo mark (a single <path>, aria-hidden, sized in
+ * em) shared by the three App Store buttons and the drawer link. Its viewBox
+ * is a unique fingerprint on this page: index.html's only other <svg> (a
+ * bundler thumbnail template, present regardless of mode) uses
+ * viewBox="0 0 100 100".
+ */
+const APPLE_MARK_RE = /<svg aria-hidden="true" viewBox="0 0 384 512"[^>]*>[\s\S]*?<\/svg>/;
 
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 
@@ -151,8 +175,8 @@ const LIVE_HTML = renderTemplate(html, LIVE_VALS);
 /**
  * The Component class's own JS source (inside <script type="text/x-dc"
  * data-dc-script>) necessarily contains both 'JOIN THE WAITLIST' and
- * 'DOWNLOAD ON THE APP STORE' as string literals: renderVals() has to
- * compute both regardless of which one is live, since which mode is active
+ * 'Download app' as string literals: renderVals() has to compute both
+ * regardless of which one is live, since which mode is active
  * isn't known until a real instance's APP_STORE_URL is read. Likewise the
  * mobile nav-hide rule in <style> spells out the App Store URL so it can
  * match it without reading the JS constant (its own dedicated test below).
@@ -167,8 +191,8 @@ const DEFAULT_VISIBLE = visibleMarkup(DEFAULT_HTML);
 const LIVE_VISIBLE = visibleMarkup(LIVE_HTML);
 
 test('sanity: visibleMarkup strips embedded <script> source (which legitimately carries both modes\' copy as string literals)', () => {
-  assert.match(DEFAULT_HTML, /appStoreLabel: 'DOWNLOAD ON THE APP STORE'/, 'precondition: the class field literal is in the source');
-  assert.doesNotMatch(DEFAULT_VISIBLE, /DOWNLOAD ON THE APP STORE/);
+  assert.match(DEFAULT_HTML, /appStoreLabel: 'Download app'/, 'precondition: the class field literal is in the source');
+  assert.doesNotMatch(DEFAULT_VISIBLE, /Download app/);
 });
 
 // ---------------------------------------------------------------- default state
@@ -193,7 +217,12 @@ test('default (APP_STORE_URL empty): renderVals() computes exactly today\'s wait
 
 test('default: the nav waitlist link is present, targeting #waitlist', () => {
   assert.match(DEFAULT_VISIBLE, /<a href="#waitlist"[^>]*>JOIN THE WAITLIST<\/a>/);
-  assert.doesNotMatch(DEFAULT_VISIBLE, /DOWNLOAD ON THE APP STORE/);
+  assert.doesNotMatch(DEFAULT_VISIBLE, /Download app/);
+});
+
+test('default: the Apple mark SVG renders nowhere on the page', () => {
+  assert.doesNotMatch(DEFAULT_VISIBLE, APPLE_MARK_RE);
+  assert.doesNotMatch(DEFAULT_HTML, APPLE_MARK_RE);
 });
 
 test('default: the hero button is present as a real submit button inside a form, not a link', () => {
@@ -235,7 +264,7 @@ test('default: focusWaitlist and the #waitlist hash handling are present, uncond
 test('live (APP_STORE_URL set): renderVals() reports app-store mode with every plate handler off', () => {
   assert.equal(LIVE_VALS.appStoreMode, true);
   assert.equal(LIVE_VALS.appStoreUrl, APP_STORE_URL);
-  assert.equal(LIVE_VALS.appStoreLabel, 'DOWNLOAD ON THE APP STORE');
+  assert.equal(LIVE_VALS.appStoreLabel, 'Download app');
   assert.equal(LIVE_VALS.notifyBtn, 'NOTIFY ME');
   assert.equal(LIVE_VALS.plateRole, undefined);
   assert.equal(LIVE_VALS.plateTabIndex, undefined);
@@ -246,27 +275,35 @@ test('live (APP_STORE_URL set): renderVals() reports app-store mode with every p
   }
 });
 
-test('live: the nav link points at the App Store URL and reads "DOWNLOAD ON THE APP STORE"', () => {
+test('live: the nav link points at the App Store URL and reads "Download app"', () => {
   const desktopNav = LIVE_VISIBLE.slice(LIVE_VISIBLE.indexOf('id="hz-nav"'), LIVE_VISIBLE.indexOf('<section id="hz-hero"'));
-  assert.match(desktopNav, new RegExp(`<a href="${APP_STORE_URL.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}"[^>]*>DOWNLOAD ON THE APP STORE</a>`));
+  assert.match(desktopNav, new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"[^>]*>`));
+  assert.match(desktopNav, /Download app/);
   assert.doesNotMatch(desktopNav, /JOIN THE WAITLIST/);
   // The mobile hamburger drawer is static markup shared with every other page
-  // (build/assemble.py's drawer()), outside this page's reactive template, so
-  // it cannot read APP_STORE_URL and is intentionally left saying "JOIN THE
-  // WAITLIST": this is the one known, disclosed gap in the launch switch.
+  // (build/assemble.py's drawer()), generated once at Python build time from
+  // this very same APP_STORE_URL constant rather than by this page's
+  // client-side template -- so simulating APP_STORE_URL here, on the
+  // Component instance, cannot change what the drawer already baked in at
+  // build time. This repo's committed build was generated with that Python
+  // constant still empty, so the drawer's own copy still reads "JOIN THE
+  // WAITLIST" even in this simulated live render; see the drawer()-source
+  // tests near the end of this file for coverage of its own live branch.
   assert.equal((LIVE_VISIBLE.match(/JOIN THE WAITLIST/g) || []).length, 1, 'expected only the static mobile drawer link to still say this');
 });
 
 test('live: the hero renders a plain App Store link, not a form', () => {
   const heroToPhone = LIVE_HTML.slice(LIVE_HTML.indexOf('<h1'), LIVE_HTML.indexOf('id="hz-phone"'));
-  assert.match(heroToPhone, new RegExp(`<a href="${APP_STORE_URL.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}"[^>]*>DOWNLOAD ON THE APP STORE</a>`));
+  assert.match(heroToPhone, new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"[^>]*>`));
+  assert.match(heroToPhone, /Download app/);
   assert.doesNotMatch(heroToPhone, /<form/);
   assert.doesNotMatch(heroToPhone, /NO SPAM/, 'the email-specific "no spam" note should not survive next to a download link');
 });
 
 test('live: the closing CTA renders a plain App Store link, not a form', () => {
   const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf('WHAT HAPPENS NEXT'));
-  assert.match(ctaSection, new RegExp(`<a href="${APP_STORE_URL.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}"[^>]*>DOWNLOAD ON THE APP STORE</a>`));
+  assert.match(ctaSection, new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"[^>]*>`));
+  assert.match(ctaSection, /Download app/);
   assert.doesNotMatch(ctaSection, /<form/);
 });
 
@@ -275,9 +312,29 @@ test('live: id="fin-form" still exists (the scroll-reveal animation keys off it 
 });
 
 test('live: the three App Store links share the same URL and label, and nothing else does', () => {
-  const hrefs = [...LIVE_VISIBLE.matchAll(new RegExp(`<a href="(${APP_STORE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})"`, 'g'))];
+  const hrefs = [...LIVE_VISIBLE.matchAll(new RegExp(`<a href="(${escapeRe(APP_STORE_URL)})"`, 'g'))];
   assert.equal(hrefs.length, 3, 'expected exactly 3 <a> links to the App Store URL (nav, hero, closing CTA)');
-  assert.equal((LIVE_VISIBLE.match(/DOWNLOAD ON THE APP STORE/g) || []).length, 3);
+  assert.equal((LIVE_VISIBLE.match(/Download app/g) || []).length, 3);
+});
+
+test('live: the Apple mark SVG renders inside the nav link, the hero button and the closing CTA, each before its label', () => {
+  const desktopNav = LIVE_VISIBLE.slice(LIVE_VISIBLE.indexOf('id="hz-nav"'), LIVE_VISIBLE.indexOf('<section id="hz-hero"'));
+  const heroToPhone = LIVE_HTML.slice(LIVE_HTML.indexOf('<h1'), LIVE_HTML.indexOf('id="hz-phone"'));
+  const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf('WHAT HAPPENS NEXT'));
+
+  for (const [name, region] of [['nav link', desktopNav], ['hero button', heroToPhone], ['closing CTA', ctaSection]]) {
+    assert.match(region, APPLE_MARK_RE, `${name}: Apple mark SVG missing`);
+    const markIdx = region.search(APPLE_MARK_RE);
+    const labelIdx = region.indexOf('Download app');
+    assert.notEqual(labelIdx, -1, `${name}: "Download app" label missing`);
+    assert.ok(markIdx < labelIdx, `${name}: the Apple mark should render to the left of the label`);
+  }
+
+  // Exactly one mark per button, three total, and nowhere else on the page
+  // (the drawer's own copy is generated separately at Python build time; see
+  // the dedicated build/assemble.py source tests below, since this build was
+  // generated with APP_STORE_URL empty and so does not carry it here).
+  assert.equal((LIVE_VISIBLE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 3);
 });
 
 test('live: all five interest plates are inert: no click/keyboard handler, no button role, no waitlist aria-label, content unchanged', () => {
@@ -331,6 +388,59 @@ test('live: focusWaitlist and the #waitlist hash handling are untouched and stil
 
 test('live: the mobile nav-hide rule hides the App Store link too, without reading the JS constant', () => {
   assert.match(html, /a\[href="#waitlist"\],#hz-nav a\[href="https:\/\/apps\.apple\.com\/app\/id6802558635"\]\{display:none !important\}/);
+});
+
+// ---------------------------------------------- the shared drawer (technique 3)
+
+// build/assemble.py's drawer() is called for every page (index.html and every
+// content page) and bakes its waitlist/App Store link once, at Python build
+// time, from the module-level APP_STORE_URL constant -- see this file's own
+// header comment above for why that makes it untestable via index.html's
+// rendered output. isolate the function's own source text instead, the same
+// way techniques 1 and 2 above trust index.html's source as ground truth.
+const assemblePy = fs.readFileSync(path.join(ROOT, 'build', 'assemble.py'), 'utf8');
+const drawerStart = assemblePy.indexOf('def drawer(');
+const drawerEnd = assemblePy.indexOf('def footer_nav(');
+assert.ok(drawerStart !== -1 && drawerEnd !== -1 && drawerStart < drawerEnd,
+  'build/assemble.py: could not isolate the drawer() function source');
+const drawerSrc = assemblePy.slice(drawerStart, drawerEnd);
+
+test('live: build/assemble.py\'s drawer() carries the Apple mark and reads "Download app" once APP_STORE_URL is set', () => {
+  assert.match(drawerSrc, /if APP_STORE_URL and app_store:/,
+    'drawer() has no APP_STORE_URL conditional (guarded by its own app_store opt-out)');
+  const liveBranch = drawerSrc.slice(drawerSrc.indexOf('if APP_STORE_URL and app_store:'), drawerSrc.indexOf('else:'));
+  assert.match(liveBranch, /APPLE_MARK/, 'drawer() live branch does not reference the shared Apple mark constant');
+  assert.match(liveBranch, /Download app/, 'drawer() live branch does not read "Download app"');
+  assert.match(liveBranch, /href="\{APP_STORE_URL\}"/, 'drawer() live branch does not link to APP_STORE_URL');
+  assert.doesNotMatch(liveBranch, /JOIN THE WAITLIST/);
+});
+
+// hunt-fallback.html ("limited beta", no App Store claims) and auth/callback
+// .html (account-agnostic, no App Store claims) each embed this same shared
+// drawer but must never show the App Store link, regardless of the site-wide
+// switch -- their own build/check.py rules forbid it outright. A regression
+// here would only surface once APP_STORE_URL actually goes live (exactly the
+// failure mode this whole file exists to catch ahead of time).
+test('drawer() call sites: hunt-fallback.html and auth/callback.html opt out of the App Store link (app_store=False)', () => {
+  for (const route of ['/hunt', '/auth/callback']) {
+    const call = new RegExp(`drawer\\("${escapeRe(route)}",\\s*"[^"]*",\\s*app_store=False\\)`);
+    assert.match(assemblePy, call, `build/assemble.py: drawer("${route}", ...) should pass app_store=False`);
+  }
+});
+
+test('default: build/assemble.py\'s drawer() default branch stays plain "JOIN THE WAITLIST" with no Apple mark', () => {
+  assert.match(drawerSrc, /\belse:/, 'drawer() has no default-branch else clause');
+  // Sliced up to the function's own return statement, not to the end of
+  // drawerSrc, so this does not spill into unrelated markup below (e.g. the
+  // header row's own "gap:14px") that has nothing to do with this branch.
+  const defaultBranch = drawerSrc.slice(drawerSrc.indexOf('else:'), drawerSrc.indexOf('return f"""'));
+  assert.match(defaultBranch, /href="\{waitlist_href\}"/, 'default branch does not link to waitlist_href');
+  assert.match(defaultBranch, />JOIN THE WAITLIST<\/a>/);
+  assert.doesNotMatch(defaultBranch, /APPLE_MARK/);
+  assert.doesNotMatch(defaultBranch, /Download app/);
+  // No icon means no icon-to-label gap: the exact same style this branch
+  // has always had, with nothing added for this feature.
+  assert.doesNotMatch(defaultBranch, /gap:/);
 });
 
 // -------------------------------------------------------------- meta tag
