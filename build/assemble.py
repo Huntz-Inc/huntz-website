@@ -919,16 +919,25 @@ CLOSING_BLOCK_OLD = (
     'text-decoration:none">JOIN THE WAITLIST &#8594;</a>'
 )
 CLOSING_BLOCK_LIVE = (
-    '<div style="font:600 clamp(20px,2.4vw,27px)/1.25 \'Playfair Display\',\'Times New Roman\',serif;'
-    'letter-spacing:-.012em;color:#16130E;margin-bottom:16px">Huntz is on the App Store'
-    f'<span style="color:#C24E1F">.</span></div>\n'
-    f'    <a href="{APP_STORE_URL}" style="display:inline-flex;align-items:center;gap:10px;'
+    # Founder review 2026-09-25: heading on the left, the store button on the
+    # right of the same row (space-between), vertically centred. flex-wrap lets
+    # a phone-width card stack the button under the text with no media query,
+    # matching the inline-style-only convention of the rest of the shell.
+    '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;'
+    'gap:18px 28px">\n'
+    '      <div style="flex:1 1 300px">\n'
+    '        <div style="font:600 clamp(20px,2.4vw,27px)/1.25 \'Playfair Display\',\'Times New Roman\',serif;'
+    'letter-spacing:-.012em;color:#16130E">Huntz is on the App Store'
+    '<span style="color:#C24E1F">.</span></div>\n'
+    '        <div style="margin-top:14px"><a href="/#waitlist" style="font:600 11px \'Figtree\','
+    'Arial,Helvetica,sans-serif;letter-spacing:.06em;color:#6E6759;text-decoration:underline">'
+    'Not on iPhone? Get notified for Android.</a></div>\n'
+    '      </div>\n'
+    f'      <a href="{APP_STORE_URL}" style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;'
     'border-radius:999px;font:700 12px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;'
     f'color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none">{apple_mark(18)}'
     '<span>Download app</span></a>\n'
-    '    <div style="margin-top:14px"><a href="/#waitlist" style="font:600 11px \'Figtree\','
-    'Arial,Helvetica,sans-serif;letter-spacing:.06em;color:#6E6759;text-decoration:underline">'
-    'Not on iPhone? Get notified for Android.</a></div>'
+    '    </div>'
 )
 
 def apply_content_app_store_switch(tpl: str) -> str:
