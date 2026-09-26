@@ -337,6 +337,24 @@ test('live: the Apple mark SVG renders inside the nav link, the hero button and 
   assert.equal((LIVE_VISIBLE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 3);
 });
 
+// 2026-09-25 founder feedback: the original 0.8em mark read as "super tiny"
+// (~10px on the hero's 12px font). Fixed sizes and a wider gap replace it;
+// this pins the exact numbers down so a future edit cannot silently shrink
+// them back.
+test('live: the Apple mark is 15px in the nav link and 18px in the hero button and closing CTA, each with a 10px gap', () => {
+  const desktopNav = LIVE_VISIBLE.slice(LIVE_VISIBLE.indexOf('id="hz-nav"'), LIVE_VISIBLE.indexOf('<section id="hz-hero"'));
+  const heroToPhone = LIVE_HTML.slice(LIVE_HTML.indexOf('<h1'), LIVE_HTML.indexOf('id="hz-phone"'));
+  const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf('WHAT HAPPENS NEXT'));
+
+  assert.match(desktopNav, /<svg aria-hidden="true" viewBox="0 0 384 512" width="15px" height="15px"/, 'nav mark should be 15px square');
+  assert.match(heroToPhone, /<svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px"/, 'hero mark should be 18px square');
+  assert.match(ctaSection, /<svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px"/, 'closing CTA mark should be 18px square');
+
+  for (const [name, region] of [['nav', desktopNav], ['hero', heroToPhone], ['closing CTA', ctaSection]]) {
+    assert.match(region, /gap:10px/, `${name}: expected a 10px icon-to-label gap`);
+  }
+});
+
 test('live: all five interest plates are inert: no click/keyboard handler, no button role, no waitlist aria-label, content unchanged', () => {
   const plates = [...LIVE_HTML.matchAll(/<div data-plate="" onClick="([^"]*)" onKeyDown="([^"]*)" role="([^"]*)" tabIndex="([^"]*)" aria-label="([^"]*)"/g)];
   assert.equal(plates.length, 5, 'expected 5 interest plate wrapper divs to still exist');
@@ -409,7 +427,8 @@ test('live: build/assemble.py\'s drawer() carries the Apple mark and reads "Down
   assert.match(drawerSrc, /if APP_STORE_URL and app_store:/,
     'drawer() has no APP_STORE_URL conditional (guarded by its own app_store opt-out)');
   const liveBranch = drawerSrc.slice(drawerSrc.indexOf('if APP_STORE_URL and app_store:'), drawerSrc.indexOf('else:'));
-  assert.match(liveBranch, /APPLE_MARK/, 'drawer() live branch does not reference the shared Apple mark constant');
+  assert.match(liveBranch, /apple_mark\(18\)/, 'drawer() live branch should use the shared 18px Apple mark');
+  assert.match(liveBranch, /gap:10px/, 'drawer() live branch should use a 10px icon-to-label gap');
   assert.match(liveBranch, /Download app/, 'drawer() live branch does not read "Download app"');
   assert.match(liveBranch, /href="\{APP_STORE_URL\}"/, 'drawer() live branch does not link to APP_STORE_URL');
   assert.doesNotMatch(liveBranch, /JOIN THE WAITLIST/);
@@ -436,7 +455,7 @@ test('default: build/assemble.py\'s drawer() default branch stays plain "JOIN TH
   const defaultBranch = drawerSrc.slice(drawerSrc.indexOf('else:'), drawerSrc.indexOf('return f"""'));
   assert.match(defaultBranch, /href="\{waitlist_href\}"/, 'default branch does not link to waitlist_href');
   assert.match(defaultBranch, />JOIN THE WAITLIST<\/a>/);
-  assert.doesNotMatch(defaultBranch, /APPLE_MARK/);
+  assert.doesNotMatch(defaultBranch, /apple_mark\(/);
   assert.doesNotMatch(defaultBranch, /Download app/);
   // No icon means no icon-to-label gap: the exact same style this branch
   // has always had, with nothing added for this feature.

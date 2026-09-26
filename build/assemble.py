@@ -559,8 +559,8 @@ def drawer(current: str, waitlist_href: str, *, app_store: bool = True) -> str:
                      f'style="{style}">{head_label}</a>')
     if APP_STORE_URL and app_store:
         cta = (f'<a href="{APP_STORE_URL}" style="display:flex;align-items:center;justify-content:center;'
-               f'gap:6px;min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};'
-               f'letter-spacing:.12em;text-decoration:none">{APPLE_MARK}<span>Download app</span></a>')
+               f'gap:10px;min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};'
+               f'letter-spacing:.12em;text-decoration:none">{apple_mark(18)}<span>Download app</span></a>')
     else:
         cta = (f'<a href="{waitlist_href}" style="display:flex;align-items:center;justify-content:center;'
                f'min-height:52px;margin-top:20px;background:{CLAY};color:{CREAM};font:700 12px {SANS};'
@@ -720,11 +720,17 @@ APP_STORE_URL_LITERAL = "https://apps.apple.com/app/id6802558635"
 # Single-path Apple logo mark for the three App Store buttons and the
 # drawer's own link, once APP_STORE_URL is live. No external asset: fill is
 # currentColor, so it always matches its own link's text colour with no
-# colour of its own. Sized in em so it scales with each button's own font
-# size, and vertically centred by their flex styling.
-APPLE_MARK = ('<svg aria-hidden="true" viewBox="0 0 384 512" width="0.8em" height="0.8em" '
-              'style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg">'
-              '<path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>')
+# colour of its own, and vertically centred by their flex styling. A function
+# rather than a constant because the nav link (smaller text) and the hero/
+# closing-CTA/drawer links (larger text) each need a different fixed pixel
+# size (2026-09-25 founder feedback: the original 0.8em read as "super tiny"
+# at ~10px, so this is sized in px against each button's actual rendered
+# size instead of scaling off font-size again) - the viewBox keeps the glyph
+# itself proportioned, so only width/height change per call site.
+def apple_mark(px: int) -> str:
+    return (f'<svg aria-hidden="true" viewBox="0 0 384 512" width="{px}px" height="{px}px" '
+            'style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg">'
+            '<path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>')
 
 # Below 641px the bar is logo + menu button: the three section anchors were
 # already hidden by (I-4b), and the CTA moves into the sheet. The second
@@ -746,8 +752,8 @@ assert html.count(old) == 1, "home nav CTA not found"
 nav_appstore = (old
     .replace('href="#waitlist"', 'href="{{ appStoreUrl }}"')
     .replace('style="font: 700 11px',
-             'style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;font: 700 11px')
-    .replace('>JOIN THE WAITLIST<', '>' + APPLE_MARK + '<span>{{ appStoreLabel }}</span><'))
+             'style="display:inline-flex;align-items:center;gap:10px;border-radius:999px;font: 700 11px')
+    .replace('>JOIN THE WAITLIST<', '>' + apple_mark(15) + '<span>{{ appStoreLabel }}</span><'))
 html = html.replace(old,
     '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + old + '</sc-if>'
     '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + nav_appstore + '</sc-if>')
@@ -762,11 +768,11 @@ assert html.count(old) == 1, "hero waitlist block not found"
 hero_appstore = (
     '<div style="animation:hzRise .7s ease .74s both">\n'
     '        <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
-    'gap:8px;padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; '
+    'gap:10px;padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; '
     'font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; text-decoration: none; '
     'border-radius: 999px; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, '
     'border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" '
-    'style-active="transform:translateY(2px)">' + APPLE_MARK + '<span>{{ appStoreLabel }}</span></a>\n'
+    'style-active="transform:translateY(2px)">' + apple_mark(18) + '<span>{{ appStoreLabel }}</span></a>\n'
     '      </div>'
 )
 html = html.replace(old,
@@ -784,11 +790,11 @@ assert old.startswith(fin_open) and old.endswith(fin_close)
 fin_inner_default = old[len(fin_open):-len(fin_close)]
 fin_appstore = (
     '\n          <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
-    'gap:8px;padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:999px;color:#F3EFE7;'
+    'gap:10px;padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:999px;color:#F3EFE7;'
     'font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;'
     'box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,'
     'transform .15s ease" style-hover="background:#16130E;border-color:#16130E" '
-    'style-active="transform:translateY(2px)">' + APPLE_MARK + '<span>{{ appStoreLabel }}</span></a>\n        '
+    'style-active="transform:translateY(2px)">' + apple_mark(18) + '<span>{{ appStoreLabel }}</span></a>\n        '
 )
 html = html.replace(old,
     fin_open
