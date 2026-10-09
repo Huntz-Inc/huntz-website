@@ -1384,21 +1384,22 @@ old = ">READY WHEN YOU ARE</div>"
 assert html.count(old) == 1, "closing eyebrow not found"
 html = html.replace(old, ">YOUR MOVE</div>")
 
-# (LC-5) The tagline under the giant HUNTZ. wordmark, at the very bottom of the
-# closing section, just above the footer's link columns. Founder revision,
-# 2026-10-09: it reads "The marketplace for accountability." where it read
-# "Put your money where your goals are."; the wordmark above it stays. The
-# inner pages' footers are the route map and nothing else (no wordmark, no
-# tagline), so this is the one place the old line lived in the visible copy.
-# The share card's og:title and twitter:title (HEAD_META) are metadata, not
-# this tagline, and keep the brand line they had.
-FOOTER_TAGLINE_OLD = ">Put your money where your goals are.</div>"
-FOOTER_TAGLINE_NEW = ">The marketplace for accountability.</div>"
-assert html.count(FOOTER_TAGLINE_OLD) == 1, "closing wordmark tagline not found"
+# (LC-5) The giant HUNTZ. wordmark at the very bottom of the closing section
+# stands on its own. Founder revisions, 2026-10-09: the line under it, "Put your
+# money where your goals are.", first became "The marketplace for accountability.";
+# the footer's own brand block, a few hundred pixels below (HUNTZ., that same
+# line, the not-a-gambling-platform chip), already said exactly that, so the
+# line under the wordmark is removed and the footer's is the page's one tagline.
+# The inner pages' footers are the route map and nothing else (no wordmark, no
+# tagline), so nothing changes there. The share card's titles are HEAD_META's.
+FOOTER_TAGLINE = ('\n      <div style="margin-top:clamp(6px,1.5vh,14px);font:500 italic clamp(15px,1.5vw,20px) '
+                  "'Playfair Display','Times New Roman',serif;color:#6E6759\">Put your money where your goals are.</div>")
+assert html.count(FOOTER_TAGLINE) == 1, "closing wordmark tagline not found"
 assert html.count('id="fin-mark"') == 1
-assert html.index('id="fin-mark"') < html.index(FOOTER_TAGLINE_OLD) < html.index('<footer data-screen-label="Footer"'), \
+assert html.index('id="fin-mark"') < html.index(FOOTER_TAGLINE) < html.index('<footer data-screen-label="Footer"'), \
     "the tagline is no longer between the wordmark and the footer"
-html = html.replace(FOOTER_TAGLINE_OLD, FOOTER_TAGLINE_NEW)
+html = html.replace(FOOTER_TAGLINE, "")
+assert html.count("The marketplace for accountability.") == 1, "the footer brand block should hold the one tagline"
 
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
@@ -1507,10 +1508,9 @@ def breadcrumb_ld(title: str, slug: str) -> str:
 
 # Search metadata leads with the category (per the approved SEO plan); the
 # social card keeps its brand line, "Put your money where your goals are."
-# (og:title, twitter:title), which the visible page no longer carries now that
-# the closing tagline reads "The marketplace for accountability." (LC-5); both
-# of its descriptions (og and twitter) are the hero sub's own sentence (the
-# launch copy mix, 2h above), so those agree with the visible copy.
+# (og:title, twitter:title), which the visible page no longer carries (LC-5);
+# both of its descriptions (og and twitter) are the hero sub's own sentence
+# (the launch copy mix, 2h above), so those agree with the visible copy.
 HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</title>
 <meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is on the App Store.">
 <link rel="canonical" href="{SITE_URL}/">

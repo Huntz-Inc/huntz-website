@@ -277,25 +277,22 @@ test('closing: YOUR MOVE, "Become someone who finishes." with the accent full st
   assert.match(finForm, /<a href="\{\{ appStoreUrl \}\}" data-appstore-badge="" aria-label="Download on the App Store"><img src="\/assets\/app-store-badge-black\.[0-9a-f]{8}\.svg"[^>]*><\/a>/);
 });
 
-// ---------------------------------------------- the closing wordmark's tagline
+// ---------------------------------------------- the closing wordmark, on its own
 
-test('closing wordmark: the tagline under the giant HUNTZ. reads "The marketplace for accountability.", the wordmark above it stays, and the old line is gone from the visible copy', () => {
-  const mark = CLOSING.match(/<div id="fin-mark" aria-hidden="true" style="([^"]*)">HUNTZ<span style="[^"]*">\.<\/span><\/div>\s*<div style="([^"]*)">([^<]*)<\/div>/);
-  assert.ok(mark, 'the wordmark and the tagline under it were not found');
-  assert.equal(mark[3], 'The marketplace for accountability.');
-  // The wordmark is untouched: the same huge Figtree "HUNTZ." and its faded clay full stop.
+test('closing wordmark: the giant HUNTZ. stands on its own, and the footer\'s brand block carries the page\'s one tagline', () => {
+  const mark = CLOSING.match(/<div id="fin-mark" aria-hidden="true" style="([^"]*)">HUNTZ<span style="[^"]*">\.<\/span><\/div>/);
+  assert.ok(mark, 'the wordmark was not found');
+  // The wordmark itself is untouched: the same huge Figtree "HUNTZ." and its faded clay full stop.
   assert.match(mark[1], /^font:800 clamp\(96px,19vw,290px\)\/\.9 'Figtree'/);
-  assert.equal(textOf(mark[0]), 'HUNTZ. The marketplace for accountability.');
-  // The tagline keeps the treatment it had: muted italic display serif at the same size and spacing.
-  assert.equal(mark[2], "margin-top:clamp(6px,1.5vh,14px);font:500 italic clamp(15px,1.5vw,20px) 'Playfair Display','Times New Roman',serif;color:#6E6759");
-  // It is still the last thing in the closing section, ahead of the footer.
-  assert.ok(CLOSING.indexOf(mark[0]) > CLOSING.indexOf('id="waitlist"'));
+  // Nothing sits under it: its container closes, then the closing section does.
   assert.match(CLOSING.slice(CLOSING.indexOf(mark[0]) + mark[0].length), /^\s*<\/div>\s*<\/div>\s*<\/section>\s*$/);
-  // The old line is nowhere in what a reader sees (the share card's title is metadata, not copy).
-  assert.doesNotMatch(textOf(visible), /Put your money where your goals are/i);
-  assert.doesNotMatch(CLOSING, /Put your money where your goals are/i);
-  // The footer's own brand block carries the same line, as it did before.
+  assert.ok(CLOSING.indexOf(mark[0]) > CLOSING.indexOf('id="waitlist"'), 'still the last thing in the closing section');
+  // One tagline on the page, the footer brand block's, and the retired brand line is nowhere in the copy.
+  const text = textOf(visible);
+  assert.equal((text.match(/The marketplace for accountability\./g) || []).length, 1);
   assert.match(between('<footer', '</footer>'), />The marketplace for accountability\.<\/p>/);
+  assert.doesNotMatch(text, /Put your money where your goals are/i);
+  assert.doesNotMatch(CLOSING, /marketplace for accountability|Put your money where your goals are/i);
 });
 
 // --------------------------------------------------------------- copy rules

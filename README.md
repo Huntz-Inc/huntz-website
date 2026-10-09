@@ -316,11 +316,11 @@ Changes currently applied on top of the design:
   Hunts live; Android coming soon). The hero and the closing section carry
   Apple's App Store badge (see "The App Store badge" above), with the Android
   notify form under the closing one and a small link to it under the hero's.
-  The tagline under the giant HUNTZ. wordmark at the very bottom of the
-  closing section reads "The marketplace for accountability." (it read "Put
-  your money where your goals are."; the share card's og:title and
-  twitter:title still carry that brand line, and the inner pages' footers have
-  no tagline). No em or en dashes, no exclamation marks.
+  The giant HUNTZ. wordmark at the very bottom of the closing section stands
+  on its own (the line under it, "Put your money where your goals are.", is
+  gone), so the footer brand block's "The marketplace for accountability." is
+  the page's one tagline; the inner pages' footers have none. No em or en
+  dashes, no exclamation marks.
 - Keyboard support and focus rings on the FAQ and cards; muted grey darkened
   for contrast.
 - Below 641px the bar is logo + menu button, and a modal sheet carries every

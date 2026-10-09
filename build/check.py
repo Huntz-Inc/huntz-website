@@ -156,10 +156,13 @@ for stale in ("FROM $50", "Stake $50", "Put your money</span>", "Hunt&nbsp;", "R
         fail(f"/: pre-launch copy {stale!r} is back on the home page")
 for needle in (">motivation.</span>", ">consequences<span", 'id="familiar"', "Sound familiar?",
                "nothing-to-lose</span> problem<span", 'data-hunt-link="" href="https://www.huntz.ai/hunt/',
-               "finishes<span", 'id="fin-sub"', "Quitting just got expensive.", "WHAT'S LIVE",
-               ">The marketplace for accountability.</div>"):
+               "finishes<span", 'id="fin-sub"', "Quitting just got expensive.", "WHAT'S LIVE"):
     if needle not in home:
         fail(f"/: launch copy {needle!r} missing from the home page")
+# One tagline on the page, the footer brand block's; the giant wordmark above it
+# stands on its own.
+if home_text.count("The marketplace for accountability.") != 1 or "Put your money where your goals are" in home_text:
+    fail("/: the footer brand block should carry the page's one tagline, and the retired brand line should be gone")
 # "Sound familiar?" is three cards on the mechanic steps' card system (founder
 # revision, 2026-10-09): one chip and one line each.
 for chip, line in (("THE GYM", "Third gym membership. Zero workouts."),
