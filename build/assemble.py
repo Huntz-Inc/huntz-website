@@ -1084,8 +1084,9 @@ def apply_content_app_store_switch(tpl: str) -> str:
 # word, the same 80 ms stagger) and its accent treatment on the last word
 # (italic, with the full stop in clay); the second sentence starts on its own
 # line. The sub keeps its paragraph styling and changes only its sentence;
-# founder revision, later the same day: the sentence is the short form below,
-# and HEAD_META's og:description and twitter:description both repeat it.
+# founder revisions, later the same day: the sentence is the one below (the
+# second revision of it), and HEAD_META's og:description and
+# twitter:description both repeat it.
 HERO_H1_STYLE = ("style=\"margin:0 0 28px;font:600 clamp(46px,6.8vw,104px)/1.05 'Playfair Display',"
                  "'Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance\"")
 
@@ -1110,7 +1111,7 @@ html = html.replace(HERO_H1_OLD, HERO_H1_NEW)
 
 HERO_SUB_OLD = ("Stake $50–$500 of your own money on your own goal. Post proof every day. "
                 "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.")
-HERO_SUB_NEW = ("Stake $20 to $500. Prove it daily. "
+HERO_SUB_NEW = ("Pick a goal. Put $20 to $500 on the line. Prove it daily. "
                 "Finish and get it all back, plus a cut of what the quitters lost.")
 assert html.count(HERO_SUB_OLD) == 1, "hero sub not found"
 html = html.replace(HERO_SUB_OLD, HERO_SUB_NEW)

@@ -75,8 +75,8 @@ test('hero: the headline reads "You don\'t need motivation. You need consequence
 });
 
 test('hero: the sub reads the approved sentence, $20 minimum, no dash', () => {
-  assert.match(HERO, />Stake \$20 to \$500\. Prove it daily\. Finish and get it all back, plus a cut of what the quitters lost\.<\/p>/);
-  assert.doesNotMatch(HERO, /\$50(?!\d)|100% back|forfeited|of your own money|Post proof every day/);
+  assert.match(HERO, />Pick a goal\. Put \$20 to \$500 on the line\. Prove it daily\. Finish and get it all back, plus a cut of what the quitters lost\.<\/p>/);
+  assert.doesNotMatch(HERO, /\$50(?!\d)|100% back|forfeited|of your own money|Post proof every day|Stake \$20/);
 });
 
 test('hero: the eyebrow keeps the colon main settled on, not a dash and not a middle dot', () => {
@@ -300,7 +300,7 @@ test('copy rules: the visible home page has no em dash, en dash or exclamation m
 
 test('copy rules: the share card follows the hero sub, in both og:description and twitter:description', () => {
   const head = html.slice(0, html.indexOf('</head>'));
-  const sub = 'Stake $20 to $500. Prove it daily. Finish and get it all back, plus a cut of what the quitters lost.';
+  const sub = 'Pick a goal. Put $20 to $500 on the line. Prove it daily. Finish and get it all back, plus a cut of what the quitters lost.';
   assert.ok(HERO.includes(`>${sub}</p>`), 'the sentence under test is the hero sub');
   assert.match(head, new RegExp(`<meta property="og:description" content="${escapeRe(sub)}">`));
   assert.match(head, new RegExp(`<meta name="twitter:description" content="${escapeRe(sub)}">`));

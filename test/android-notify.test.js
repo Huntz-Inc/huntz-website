@@ -69,7 +69,7 @@ test('hero link: "Not on iPhone? Get notified for Android", a text link in its o
 
 test('hero link: muted colour, the size of the hero sub, underlined so it reads as a link, clay on hover', () => {
   const [, style, hover] = HERO.match(LINK_RE);
-  const subStyle = HERO.match(/<p style="([^"]*)">Stake \$20 to \$500\./)[1];
+  const subStyle = HERO.match(/<p style="([^"]*)">Pick a goal\. Put \$20 to \$500 on the line\./)[1];
   const subSize = subStyle.match(/font:\s*400 (clamp\([^)]*\))\//)[1];
   assert.equal(subSize, 'clamp(15px,1.4vw,18px)');
   assert.match(style, new RegExp(`font:500 ${subSize.replace(/[()]/g, '\\$&')}/1\\.5 'Figtree',Arial,Helvetica,sans-serif;`), 'hero-sub size');
