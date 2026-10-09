@@ -205,7 +205,7 @@ test('upcoming: build/assemble.py hard-codes the list, dated, naming the API it 
 
 const CLOSING = between('<section id="cta"', '<footer');
 
-test('closing: YOUR MOVE, "Become someone who finishes." with the accent full stop, "Quitting just got expensive." under it, the Download app button after', () => {
+test('closing: YOUR MOVE, "Become someone who finishes." with the accent full stop, "Quitting just got expensive." under it, Apple\'s badge after', () => {
   assert.match(CLOSING, /<div id="fin-eyebrow"[^>]*>YOUR MOVE<\/div>/);
   const h2 = between('<h2', '</h2>', CLOSING);
   assert.equal(textOf(h2), 'Become someone who finishes.');
@@ -220,9 +220,10 @@ test('closing: YOUR MOVE, "Become someone who finishes." with the accent full st
   for (const gone of ['Hunt&nbsp;', 'Stop&nbsp;', 'hiding<', 'READY WHEN YOU ARE']) {
     assert.ok(!CLOSING.includes(gone), `${gone} should be gone`);
   }
-  // The Download app button (AS-3) is untouched, still inside #fin-form.
+  // The store link (AS-3) is still inside #fin-form: Apple's badge, since the
+  // founder's revision of the same day (test/app-store-badge.test.js).
   const finForm = between('<div id="fin-form"', "WHAT'S LIVE", CLOSING);
-  assert.match(finForm, /<a href="\{\{ appStoreUrl \}\}"[^>]*>[\s\S]*?<span>\{\{ appStoreLabel \}\}<\/span><\/a>/);
+  assert.match(finForm, /<a href="\{\{ appStoreUrl \}\}" data-appstore-badge="" aria-label="Download on the App Store"><img src="\/assets\/app-store-badge-black\.[0-9a-f]{8}\.svg"[^>]*><\/a>/);
 });
 
 // --------------------------------------------------------------- copy rules

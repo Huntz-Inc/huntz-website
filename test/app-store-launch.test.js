@@ -3,8 +3,11 @@
 // since launch day, 2026-10-09): index.html's Component class gains an
 // APP_STORE_URL config field, next to WAITLIST_ENDPOINT, that flips the home
 // page from "join the waitlist" to "download on the App Store" once set: the
-// nav link, hero button and closing CTA become pill-shaped "Download app"
-// links carrying an inline Apple mark. The same build-time APP_STORE_URL
+// nav link becomes a pill-shaped "Download app" link carrying an inline Apple
+// mark, and the hero and the closing CTA carry Apple's own "Download on the
+// App Store" badge (founder revision, 2026-10-09; its artwork, size and
+// clear-space rules are asserted in test/app-store-badge.test.js). The same
+// build-time APP_STORE_URL
 // constant also drives the shared mobile drawer (build/assemble.py's
 // drawer()), the inner pages' nav pill and closing block, four pages'
 // in-copy sentences and the home page's "What's live" card (the "What
@@ -96,6 +99,15 @@ const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  * viewBox="0 0 100 100".
  */
 const APPLE_MARK_RE = /<svg aria-hidden="true" viewBox="0 0 384 512"[^>]*>[\s\S]*?<\/svg>/;
+
+/**
+ * Apple's badge as the hero and the closing CTA render it (build/assemble.py's
+ * APP_STORE_BADGE_LINK): a plain link to the listing around the unaltered
+ * artwork, which is a content-hashed file under /assets/.
+ */
+const BADGE_LINK_RE = new RegExp(
+  `<a href="${escapeRe(APP_STORE_URL)}" data-appstore-badge="" aria-label="Download on the App Store">`
+  + '<img src="/assets/app-store-badge-black\\.[0-9a-f]{8}\\.svg" alt="Download on the App Store" width="144" height="48"></a>');
 
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 
@@ -381,18 +393,18 @@ test('live: the nav link points at the App Store URL and reads "Download app"', 
   assert.equal((LIVE_VISIBLE.match(/JOIN THE WAITLIST/g) || []).length, 0, 'nothing on the live page should still say this');
 });
 
-test('live: the hero renders a plain App Store link, not a form', () => {
+test('live: the hero renders Apple\'s badge as a plain App Store link, not a form', () => {
   const heroToPhone = LIVE_HTML.slice(LIVE_HTML.indexOf('<h1'), LIVE_HTML.indexOf('id="hz-phone"'));
-  assert.match(heroToPhone, new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"[^>]*>`));
-  assert.match(heroToPhone, /Download app/);
+  assert.match(heroToPhone, BADGE_LINK_RE);
+  assert.doesNotMatch(heroToPhone, /Download app/, 'the pill label is gone from the hero');
   assert.doesNotMatch(heroToPhone, /<form/);
   assert.doesNotMatch(heroToPhone, /NO SPAM/, 'the email-specific "no spam" note should not survive next to a download link');
 });
 
-test('live: the closing CTA renders a plain App Store link, not a form', () => {
+test('live: the closing CTA renders Apple\'s badge as a plain App Store link, not a form', () => {
   const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf("WHAT'S LIVE"));
-  assert.match(ctaSection, new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"[^>]*>`));
-  assert.match(ctaSection, /Download app/);
+  assert.match(ctaSection, BADGE_LINK_RE);
+  assert.doesNotMatch(ctaSection, /Download app/, 'the pill label is gone from the closing CTA');
   assert.doesNotMatch(ctaSection, /<form/);
 });
 
@@ -400,55 +412,54 @@ test('live: id="fin-form" still exists (the scroll-reveal animation keys off it 
   assert.match(LIVE_HTML, /<div id="fin-form"/);
 });
 
-test('live: the four App Store links (nav, hero, closing CTA, drawer) share the same URL and label, and nothing else does', () => {
+test('live: the four App Store links (nav, hero, closing CTA, drawer) share the same URL; the nav and drawer pills read "Download app", the hero and closing carry the badge, and nothing else does', () => {
   const linkRe = new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"`, 'g');
   // Three rendered by the template, plus the Python-baked drawer's own link
   // (technique 3), which this build carries since launch.
   assert.equal((LIVE_REACTIVE.match(linkRe) || []).length, 3, 'expected exactly 3 template-rendered <a> links to the App Store URL (nav, hero, closing CTA)');
   assert.equal((drawerOf(LIVE_VISIBLE).match(linkRe) || []).length, 1, 'expected exactly 1 App Store link in the drawer');
   assert.equal((LIVE_VISIBLE.match(linkRe) || []).length, 4);
-  assert.equal((LIVE_REACTIVE.match(/Download app/g) || []).length, 3);
-  assert.equal((LIVE_VISIBLE.match(/Download app/g) || []).length, 4);
+  // Our small accent pill: the nav link (template) and the drawer link only.
+  assert.equal((LIVE_REACTIVE.match(/Download app/g) || []).length, 1);
+  assert.equal((LIVE_VISIBLE.match(/Download app/g) || []).length, 2);
+  // Apple's badge: the hero and the closing CTA, one each.
+  assert.equal((LIVE_REACTIVE.match(new RegExp(BADGE_LINK_RE.source, 'g')) || []).length, 2);
+  assert.equal((LIVE_VISIBLE.match(/data-appstore-badge/g) || []).length, 2);
   // No other spelling of the listing URL anywhere in the visible page.
   assert.equal((LIVE_VISIBLE.match(/apps\.apple\.com/g) || []).length, 4);
 });
 
-test('live: the Apple mark SVG renders inside the nav link, the hero button and the closing CTA, each before its label', () => {
+test('live: the Apple mark SVG renders inside the nav pill before its label, and not in the hero or the closing CTA, which carry Apple\'s own badge', () => {
   const desktopNav = LIVE_VISIBLE.slice(LIVE_VISIBLE.indexOf('id="hz-nav"'), LIVE_VISIBLE.indexOf('<section id="hz-hero"'));
   const heroToPhone = LIVE_HTML.slice(LIVE_HTML.indexOf('<h1'), LIVE_HTML.indexOf('id="hz-phone"'));
   const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf("WHAT'S LIVE"));
 
-  for (const [name, region] of [['nav link', desktopNav], ['hero button', heroToPhone], ['closing CTA', ctaSection]]) {
-    assert.match(region, APPLE_MARK_RE, `${name}: Apple mark SVG missing`);
-    const markIdx = region.search(APPLE_MARK_RE);
-    const labelIdx = region.indexOf('Download app');
-    assert.notEqual(labelIdx, -1, `${name}: "Download app" label missing`);
-    assert.ok(markIdx < labelIdx, `${name}: the Apple mark should render to the left of the label`);
+  assert.match(desktopNav, APPLE_MARK_RE, 'nav link: Apple mark SVG missing');
+  const markIdx = desktopNav.search(APPLE_MARK_RE);
+  const labelIdx = desktopNav.indexOf('Download app');
+  assert.notEqual(labelIdx, -1, 'nav link: "Download app" label missing');
+  assert.ok(markIdx < labelIdx, 'nav link: the Apple mark should render to the left of the label');
+  for (const [name, region] of [['hero', heroToPhone], ['closing CTA', ctaSection]]) {
+    assert.doesNotMatch(region, APPLE_MARK_RE, `${name}: our own Apple glyph must not sit next to Apple's badge`);
   }
 
-  // Exactly one mark per button: three in the template, plus the drawer's
-  // own (generated separately at Python build time, technique 3), and
-  // nowhere else on the page.
-  assert.equal((LIVE_REACTIVE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 3);
-  assert.equal((LIVE_VISIBLE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 4);
+  // One mark in the template (the nav pill), plus the drawer's own
+  // (generated separately at Python build time, technique 3), and nowhere
+  // else on the page.
+  assert.equal((LIVE_REACTIVE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 1);
+  assert.equal((LIVE_VISIBLE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 2);
 });
 
 // 2026-09-25 founder feedback: the original 0.8em mark read as "super tiny"
-// (~10px on the hero's 12px font). Fixed sizes and a wider gap replace it;
-// this pins the exact numbers down so a future edit cannot silently shrink
-// them back.
-test('live: the Apple mark is 15px in the nav link and 18px in the hero button and closing CTA, each with a 10px gap', () => {
+// (~10px on the nav pill's 11px font). A fixed size and a wider gap replace
+// it; this pins the exact numbers down so a future edit cannot silently
+// shrink them back. (The 18px hero and closing marks it also pinned went with
+// those pills: the badge's own size is pinned in test/app-store-badge.test.js.)
+test('live: the Apple mark is 15px in the nav link, with a 10px gap', () => {
   const desktopNav = LIVE_VISIBLE.slice(LIVE_VISIBLE.indexOf('id="hz-nav"'), LIVE_VISIBLE.indexOf('<section id="hz-hero"'));
-  const heroToPhone = LIVE_HTML.slice(LIVE_HTML.indexOf('<h1'), LIVE_HTML.indexOf('id="hz-phone"'));
-  const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf("WHAT'S LIVE"));
 
   assert.match(desktopNav, /<svg aria-hidden="true" viewBox="0 0 384 512" width="15px" height="15px"/, 'nav mark should be 15px square');
-  assert.match(heroToPhone, /<svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px"/, 'hero mark should be 18px square');
-  assert.match(ctaSection, /<svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px"/, 'closing CTA mark should be 18px square');
-
-  for (const [name, region] of [['nav', desktopNav], ['hero', heroToPhone], ['closing CTA', ctaSection]]) {
-    assert.match(region, /gap:10px/, `${name}: expected a 10px icon-to-label gap`);
-  }
+  assert.match(desktopNav, /gap:10px/, 'nav: expected a 10px icon-to-label gap');
 });
 
 test('live: the waitlist form survives exactly once, relocated to the bottom and retitled for Android, with the same Mailchimp endpoint', () => {

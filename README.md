@@ -119,15 +119,43 @@ constant (CSS cannot), and it is already set correctly, so it needs no change
 on launch day. Only touch it if the listing URL itself ever changes, and keep
 it equal to `APP_STORE_URL`'s own value once that is live.
 
-With `APP_STORE_URL` set: the nav link, the hero button and the closing CTA
-become pill-shaped "Download app" links to that URL, each with a small inline
-Apple mark ahead of the label (a single SVG path, no external asset or badge
-artwork; the site's existing button font, colours and size are otherwise
-unchanged); the plates under **Upcoming** link to the live Hunts in either
-state (since the launch copy mix, 2026-10-09); and the waitlist form survives
-as a fallback, relocated to the bottom of the page and retitled "Not on
-iPhone? Get notified for Android.", with its button reading "NOTIFY ME" and
-posting to the same Mailchimp audience and honeypot as before.
+With `APP_STORE_URL` set: the nav link becomes a pill-shaped "Download app"
+link to that URL, with a small inline Apple mark ahead of the label (a single
+SVG path; the site's existing button font, colours and size are otherwise
+unchanged); the hero and the closing CTA carry Apple's own "Download on the App
+Store" badge, linked to the same URL (see "The App Store badge" below); the
+plates under **Upcoming** link to the live Hunts in either state (since the
+launch copy mix, 2026-10-09); and the waitlist form survives as a fallback,
+relocated to the bottom of the page and retitled "Not on iPhone? Get notified
+for Android.", with its button reading "NOTIFY ME" and posting to the same
+Mailchimp audience and honeypot as before.
+
+### The App Store badge
+
+*(2026-10-09, founder revision)* The two big accent pills in the hero and the
+closing section were replaced by Apple's official badge, black, English
+(US-UK). It is Apple's file, used unaltered: no recolouring, no inlining, no
+filter, no hover state, nothing animated on the badge itself. Our small accent
+pill stays in the nav and the drawer.
+
+- **Source.** Apple's App Store Marketing Tools (the page
+  `tools.applemediaservices.com/app-store/` now forwards there), for this app:
+  <https://toolbox.marketingtools.apple.com/en-us/app-store/us/app/6802558635>.
+  Its "Download Badges" button serves
+  `https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us/download`,
+  a zip whose `black.svg` is `build/source/app-store-badge-black-en-us.svg`
+  (fetched 2026-10-09; its SHA-256 is pinned in `build/assemble.py`, so the
+  build stops if the file is edited). Apple's rules are at
+  <https://developer.apple.com/app-store/marketing/guidelines/>.
+- **Served.** `build/assemble.py` copies the bytes to
+  `assets/app-store-badge-black.<hash>.svg` (content-hashed like the other
+  shared assets, so the immutable cache is safe) and the hero and closing
+  links reference it with an `<img>`. If Apple ever reissues the badge,
+  replace the source file and its pin in `build/assemble.py` on purpose.
+- **Size and space.** 48px high on desktop and 44px at 640px and below (Apple's
+  minimum on screen is 40px); whatever sits beside or under a badge is at
+  least a quarter of its height away. `test/app-store-badge.test.js` pins all
+  of this.
 
 The mobile hamburger drawer's own link (`build/assemble.py`'s `drawer()`,
 static markup shared with every other page, outside `index.html`'s reactive

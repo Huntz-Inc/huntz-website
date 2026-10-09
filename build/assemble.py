@@ -701,13 +701,14 @@ html = html.replace(old, old + "\n    " + MENU_BUTTON)
 # page, from "join the waitlist" to "download on the App Store". Empty
 # (default) leaves every existing waitlist piece exactly as it renders today:
 # each patch below has its own untouched default branch. Set APP_STORE_URL to
-# the live App Store listing and: the nav CTA, the hero button, the closing
-# CTA and the drawer's own link (2e above) all become "Download app" links,
-# with the Apple mark below, to that URL; the five interest plates go inert
-# (no click handler, no button role, no aria-label); and the waitlist form
-# survives as a relocated, retitled Android fallback at the bottom of the
-# page. See README.md, "App Store launch switch", for the day-of-approval
-# steps.
+# the live App Store listing and: the nav CTA and the drawer's own link (2e
+# above) become "Download app" links, with the Apple mark below, to that URL;
+# the hero and the closing CTA carry Apple's own "Download on the App Store"
+# badge instead of a pill (founder revision, 2026-10-09: see the badge block
+# below); the five interest plates go inert (no click handler, no button
+# role, no aria-label); and the waitlist form survives as a relocated,
+# retitled Android fallback. See README.md, "App Store launch switch", for
+# the day-of-approval steps.
 #
 # This is the one value to change on launch day: it feeds the Component
 # class field directly (AS-5 below) and drawer() reads it too, so both
@@ -721,12 +722,14 @@ APP_STORE_URL = "https://apps.apple.com/app/id6802558635"
 # and keep it equal to APP_STORE_URL's own value once that goes live.
 APP_STORE_URL_LITERAL = "https://apps.apple.com/app/id6802558635"
 
-# Single-path Apple logo mark for the three App Store buttons and the
-# drawer's own link, once APP_STORE_URL is live. No external asset: fill is
-# currentColor, so it always matches its own link's text colour with no
+# Single-path Apple logo mark for our own accent pills (the nav link, the
+# drawer's own link, and the inner pages' and /hunt buttons), once
+# APP_STORE_URL is live. (The hero and closing CTA carry Apple's badge
+# instead, below; this mark is not Apple's artwork.) No external asset: fill
+# is currentColor, so it always matches its own link's text colour with no
 # colour of its own, and vertically centred by their flex styling. A function
-# rather than a constant because the nav link (smaller text) and the hero/
-# closing-CTA/drawer links (larger text) each need a different fixed pixel
+# rather than a constant because the nav link (smaller text) and the
+# drawer/page links (larger text) each need a different fixed pixel
 # size (2026-09-25 founder feedback: the original 0.8em read as "super tiny"
 # at ~10px, so this is sized in px against each button's actual rendered
 # size instead of scaling off font-size again) - the viewBox keeps the glyph
@@ -735,6 +738,64 @@ def apple_mark(px: int) -> str:
     return (f'<svg aria-hidden="true" viewBox="0 0 384 512" width="{px}px" height="{px}px" '
             'style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg">'
             '<path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>')
+
+# Apple's official "Download on the App Store" badge, black version, English
+# (US-UK), for the hero and the closing CTA (founder revision, 2026-10-09:
+# the two big pills become the badge; our small accent pill stays in the nav
+# and the drawer). The artwork is Apple's, used unaltered as a referenced
+# file: never inlined, recoloured, filtered, faded, animated or given a hover
+# state, and its link carries no animation of its own. What Apple's marketing
+# guidelines (https://developer.apple.com/app-store/marketing/guidelines/,
+# "Graphic Standards") ask for, and where it is met:
+#   - the artwork exactly as supplied, grey outline included: the file below
+#     is pinned by SHA-256, so the build stops if it is ever edited;
+#   - at least 40px high on screen: 48px, and 44px at 640px and below, in the
+#     style block (APP_STORE_BADGE_CSS);
+#   - clear space of a quarter of the badge height on every side (12px at
+#     48px, 11px at 44px): whatever sits beside or under a badge is 20px or
+#     more away;
+#   - one badge per layout: the hero and the closing section are two layouts
+#     a full page apart.
+#
+# Source: Apple's App Store Marketing Tools, which tools.applemediaservices.com/
+# app-store/ now forwards to, for this app's listing:
+#   https://toolbox.marketingtools.apple.com/en-us/app-store/us/app/6802558635
+# Its "Download Badges" button serves
+#   https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us/download
+# a zip whose black.svg is this file (the same bytes the tool's own embed code
+# serves from .../badges/download-on-the-app-store/black/en-us), fetched
+# 2026-10-09. The file's own <title> is
+# Download_on_the_App_Store_Badge_US-UK_RGB_blk_4SVG_092917; it is 119.66 x 40
+# user units, so the on-screen width follows from the height. If Apple ever
+# reissues the badge, replace the file and update the pin on purpose.
+#
+# build/source/ holds the file as downloaded; section 4 serves it from
+# assets/ under a content-hashed name, like the other shared assets, so the
+# one-year immutable cache that vercel.json gives /assets/ is safe.
+import hashlib
+APP_STORE_BADGE_SRC = SRC / "app-store-badge-black-en-us.svg"
+APP_STORE_BADGE_SHA256 = "a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f"
+APP_STORE_BADGE_BYTES = APP_STORE_BADGE_SRC.read_bytes()
+assert hashlib.sha256(APP_STORE_BADGE_BYTES).hexdigest() == APP_STORE_BADGE_SHA256, (
+    "build/source/app-store-badge-black-en-us.svg is not the badge Apple supplied (SHA-256 pin)")
+APP_STORE_BADGE_HREF = f"/assets/app-store-badge-black.{APP_STORE_BADGE_SHA256[:8]}.svg"
+APP_STORE_BADGE_ALT = "Download on the App Store"
+# 144 x 48 is the badge's own 2.99:1 shape at the desktop height; the CSS below
+# sets the displayed height and lets the width follow.
+APP_STORE_BADGE_LINK = (
+    '<a href="{{ appStoreUrl }}" data-appstore-badge="" '
+    f'aria-label="{APP_STORE_BADGE_ALT}">'
+    f'<img src="{APP_STORE_BADGE_HREF}" alt="{APP_STORE_BADGE_ALT}" width="144" height="48"></a>')
+# The link only shrink-wraps the image (a rounded box, so the keyboard focus
+# ring from (I-3b) follows the badge's own corners); the image has no
+# transition, transform or filter, and nothing here reacts to hover.
+APP_STORE_BADGE_CSS = (
+    "[data-appstore-badge]{display:inline-block;line-height:0;border-radius:11px}\n"
+    "[data-appstore-badge] img{display:block;height:48px;width:auto}\n"
+    "@media (max-width:640px){[data-appstore-badge] img{height:44px}}\n")
+old = "#ch-rail{overscroll-behavior-x:contain}\n"
+assert html.count(old) == 1, "rail style rule not found (badge CSS anchor)"
+html = html.replace(old, old + APP_STORE_BADGE_CSS)
 
 # Below 641px the bar is logo + menu button: the three section anchors were
 # already hidden by (I-4b), and the CTA moves into the sheet. The second
@@ -799,20 +860,17 @@ html = html.replace(old,
     '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + nav_appstore + '</sc-if>')
 
 # (AS-2) Hero CTA: default form/confirmation/"no spam" note is left untouched
-# in its own branch; a second branch renders one App Store link in their
-# place. #waitlist itself only exists in the default branch: the id moves to
-# the relocated section below once appStoreMode is on, so it is never
-# duplicated in the live DOM.
+# in its own branch; a second branch renders Apple's badge, linked to the App
+# Store, in their place. #waitlist itself only exists in the default branch:
+# the id moves to the relocated form below once appStoreMode is on, so it is
+# never duplicated in the live DOM.
 old = ('<div id="waitlist" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">\n        <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">\n          <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">\n            <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px \'Figtree\',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">\n            <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ heroBtn }}</button>\n            <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>\n          </form>\n        </sc-if>\n        <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">\n          <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU\'RE IN. WE\'LL EMAIL YOU WHEN WE LAUNCH.</div>\n        </sc-if>\n      </div>\n      <div style="margin-top: 20px; font: 500 11px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; animation: hzRise .7s ease .84s both; font-family:\'Figtree\',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>')
 assert html.count(old) == 1, "hero waitlist block not found"
+# The block's own entrance (one rise, like every other hero element) is the
+# page's, not the badge's: the badge has no motion of its own.
 hero_appstore = (
     '<div style="animation:hzRise .7s ease .74s both">\n'
-    '        <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
-    'gap:10px;padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; '
-    'font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; text-decoration: none; '
-    'border-radius: 999px; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, '
-    'border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" '
-    'style-active="transform:translateY(2px)">' + apple_mark(18) + '<span>{{ appStoreLabel }}</span></a>\n'
+    '        ' + APP_STORE_BADGE_LINK + '\n'
     '      </div>'
 )
 html = html.replace(old,
@@ -821,21 +879,15 @@ html = html.replace(old,
 
 # (AS-3) Closing CTA: id="fin-form" stays put in both branches, since the
 # scroll-reveal animation (componentDidMount's finBits) targets it by id
-# regardless of mode. Only the content inside it swaps.
+# regardless of mode. Only the content inside it swaps; live, it is Apple's
+# badge, like the hero's.
 fin_open = '<div id="fin-form" style="opacity:0;transform:translateY(20px)">'
 fin_close = '</div>'
 old = (fin_open + '\n          <sc-if value="{{ interest }}"><div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:14px;padding:6px 8px 6px 12px;border:1px solid rgba(194,78,31,.45);border-radius:20px;font:700 9.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#C24E1F;text-transform:uppercase">Joining for: {{ interest }}<button type="button" onClick="{{ clearInterest }}" aria-label="Remove this interest" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:rgba(194,78,31,.12);color:#C24E1F;font:400 11px \'Figtree\',Arial,Helvetica,sans-serif;cursor:pointer;padding:0" style-hover="background:#C24E1F;color:#F3EFE7">&#10005;</button></div></sc-if>\n          <sc-if value="{{ finalIdle }}" hint-placeholder-val="{{ true }}">\n            <form onSubmit="{{ submitFinal }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">\n              <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex:1 1 220px;padding:17px 18px;border:1px solid rgba(22,19,14,.28);border-radius:14px;background:rgba(255,255,255,.6);font:500 15px \'Figtree\',Arial,Helvetica,sans-serif;color:#16130E;outline:none" style-focus="border-color:#C24E1F">\n              <button type="submit" disabled="{{ busy2 }}" style="padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:14px;color:#F3EFE7;font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;cursor:pointer;box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,transform .15s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ finalBtn }}</button>\n              <sc-if value="{{ err2 }}"><div style="flex:1 1 100%;font:600 11.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err2 }}</div></sc-if>\n            </form>\n          </sc-if>\n          <sc-if value="{{ sub2 }}" hint-placeholder-val="{{ false }}">\n            <div style="display:inline-block;border:2px solid #C24E1F;border-radius:14px;color:#C24E1F;padding:17px 24px;font:700 clamp(13px,1.4vw,17px) \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU\'RE IN.</div>\n          </sc-if>\n          <div style="margin-top:16px;font:500 10.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759">NO SPAM · ONE EMAIL WHEN WE LAUNCH</div>\n        </div>')
 assert html.count(old) == 1, "closing CTA fin-form block not found"
 assert old.startswith(fin_open) and old.endswith(fin_close)
 fin_inner_default = old[len(fin_open):-len(fin_close)]
-fin_appstore = (
-    '\n          <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
-    'gap:10px;padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:999px;color:#F3EFE7;'
-    'font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;'
-    'box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,'
-    'transform .15s ease" style-hover="background:#16130E;border-color:#16130E" '
-    'style-active="transform:translateY(2px)">' + apple_mark(18) + '<span>{{ appStoreLabel }}</span></a>\n        '
-)
+fin_appstore = '\n          ' + APP_STORE_BADGE_LINK + '\n        '
 html = html.replace(old,
     fin_open
     + '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + fin_inner_default + '</sc-if>'
@@ -1309,20 +1361,25 @@ import json
 ASSETS = ROOT / "assets"
 ASSETS.mkdir(exist_ok=True)
 
-def write_hashed(stem: str, ext: str, content: str) -> str:
-    """Write assets/<stem>.<hash8>.<ext>, prune stale siblings, return the path."""
-    digest = hashlib.sha256(content.encode()).hexdigest()[:8]
+def write_hashed(stem: str, ext: str, content: "str | bytes") -> str:
+    """Write assets/<stem>.<hash8>.<ext>, prune stale siblings, return the path.
+    Bytes are written exactly as given (the App Store badge is Apple's file)."""
+    data = content.encode() if isinstance(content, str) else content
+    digest = hashlib.sha256(data).hexdigest()[:8]
     name = f"{stem}.{digest}.{ext}"
     for old in ASSETS.glob(f"{stem}.????????.{ext}"):
         if old.name != name:
             old.unlink()
-    (ASSETS / name).write_text(content)
+    (ASSETS / name).write_bytes(data)
     return f"/assets/{name}"
 
 fonts_css_out = ("/* Playfair Display + Figtree, latin subset, embedded. Generated by "
                  "build/assemble.py — do not edit. */\n" + "\n".join(kept) + "\n")
 FONTS_HREF = write_hashed("fonts", "css", fonts_css_out)
 APP_HREF = write_hashed("app", "js", app_js)
+# Apple's badge, byte for byte; its name was fixed earlier (the markup that
+# references it is patched in 2f), so the two must agree.
+assert write_hashed("app-store-badge-black", "svg", APP_STORE_BADGE_BYTES) == APP_STORE_BADGE_HREF
 # Kept for any cached copy of the earlier legal pages that still links it.
 (ASSETS / "fonts.css").write_text(fonts_css_out)
 
@@ -1447,6 +1504,10 @@ home = home.replace("</body>", drawer("/", "#waitlist") + "\n" + NAV_JS + "\n" +
 
 art = html.replace("<!--HZ:FONTS-->", font_style)
 art = art.replace("<!--HZ:SCRIPTS-->", "")
+# The artifact has no assets/ beside it: Apple's badge travels as a data URI.
+assert art.count(APP_STORE_BADGE_HREF) == 2, "expected the hero and closing badges in the artifact"
+art = art.replace(APP_STORE_BADGE_HREF,
+                  "data:image/svg+xml;base64," + base64.b64encode(APP_STORE_BADGE_BYTES).decode())
 art = art.replace("</body>", legal + "\n</body>")
 m = re.search(r"<body>\n?(.*)\n?</body>", art, re.S)
 fragment = (inline_scripts + "\n" + m.group(1) + "\n<style>" + NAV_CSS + HOME_NAV_CSS + "</style>\n"

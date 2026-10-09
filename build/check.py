@@ -162,6 +162,25 @@ for link in ("/how-it-works", "/accountability-challenges", "/faq", "/about", "/
     if f'href="{link}"' not in home:
         fail(f"/: footer link to {link} missing")
 
+# Apple's "Download on the App Store" badge in the hero and the closing section
+# (founder revision, 2026-10-09; build/assemble.py's badge block). Apple's
+# guidelines want the artwork unaltered and at least 40px high on screen;
+# test/app-store-badge.test.js pins the details, this keeps a Python-only
+# build run honest.
+badge_src = ROOT / "build" / "source" / "app-store-badge-black-en-us.svg"
+badge_served = sorted((ROOT / "assets").glob("app-store-badge-black.????????.svg"))
+if len(badge_served) != 1 or not badge_src.exists() or badge_served[0].read_bytes() != badge_src.read_bytes():
+    fail("assets/: the served App Store badge is missing, duplicated or not exactly the artwork in build/source/")
+else:
+    badge_link = ('<a href="{{ appStoreUrl }}" data-appstore-badge="" aria-label="Download on the App Store">'
+                  f'<img src="/assets/{badge_served[0].name}" alt="Download on the App Store" width="144" height="48"></a>')
+    if home.count(badge_link) != 2:
+        fail(f"/: expected the App Store badge exactly twice (hero, closing section), found {home.count(badge_link)}")
+badge_css = re.search(r"\[data-appstore-badge\] img\{display:block;height:(\d+)px;width:auto\}\n"
+                      r"@media \(max-width:640px\)\{\[data-appstore-badge\] img\{height:(\d+)px\}\}", home)
+if not badge_css or min(int(badge_css.group(1)), int(badge_css.group(2))) < 40:
+    fail("/: the App Store badge is under Apple's 40px minimum height (or its sizing rules are missing)")
+
 # Content pages: no em dashes in marketing copy (legal keeps counsel's own).
 # The contact form's success line is the founder's exact wording and is the
 # single sanctioned exception; it is asserted verbatim further down.
