@@ -708,7 +708,7 @@ html = html.replace(old, old + "\n    " + MENU_BUTTON)
 # This is the one value to change on launch day: it feeds the Component
 # class field directly (AS-5 below) and drawer() reads it too, so both
 # surfaces flip together from this single assignment.
-APP_STORE_URL = ""
+APP_STORE_URL = "https://apps.apple.com/app/id6802558635"
 
 # The known App Store listing URL, independent of the switch above: CSS can't
 # read a JS/Python constant, so HOME_NAV_CSS (below) matches this literal
