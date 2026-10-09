@@ -1115,30 +1115,69 @@ HERO_SUB_NEW = ("Stake $20 to $500. Prove it daily. "
 assert html.count(HERO_SUB_OLD) == 1, "hero sub not found"
 html = html.replace(HERO_SUB_OLD, HERO_SUB_NEW)
 
-# (LC-2) "Sound familiar?": a new block directly after the hero's marquee strip
-# and before the mechanic, built from the mechanic's own section pattern (the
-# same container width, side padding and label eyebrow). The label is the
-# section's heading; the four lines sit in the display serif at a size between
-# the hero sub and the mechanic headline, each on its own line, left-aligned,
-# no icons. The last line is the payoff and takes the accent colour, the way
-# the page emphasises everywhere else. The bottom padding is shorter than the
-# top so the block reads as the lead-in to "The mechanic" that answers it.
-FAMILIAR_LINES = [
-    "Third gym membership. Zero workouts.",
-    "You said Monday. It is now October.",
-    "Your camera roll is full of day-one screenshots. There is no day two.",
-    "You don't have a discipline problem. You have a nothing-to-lose problem.",
+# (LC-2) "Sound familiar?": a block directly after the hero's marquee strip and
+# before the mechanic, built from the mechanic's own pieces. Founder revision,
+# 2026-10-09: it began as a plain block of four text lines; it now sits on the
+# page's card system, like the four mechanic steps.
+#   - The section pattern (container width, side padding) and the eyebrow are
+#     the mechanic's: "SOUND FAMILIAR?" wears THE MECHANIC's label style, set
+#     uppercase by CSS so the source stays in sentence case.
+#   - The headline is "You don't have a discipline problem. You have a
+#     nothing-to-lose problem." in the style and size of the mechanic's "Lock
+#     in or you lose.", with the accent full stop on its last word.
+#   - Under it, three cards in a row, stacked at 960px and below (so on every
+#     phone). Each takes its surface, radius, shadow, hover, label chip and big
+#     index number from the mechanic's first step card, read out of that card's
+#     markup below rather than retyped, so they cannot drift from it; each is
+#     one chip and one line, the line in the card title's display serif.
+#     They are not data-plate cards: that marker is the mechanic steps' and the
+#     Hunts' (counted in (LC-3)).
+# The bottom padding is shorter than the top so the block reads as the lead-in
+# to "The mechanic" that answers it.
+# "nothing-to-lose" is kept whole (no break after "nothing-") so that on a phone
+# the last line reads "nothing-to-lose problem." rather than splitting the compound.
+FAMILIAR_HEADLINE = ("You don't have a discipline problem. You have a "
+                     '<span style="white-space:nowrap">nothing-to-lose</span> problem')
+FAMILIAR_CARDS = [
+    ("THE GYM", "Third gym membership. Zero workouts."),
+    ("THE MONDAY", "You said Monday. It is now October."),
+    ("THE CAMERA ROLL", "Your camera roll is full of day-one screenshots. There is no day two."),
 ]
-FAMILIAR_LINE_STYLE = (f"margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 {SERIF};letter-spacing:-.012em;"
-                       "text-wrap:balance;color:")
-familiar_lines = "\n      ".join(
-    f'<p style="{FAMILIAR_LINE_STYLE}{CLAY if i == len(FAMILIAR_LINES) - 1 else INK}">{line}</p>'
-    for i, line in enumerate(FAMILIAR_LINES))
+_step = re.search(
+    r'<div data-plate="" style="position:relative;margin-right:clamp\(0px,4vw,42px\);([^"]*)" style-hover="([^"]*)">\s*'
+    r'<div style="([^"]*)">01</div>\s*'
+    r'<div style="([^"]*)">STAKE</div>\s*'
+    r'<h3 style="margin:0 0 7px;([^"]*)">Stake what hurts to lose', html)
+assert _step, "the mechanic's first step card was not found"
+CARD_FACE, CARD_HOVER, CARD_NUMBER, CARD_CHIP, CARD_TITLE = _step.groups()
+assert CARD_FACE.startswith("padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,24px);border:1px solid rgba(22,19,14,.12);"
+                            "border-radius:16px;background:linear-gradient("), "mechanic card surface drifted"
+assert "box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 20px 34px -30px rgba(22,19,14,.55)" in CARD_FACE
+assert CARD_NUMBER.startswith("position:absolute;top:clamp(14px,1.8vw,20px);right:clamp(16px,2vw,22px);"
+                              "font:400 clamp(26px,3vw,38px) 'Playfair Display'"), "mechanic index number drifted"
+assert CARD_CHIP.startswith("display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;"), \
+    "mechanic label chip drifted"
+assert CARD_TITLE.startswith("padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 "), "mechanic card title drifted"
+_headline = re.search(r'<h2 style="margin:0;(font:600 clamp\(34px,4\.4vw,60px\)/1\.06 [^"]*)">'
+                      r'Lock in or you lose<span style="color:#C24E1F">\.</span></h2>', html)
+assert _headline, "the mechanic's headline was not found"
+_eyebrow = re.search(r'<div style="([^"]*)">THE MECHANIC</div>', html)
+assert _eyebrow, "THE MECHANIC eyebrow was not found"
+
+CARD_LINE_STYLE = "margin:0;" + CARD_TITLE + ";text-wrap:balance"
+familiar_cards = "\n      ".join(
+    f'<div data-familiar-card="" style="position:relative;{CARD_FACE}" style-hover="{CARD_HOVER}">\n'
+    f'        <div style="{CARD_NUMBER}">{i + 1:02d}</div>\n'
+    f'        <div style="{CARD_CHIP}">{chip}</div>\n'
+    f'        <p style="{CARD_LINE_STYLE}">{line}</p>\n'
+    '      </div>'
+    for i, (chip, line) in enumerate(FAMILIAR_CARDS))
 FAMILIAR_SECTION = f"""<section id="familiar" data-screen-label="Sound familiar" style="position:relative;padding:clamp(64px,9vh,104px) clamp(20px,5vw,64px) clamp(8px,2vh,24px)">
   <div style="max-width:1220px;margin:0 auto">
-    <h2 style="margin:0 0 clamp(22px,3.5vh,34px);font:600 11px {SANS};letter-spacing:.2em;text-transform:uppercase;color:{MUTED}">Sound familiar?</h2>
-    <div style="display:flex;flex-direction:column;gap:clamp(14px,2.4vh,24px)">
-      {familiar_lines}
+    <div style="{_eyebrow.group(1)};text-transform:uppercase">Sound familiar?</div>
+    <h2 style="margin:0 0 clamp(26px,4vh,42px);{_headline.group(1)}">{FAMILIAR_HEADLINE}<span style="color:#C24E1F">.</span></h2>
+    <div data-familiar-cards="">
+      {familiar_cards}
     </div>
   </div>
 </section>
@@ -1149,6 +1188,13 @@ assert html.count(old) == 1, "mechanic section not found"
 assert html.count('data-screen-label="Ticker"') == 1
 assert html.index('data-screen-label="Ticker"') < html.index(old)
 html = html.replace(old, FAMILIAR_SECTION + old)
+# Three across, then one column from 960px down: with the section's side
+# padding that keeps every card wide enough for its longest line.
+FAMILIAR_CSS = ("[data-familiar-cards]{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.6vw,20px)}\n"
+                "@media (max-width:960px){[data-familiar-cards]{grid-template-columns:1fr}}\n")
+old = "#ch-rail{overscroll-behavior-x:contain}\n"
+assert html.count(old) == 1, "rail style rule not found (familiar CSS anchor)"
+html = html.replace(old, old + FAMILIAR_CSS)
 
 # (LC-3) Upcoming: the five placeholder plates become the Hunts actually open
 # on Discover. Fetched once from the public API,

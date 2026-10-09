@@ -305,11 +305,18 @@ Changes currently applied on top of the design:
 - Upcoming cards list the Hunts open on Discover (`LIVE_HUNTS`, dated) and
   each "I want this hunt" is a link to that Hunt's universal link.
 - Launch copy mix (2026-10-09, founder-approved): the hero reads "You don't
-  need motivation. You need consequences." with the $20 to $500 stake, a
-  "Sound familiar?" block follows the marquee strip, the closing section reads
-  "Become someone who finishes." over "Quitting just got expensive.", and the
-  closing card is "What's live" (iOS app, creator-hosted and private Hunts
-  live; Android coming soon). No em or en dashes, no exclamation marks.
+  need motivation. You need consequences." over "Stake $20 to $500. Prove it
+  daily. ..." (the share card's og and twitter descriptions repeat that
+  sentence), a "Sound familiar?" block follows the marquee strip (a headline
+  in the mechanic's style over three cards, "THE GYM", "THE MONDAY" and "THE
+  CAMERA ROLL", on the mechanic steps' own card styles: three across on
+  desktop, stacked on phones), the closing section reads "Become someone who
+  finishes." over "Quitting just got expensive.", and the closing card is
+  "What's live" (iOS app, creator-hosted and private Hunts live; Android
+  coming soon). The hero and the closing section carry Apple's App Store badge
+  (see "The App Store badge" above), with the Android notify form under the
+  closing one and a small link to it under the hero's. No em or en dashes, no
+  exclamation marks.
 - Keyboard support and focus rings on the FAQ and cards; muted grey darkened
   for contrast.
 - Below 641px the bar is logo + menu button, and a modal sheet carries every

@@ -154,10 +154,20 @@ for stale in ("FROM $50", "Stake $50", "Put your money</span>", "Hunt&nbsp;", "R
     if stale in home:
         fail(f"/: pre-launch copy {stale!r} is back on the home page")
 for needle in (">motivation.</span>", ">consequences<span", 'id="familiar"', "Sound familiar?",
-               "nothing-to-lose problem.", 'data-hunt-link="" href="https://www.huntz.ai/hunt/',
+               "nothing-to-lose</span> problem<span", 'data-hunt-link="" href="https://www.huntz.ai/hunt/',
                "finishes<span", 'id="fin-sub"', "Quitting just got expensive.", "WHAT'S LIVE"):
     if needle not in home:
         fail(f"/: launch copy {needle!r} missing from the home page")
+# "Sound familiar?" is three cards on the mechanic steps' card system (founder
+# revision, 2026-10-09): one chip and one line each.
+for chip, line in (("THE GYM", "Third gym membership. Zero workouts."),
+                   ("THE MONDAY", "You said Monday. It is now October."),
+                   ("THE CAMERA ROLL", "Your camera roll is full of day-one screenshots. There is no day two.")):
+    if f">{chip}</div>" not in home or f">{line}</p>" not in home:
+        fail(f"/: Sound familiar card {chip!r} is missing or changed")
+n_cards = home.count('data-familiar-card=""')
+if n_cards != 3:
+    fail(f"/: expected 3 Sound familiar cards, found {n_cards}")
 for link in ("/how-it-works", "/accountability-challenges", "/faq", "/about", "/contact", "/terms", "/privacy"):
     if f'href="{link}"' not in home:
         fail(f"/: footer link to {link} missing")

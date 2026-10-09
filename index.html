@@ -72,6 +72,8 @@ html{overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none}
 body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%)}
 #ch-rail{overscroll-behavior-x:contain}
 [data-plate] a[data-hunt-link]::after{content:'';position:absolute;inset:0}
+[data-familiar-cards]{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.6vw,20px)}
+@media (max-width:960px){[data-familiar-cards]{grid-template-columns:1fr}}
 [data-appstore-badge]{display:inline-block;line-height:0;border-radius:11px}
 [data-appstore-badge] img{display:block;height:48px;width:auto}
 @media (max-width:640px){[data-appstore-badge] img{height:44px}}
@@ -232,12 +234,24 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
 
 <section id="familiar" data-screen-label="Sound familiar" style="position:relative;padding:clamp(64px,9vh,104px) clamp(20px,5vw,64px) clamp(8px,2vh,24px)">
   <div style="max-width:1220px;margin:0 auto">
-    <h2 style="margin:0 0 clamp(22px,3.5vh,34px);font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759">Sound familiar?</h2>
-    <div style="display:flex;flex-direction:column;gap:clamp(14px,2.4vh,24px)">
-      <p style="margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E">Third gym membership. Zero workouts.</p>
-      <p style="margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E">You said Monday. It is now October.</p>
-      <p style="margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E">Your camera roll is full of day-one screenshots. There is no day two.</p>
-      <p style="margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#C24E1F">You don't have a discipline problem. You have a nothing-to-lose problem.</p>
+    <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;color:#6E6759;margin-bottom:14px;text-transform:uppercase">Sound familiar?</div>
+    <h2 style="margin:0 0 clamp(26px,4vh,42px);font:600 clamp(34px,4.4vw,60px)/1.06 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">You don't have a discipline problem. You have a <span style="white-space:nowrap">nothing-to-lose</span> problem<span style="color:#C24E1F">.</span></h2>
+    <div data-familiar-cards="">
+      <div data-familiar-card="" style="position:relative;padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,24px);border:1px solid rgba(22,19,14,.12);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 20px 34px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div style="position:absolute;top:clamp(14px,1.8vw,20px);right:clamp(16px,2vw,22px);font:400 clamp(26px,3vw,38px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">01</div>
+        <div style="display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;color:currentColor;opacity:.9;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;margin-bottom:11px">THE GYM</div>
+        <p style="margin:0;padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor;text-wrap:balance">Third gym membership. Zero workouts.</p>
+      </div>
+      <div data-familiar-card="" style="position:relative;padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,24px);border:1px solid rgba(22,19,14,.12);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 20px 34px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div style="position:absolute;top:clamp(14px,1.8vw,20px);right:clamp(16px,2vw,22px);font:400 clamp(26px,3vw,38px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">02</div>
+        <div style="display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;color:currentColor;opacity:.9;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;margin-bottom:11px">THE MONDAY</div>
+        <p style="margin:0;padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor;text-wrap:balance">You said Monday. It is now October.</p>
+      </div>
+      <div data-familiar-card="" style="position:relative;padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,24px);border:1px solid rgba(22,19,14,.12);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 20px 34px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div style="position:absolute;top:clamp(14px,1.8vw,20px);right:clamp(16px,2vw,22px);font:400 clamp(26px,3vw,38px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">03</div>
+        <div style="display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;color:currentColor;opacity:.9;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;margin-bottom:11px">THE CAMERA ROLL</div>
+        <p style="margin:0;padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor;text-wrap:balance">Your camera roll is full of day-one screenshots. There is no day two.</p>
+      </div>
     </div>
   </div>
 </section>
