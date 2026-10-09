@@ -825,7 +825,9 @@ html = html.replace(old,
 # Android, once the App Store link is live. Reuses the hero's own form
 # state/handler (heroIdle/sub1/err1/busy1/submitHero): the two are mutually
 # exclusive, since the hero is a plain link whenever this section renders,
-# rather than adding a second, redundant set of fields.
+# rather than adding a second, redundant set of fields. Since launch day
+# (2026-10-09) its confirmation and no-spam lines say which launch they
+# mean: Android's, now that "when we launch" would read as the iOS one.
 old = '</section>\n\n<footer data-screen-label="Footer"'
 assert html.count(old) == 1, "footer anchor not found"
 android_section = '''<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><section id="waitlist" data-screen-label="Android Waitlist" style="position:relative;border-top:1px solid rgba(22,19,14,.16);padding:clamp(40px,6vh,64px) clamp(20px,5vw,64px);scroll-margin-top:110px">
@@ -839,9 +841,9 @@ android_section = '''<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ 
       </form>
     </sc-if>
     <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
-      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN WE LAUNCH.</div>
+      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN ANDROID LAUNCHES.</div>
     </sc-if>
-    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>
+    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN ANDROID LAUNCHES.</div>
   </div>
 </section></sc-if>
 

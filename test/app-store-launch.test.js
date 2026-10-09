@@ -805,6 +805,22 @@ test('live: about.html says Huntz is live on the App Store, in step with faq.htm
   assert.doesNotMatch(t, /being developed now/);
 });
 
+test('live: the Android notify section names the Android launch, and nothing visible on the live page still says WHEN WE LAUNCH', () => {
+  // The no-spam line is always rendered; the confirmation stamp sits behind
+  // sc-if sub1 (a fresh page has not submitted), so it is read from the
+  // section's own source.
+  assert.equal((LIVE_VISIBLE.match(/WHEN ANDROID LAUNCHES/g) || []).length, 1, 'the no-spam line');
+  const sectionStart = html.indexOf('data-screen-label="Android Waitlist"');
+  assert.notEqual(sectionStart, -1, 'the Android section was not found');
+  const section = html.slice(sectionStart, html.indexOf('</section>', sectionStart));
+  assert.equal((section.match(/WHEN ANDROID LAUNCHES/g) || []).length, 2, 'the confirmation stamp and the no-spam line');
+  assert.doesNotMatch(section, /WHEN WE LAUNCH/);
+  assert.doesNotMatch(LIVE_VISIBLE, /WHEN WE LAUNCH/);
+  // The switched-off hero keeps its own wording: there "we" is unambiguous.
+  assert.match(DEFAULT_REACTIVE, /WHEN WE LAUNCH/);
+  assert.doesNotMatch(DEFAULT_REACTIVE, /WHEN ANDROID LAUNCHES/);
+});
+
 // -------------------------------------------------------------- meta tag
 
 const APPLE_ITUNES_META = '<meta name="apple-itunes-app" content="app-id=6802558635">';
