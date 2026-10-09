@@ -740,6 +740,25 @@ HOME_NAV_CSS = ('@media (max-width:640px){#hz-nav a[href="#waitlist"],'
                  f'#hz-nav a[href="{APP_STORE_URL_LITERAL}"]'
                  '{display:none !important}}\n')
 
+# (S-2b) Launch day, 2026-10-09: the iOS app is on the App Store, so the
+# "What happens next" list stops calling it COMING SOON. The row splits into
+# the live iOS app and the Android app still to come. Only when the store
+# switch is on; before launch the design's own row stands.
+ROW_STYLE = ('style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;'
+             'padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"')
+ROW_LABEL = "style=\"font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em\""
+ROW_PILL = ("style=\"font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;"
+            "color:#C24E1F;white-space:nowrap\"")
+old = (f'<div {ROW_STYLE}><span {ROW_LABEL}>iOS &amp; Android app</span>'
+       f'<span {ROW_PILL}>COMING SOON</span></div>')
+assert old in html, "what-happens-next iOS row not found"
+if APP_STORE_URL:
+    html = html.replace(old,
+        f'<div {ROW_STYLE}><span {ROW_LABEL}>iOS app</span>'
+        f'<span {ROW_PILL}>ON THE APP STORE</span></div>\n'
+        f'          <div {ROW_STYLE}><span {ROW_LABEL}>Android app</span>'
+        f'<span {ROW_PILL}>COMING SOON</span></div>')
+
 # (AS-1) Nav CTA: the default anchor is left completely untouched in its own
 # branch; a second branch swaps in the App Store link with identical font,
 # colour and size, plus a pill radius, the Apple mark, and a small icon-text
