@@ -1352,8 +1352,8 @@ for token in ("pickHunt", "_picks", "_pickKeys", "plateRole", "plateTabIndex", "
 # (data-fw spans, animated by playFinale) and the accent treatment on the
 # last word; "Quitting just got expensive." sits under it as #fin-sub, an id
 # the design's own finBits list already looks for, so it rises in with the
-# eyebrow and the button. The eyebrow becomes YOUR MOVE. The Download app
-# button below is untouched (AS-3).
+# eyebrow and the button. The eyebrow becomes YOUR MOVE. The store badge
+# below it, and the Android form under that, are (AS-3) and (AS-4).
 FW_STYLE = 'style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)"'
 FW_ITALIC_STYLE = 'style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic"'
 CLOSING_H2_STYLE_OLD = ("style=\"margin:0 0 clamp(24px,4vh,34px);font:600 clamp(40px,5.6vw,78px)/1.03 'Playfair Display',"
