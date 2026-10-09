@@ -1075,7 +1075,7 @@ def breadcrumb_ld(title: str, slug: str) -> str:
 # social card keeps the brand line, which the visible hero also carries, so
 # metadata and visible copy agree in both places.
 HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</title>
-<meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is currently in pre-launch.">
+<meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is on the App Store.">
 <link rel="canonical" href="{SITE_URL}/">
 <meta property="og:site_name" content="Huntz">
 <meta property="og:title" content="Huntz · Put your money where your goals are.">
@@ -1499,8 +1499,9 @@ CONTENT_LIVE_COPY = {
             '<a href="/#waitlist" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
             'rgba(194,78,31,.4)">waitlist</a> is the way in.</p>',
             '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
-            'text-wrap:pretty">The first Hunts are being developed now, directly with selected creators for their '
-            'communities. Self-service tools for creators to launch Hunts independently are planned for later. The '
+            'text-wrap:pretty">Huntz is live on the App Store, with the first Hunts developed directly with selected '
+            'creators for their communities. Self-service tools for creators to launch Hunts independently are planned '
+            'for later. The '
             f'<a href="{APP_STORE_URL}" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
             'rgba(194,78,31,.4)">app</a> is the way in.</p>',
         )],
@@ -1552,6 +1553,12 @@ CONTENT_LIVE_COPY = {
         )],
     },
     "how-it-works": {
+        "meta": (
+            "How a Hunt works: rules published before anyone joins, a committed stake, proof on a schedule, "
+            "finishers recover their stake plus forfeit shares. Pre-launch.",
+            "How a Hunt works: rules published before anyone joins, a committed stake, proof on a schedule, "
+            "finishers recover their stake plus forfeit shares.",
+        ),
         "body": [(
             '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
             'text-wrap:pretty">The first Hunts are being developed now, directly with our first creators. '

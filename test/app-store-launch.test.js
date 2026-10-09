@@ -667,7 +667,7 @@ test('live: accountability-challenges.html\'s meta description says the app is a
 test('live: about.html is byte-for-byte the committed launched page (sha256 pin)', () => {
   const bytes = fs.readFileSync(path.join(ROOT, 'about.html'));
   const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  assert.equal(hash, 'cedc6c8a8028afb7b7946adb25c672ac7609f54781a48540d85aaf5da44d7d2d',
+  assert.equal(hash, '29c69a6263c1de390c935c60e8d475e3049f454bfc153c44b82d15b5d46c93ed',
     'about.html changed: the launched (APP_STORE_URL set) state must stay byte-for-byte identical to the committed page');
 });
 
@@ -778,6 +778,31 @@ test('default: build/assemble.py keeps the single "iOS & Android app / COMING SO
   assert.match(s2b, /iOS &amp; Android app<\/span>'\n\s*f'<span \{ROW_PILL\}>COMING SOON<\/span><\/div>'\)/);
   assert.match(s2b, /\nassert old in html/, 'the pre-launch row is asserted present in the template regardless of mode');
   assert.match(s2b, /\nif APP_STORE_URL:\n\s+html = html\.replace\(old,/, 'the split is gated on the switch');
+});
+
+// ------------------------------------------- launch leftovers (2026-10-09)
+
+// The statements the launch switch did not reach on its own, each fixed in
+// build/assemble.py (HEAD_META, CONTENT_LIVE_COPY) the day the app went live.
+
+test('live: the home meta description says Huntz is on the App Store, in under 160 characters', () => {
+  const m = html.match(/<meta name="description" content="([^"]*)">/);
+  assert.ok(m, 'home meta description missing');
+  assert.match(m[1], /Huntz is on the App Store\.$/);
+  assert.doesNotMatch(m[1], /pre-launch/i);
+  assert.ok(m[1].length < 160, `home meta description is ${m[1].length} chars`);
+});
+
+test('live: how-it-works.html\'s meta description drops "Pre-launch"', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'how-it-works.html'), 'utf8');
+  assert.match(t, /<meta name="description" content="How a Hunt works: rules published before anyone joins, a committed stake, proof on a schedule, finishers recover their stake plus forfeit shares\.">/);
+  assert.doesNotMatch(t, /Pre-launch/);
+});
+
+test('live: about.html says Huntz is live on the App Store, in step with faq.html', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'about.html'), 'utf8');
+  assert.match(t, /Huntz is live on the App Store, with the first Hunts developed directly with selected creators for their communities\. Self-service tools/);
+  assert.doesNotMatch(t, /being developed now/);
 });
 
 // -------------------------------------------------------------- meta tag
