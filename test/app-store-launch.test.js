@@ -1,12 +1,14 @@
 'use strict';
-// Tests for the App Store launch switch (2026-09-25 founder decision):
-// index.html's Component class gains an APP_STORE_URL config field, next to
-// WAITLIST_ENDPOINT, that flips the home page from "join the waitlist" to
-// "download on the App Store" once set: the nav link, hero button and
-// closing CTA become pill-shaped "Download app" links carrying an inline
-// Apple mark. The same build-time APP_STORE_URL constant also drives the
-// shared mobile drawer (build/assemble.py's drawer()). See README.md, "App
-// Store launch switch".
+// Tests for the App Store launch switch (2026-09-25 founder decision; on
+// since launch day, 2026-10-09): index.html's Component class gains an
+// APP_STORE_URL config field, next to WAITLIST_ENDPOINT, that flips the home
+// page from "join the waitlist" to "download on the App Store" once set: the
+// nav link, hero button and closing CTA become pill-shaped "Download app"
+// links carrying an inline Apple mark. The same build-time APP_STORE_URL
+// constant also drives the shared mobile drawer (build/assemble.py's
+// drawer()), the inner pages' nav pill and closing block, four pages'
+// in-copy sentences and the home page's "What happens next" rows. See
+// README.md, "App Store launch switch".
 //
 //     npm test          (or: node --test "test/*.test.js")
 //
@@ -14,8 +16,10 @@
 // "unfilled build placeholder" rule) and is not hand-edited, so these tests
 // read the committed file the same way build/check.py does.
 //
-// Three complementary techniques evaluate the feature in both states without
-// a browser:
+// The committed build is the launched site: build/assemble.py's
+// APP_STORE_URL is set. Three complementary techniques evaluate the feature
+// in both states without a browser; which state each one can observe depends
+// on where the markup is produced:
 //
 //   1. The Component class is a plain, DOM-free-at-render JS class (its
 //      renderVals() touches no DOM), so it is extracted from its
@@ -32,15 +36,24 @@
 //      the static markup against those same computed values, so assertions
 //      read like "what's on the page" rather than "what's in the template
 //      source". It does not need sc-for (unused by the pieces under test).
+//      Because the template keeps both <sc-if> branches and the class
+//      computes both modes' values, techniques 1 and 2 can still render the
+//      pre-launch page from the launched build. The "default:" tests that
+//      use them are kept for exactly that reason: they are the only place
+//      the waitlist state can still be observed from a committed file, and
+//      they pin the switch's reversibility (APP_STORE_URL set back to ''
+//      must restore the waitlist page, not some third state).
 //   3. The mobile drawer is different from techniques 1 and 2: it is static
 //      markup baked once per build by build/assemble.py's drawer(), entirely
 //      outside index.html's reactive template (no <sc-if>, no renderVals()),
 //      so a single committed build can only ever show the branch that was
-//      active when it was built. This repo's committed build was generated
-//      with APP_STORE_URL empty, so the drawer's live branch cannot be
-//      observed by reading any committed HTML file; the tests for it read
-//      build/assemble.py's own source instead, the same way techniques 1 and
+//      active when it was built. Since launch that is the App Store branch,
+//      on index.html and every content page alike, so the live drawer is
+//      asserted on the committed pages, and its waitlist branch can only be
+//      read from drawer()'s own source text, the same way techniques 1 and
 //      2 already treat index.html's source as ground truth for a build.
+//      Simulating APP_STORE_URL = '' on the Component cannot un-bake it, so
+//      whole-page default assertions exclude it (withoutDrawer() below).
 //   4. 2026-09-25 founder follow-up: how-it-works, faq, about, contact,
 //      accountability-challenges, the blog hub and both articles each carry
 //      their own copy of the same desktop nav pill and closing CTA block as
@@ -48,10 +61,11 @@
 //      apply_content_app_store_switch(), applied to build/content-page.html,
 //      build/article-page.html and build/blog-index.html), and four of them
 //      also carry their own in-copy waitlist sentence (CONTENT_LIVE_COPY).
-//      None of this is reactive, so exactly like technique 3, the live-state
-//      markup cannot be observed from any committed HTML file; those tests
-//      read build/assemble.py's source, while the default-state tests read
-//      the real committed pages (this build's actual, current state).
+//      None of this is reactive, so exactly like technique 3, a committed
+//      page carries only the branch its build baked in: since launch, the
+//      live one. Those tests read the real committed pages (this build's
+//      actual, current state); a second set reads build/assemble.py's
+//      source to pin what those pages are generated from.
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -61,6 +75,13 @@ const crypto = require('node:crypto');
 
 const ROOT = path.join(__dirname, '..');
 const APP_STORE_URL = 'https://apps.apple.com/app/id6802558635';
+
+/** Every public page that embeds the shared chrome (drawer, nav pill, closing block). */
+const SHARED_CHROME_PAGES = [
+  'how-it-works.html', 'faq.html', 'about.html', 'contact.html',
+  'accountability-challenges.html', 'blog.html',
+  'blog/best-accountability-apps-2026.html', 'blog/why-you-dont-achieve-your-goals.html',
+];
 
 /** Escapes a string for safe use inside a RegExp built at runtime. */
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -202,9 +223,61 @@ function visibleMarkup(rendered) {
 const DEFAULT_VISIBLE = visibleMarkup(DEFAULT_HTML);
 const LIVE_VISIBLE = visibleMarkup(LIVE_HTML);
 
+/**
+ * The shared mobile drawer (#hz-menu) is Python-baked (technique 3): the
+ * same bytes in DEFAULT_HTML and LIVE_HTML, and since launch they carry the
+ * App Store link. Assertions about what index.html's own reactive template
+ * renders in default mode exclude it; the drawer's own tests read it
+ * directly. drawer() emits exactly one <nav> and closes with "</nav>\n</div>".
+ */
+const DRAWER_START = '<div id="hz-menu"';
+const DRAWER_END = '</nav>\n</div>';
+
+function drawerBounds(markup) {
+  const start = markup.indexOf(DRAWER_START);
+  assert.notEqual(start, -1, 'the shared mobile drawer (#hz-menu) was not found');
+  assert.equal(markup.indexOf(DRAWER_START, start + 1), -1, 'expected exactly one #hz-menu drawer');
+  const end = markup.indexOf(DRAWER_END, start);
+  assert.notEqual(end, -1, 'could not find the end of the #hz-menu drawer');
+  return [start, end + DRAWER_END.length];
+}
+
+/** The drawer's own static markup, exactly as committed. */
+function drawerOf(markup) {
+  const [start, end] = drawerBounds(markup);
+  return markup.slice(start, end);
+}
+
+/** Everything but the drawer: the markup index.html's own template controls. */
+function withoutDrawer(markup) {
+  const [start, end] = drawerBounds(markup);
+  return markup.slice(0, start) + markup.slice(end);
+}
+
+const DEFAULT_REACTIVE = withoutDrawer(DEFAULT_VISIBLE);
+const LIVE_REACTIVE = withoutDrawer(LIVE_VISIBLE);
+
+test('sanity: withoutDrawer() removes exactly the #hz-menu block that drawerOf() returns', () => {
+  const d = drawerOf(html);
+  assert.ok(d.startsWith(DRAWER_START) && d.endsWith(DRAWER_END));
+  assert.match(d, /data-hz-panel/);
+  assert.equal((d.match(/<nav /g) || []).length, 1);
+  // The element itself is gone; the nav's hamburger button still names it
+  // (aria-controls="hz-menu"), which is template markup and rightly stays.
+  for (const reactive of [DEFAULT_REACTIVE, LIVE_REACTIVE]) {
+    assert.doesNotMatch(reactive, /id="hz-menu"/);
+    assert.doesNotMatch(reactive, /data-hz-panel/);
+    assert.match(reactive, /aria-controls="hz-menu"/);
+  }
+});
+
 test('sanity: visibleMarkup strips embedded <script> source (which legitimately carries both modes\' copy as string literals)', () => {
   assert.match(DEFAULT_HTML, /appStoreLabel: 'Download app'/, 'precondition: the class field literal is in the source');
-  assert.doesNotMatch(DEFAULT_VISIBLE, /Download app/);
+  assert.doesNotMatch(DEFAULT_VISIBLE, /appStoreLabel: 'Download app'/);
+  // The one "Download app" left in the default render's visible markup is
+  // the drawer's Python-baked link (technique 3), not template output.
+  assert.doesNotMatch(DEFAULT_REACTIVE, /Download app/);
+  assert.equal((DEFAULT_VISIBLE.match(/Download app/g) || []).length, 1);
 });
 
 // ---------------------------------------------------------------- default state
@@ -229,12 +302,18 @@ test('default (APP_STORE_URL empty): renderVals() computes exactly today\'s wait
 
 test('default: the nav waitlist link is present, targeting #waitlist', () => {
   assert.match(DEFAULT_VISIBLE, /<a href="#waitlist"[^>]*>JOIN THE WAITLIST<\/a>/);
-  assert.doesNotMatch(DEFAULT_VISIBLE, /Download app/);
+  // Scoped to the reactive template: the Python-baked drawer has read
+  // "Download app" in every render since launch (its own tests are below).
+  assert.doesNotMatch(DEFAULT_REACTIVE, /Download app/);
 });
 
-test('default: the Apple mark SVG renders nowhere on the page', () => {
-  assert.doesNotMatch(DEFAULT_VISIBLE, APPLE_MARK_RE);
-  assert.doesNotMatch(DEFAULT_HTML, APPLE_MARK_RE);
+test('default: the Apple mark SVG renders nowhere in the reactive template', () => {
+  assert.doesNotMatch(DEFAULT_REACTIVE, APPLE_MARK_RE);
+  assert.doesNotMatch(withoutDrawer(DEFAULT_HTML), APPLE_MARK_RE);
+  // The one mark the default render does carry is the drawer's (technique
+  // 3), baked in at Python build time, where APP_STORE_URL is set since launch.
+  assert.equal((DEFAULT_HTML.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 1);
+  assert.match(drawerOf(DEFAULT_HTML), APPLE_MARK_RE);
 });
 
 test('default: the hero button is present as a real submit button inside a form, not a link', () => {
@@ -295,13 +374,10 @@ test('live: the nav link points at the App Store URL and reads "Download app"', 
   // The mobile hamburger drawer is static markup shared with every other page
   // (build/assemble.py's drawer()), generated once at Python build time from
   // this very same APP_STORE_URL constant rather than by this page's
-  // client-side template -- so simulating APP_STORE_URL here, on the
-  // Component instance, cannot change what the drawer already baked in at
-  // build time. This repo's committed build was generated with that Python
-  // constant still empty, so the drawer's own copy still reads "JOIN THE
-  // WAITLIST" even in this simulated live render; see the drawer()-source
-  // tests near the end of this file for coverage of its own live branch.
-  assert.equal((LIVE_VISIBLE.match(/JOIN THE WAITLIST/g) || []).length, 1, 'expected only the static mobile drawer link to still say this');
+  // client-side template. Since launch that constant is set, so the drawer
+  // carries the App Store link as well and nothing on the live page still
+  // reads "JOIN THE WAITLIST"; see the drawer tests near the end of this file.
+  assert.equal((LIVE_VISIBLE.match(/JOIN THE WAITLIST/g) || []).length, 0, 'nothing on the live page should still say this');
 });
 
 test('live: the hero renders a plain App Store link, not a form', () => {
@@ -323,10 +399,17 @@ test('live: id="fin-form" still exists (the scroll-reveal animation keys off it 
   assert.match(LIVE_HTML, /<div id="fin-form"/);
 });
 
-test('live: the three App Store links share the same URL and label, and nothing else does', () => {
-  const hrefs = [...LIVE_VISIBLE.matchAll(new RegExp(`<a href="(${escapeRe(APP_STORE_URL)})"`, 'g'))];
-  assert.equal(hrefs.length, 3, 'expected exactly 3 <a> links to the App Store URL (nav, hero, closing CTA)');
-  assert.equal((LIVE_VISIBLE.match(/Download app/g) || []).length, 3);
+test('live: the four App Store links (nav, hero, closing CTA, drawer) share the same URL and label, and nothing else does', () => {
+  const linkRe = new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"`, 'g');
+  // Three rendered by the template, plus the Python-baked drawer's own link
+  // (technique 3), which this build carries since launch.
+  assert.equal((LIVE_REACTIVE.match(linkRe) || []).length, 3, 'expected exactly 3 template-rendered <a> links to the App Store URL (nav, hero, closing CTA)');
+  assert.equal((drawerOf(LIVE_VISIBLE).match(linkRe) || []).length, 1, 'expected exactly 1 App Store link in the drawer');
+  assert.equal((LIVE_VISIBLE.match(linkRe) || []).length, 4);
+  assert.equal((LIVE_REACTIVE.match(/Download app/g) || []).length, 3);
+  assert.equal((LIVE_VISIBLE.match(/Download app/g) || []).length, 4);
+  // No other spelling of the listing URL anywhere in the visible page.
+  assert.equal((LIVE_VISIBLE.match(/apps\.apple\.com/g) || []).length, 4);
 });
 
 test('live: the Apple mark SVG renders inside the nav link, the hero button and the closing CTA, each before its label', () => {
@@ -342,11 +425,11 @@ test('live: the Apple mark SVG renders inside the nav link, the hero button and 
     assert.ok(markIdx < labelIdx, `${name}: the Apple mark should render to the left of the label`);
   }
 
-  // Exactly one mark per button, three total, and nowhere else on the page
-  // (the drawer's own copy is generated separately at Python build time; see
-  // the dedicated build/assemble.py source tests below, since this build was
-  // generated with APP_STORE_URL empty and so does not carry it here).
-  assert.equal((LIVE_VISIBLE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 3);
+  // Exactly one mark per button: three in the template, plus the drawer's
+  // own (generated separately at Python build time, technique 3), and
+  // nowhere else on the page.
+  assert.equal((LIVE_REACTIVE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 3);
+  assert.equal((LIVE_VISIBLE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 4);
 });
 
 // 2026-09-25 founder feedback: the original 0.8em mark read as "super tiny"
@@ -425,9 +508,25 @@ test('live: the mobile nav-hide rule hides the App Store link too, without readi
 // build/assemble.py's drawer() is called for every page (index.html and every
 // content page) and bakes its waitlist/App Store link once, at Python build
 // time, from the module-level APP_STORE_URL constant -- see this file's own
-// header comment above for why that makes it untestable via index.html's
-// rendered output. isolate the function's own source text instead, the same
-// way techniques 1 and 2 above trust index.html's source as ground truth.
+// header comment above. Since launch every committed page carries its App
+// Store branch, asserted on the real markup first; the waitlist branch can
+// only be read from the function's own source text, the same way techniques
+// 1 and 2 above trust index.html's source as ground truth.
+const DRAWER_LIVE_LINK_RE = new RegExp(
+  `<a href="${escapeRe(APP_STORE_URL)}" style="display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;margin-top:20px;[^"]*">`
+  + '<svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px"[^>]*>[\\s\\S]*?<\\/svg><span>Download app<\\/span><\\/a>');
+
+test('live: the committed drawer on index.html and every content page links to the App Store with the 18px Apple mark and reads "Download app", with no waitlist link left', () => {
+  for (const rel of ['index.html', ...SHARED_CHROME_PAGES]) {
+    const d = drawerOf(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
+    assert.match(d, DRAWER_LIVE_LINK_RE, `${rel}: drawer App Store link missing or changed`);
+    assert.equal((d.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 1, `${rel}: expected exactly one Apple mark in the drawer`);
+    assert.equal((d.match(/Download app/g) || []).length, 1, `${rel}: expected exactly one "Download app" in the drawer`);
+    assert.doesNotMatch(d, /JOIN THE WAITLIST/, `${rel}: the drawer still offers the waitlist`);
+    assert.doesNotMatch(d, /#waitlist/, `${rel}: the drawer still links to #waitlist`);
+  }
+});
+
 const assemblePy = fs.readFileSync(path.join(ROOT, 'build', 'assemble.py'), 'utf8');
 const drawerStart = assemblePy.indexOf('def drawer(');
 const drawerEnd = assemblePy.indexOf('def footer_nav(');
@@ -449,16 +548,26 @@ test('live: build/assemble.py\'s drawer() carries the Apple mark and reads "Down
 // hunt-fallback.html ("limited beta", no App Store claims) and auth/callback
 // .html (account-agnostic, no App Store claims) each embed this same shared
 // drawer but must never show the App Store link, regardless of the site-wide
-// switch -- their own build/check.py rules forbid it outright. A regression
-// here would only surface once APP_STORE_URL actually goes live (exactly the
-// failure mode this whole file exists to catch ahead of time).
+// switch -- their own build/check.py rules forbid it outright. With
+// APP_STORE_URL live, a regression here is visible on the committed pages
+// themselves, so both the call sites and their output are checked.
 test('drawer() call sites: hunt-fallback.html and auth/callback.html opt out of the App Store link (app_store=False)', () => {
   for (const route of ['/hunt', '/auth/callback']) {
     const call = new RegExp(`drawer\\("${escapeRe(route)}",\\s*"[^"]*",\\s*app_store=False\\)`);
     assert.match(assemblePy, call, `build/assemble.py: drawer("${route}", ...) should pass app_store=False`);
   }
+  for (const rel of ['api/_lib/hunt-fallback.html', 'auth/callback.html']) {
+    const t = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    const d = drawerOf(t);
+    assert.match(d, /<a href="\/#waitlist"[^>]*>JOIN THE WAITLIST<\/a>/, `${rel}: drawer waitlist link missing`);
+    assert.doesNotMatch(d, /Download app/, `${rel}: drawer claims App Store availability`);
+    assert.doesNotMatch(t, /apps\.apple\.com/, `${rel}: App Store URL leaked in`);
+    assert.doesNotMatch(t, APPLE_MARK_RE, `${rel}: Apple mark leaked in`);
+  }
 });
 
+// With the shared switch on, only the two opt-out pages above still render
+// this branch; its source is pinned here so it stays exactly as it was.
 test('default: build/assemble.py\'s drawer() default branch stays plain "JOIN THE WAITLIST" with no Apple mark', () => {
   assert.match(drawerSrc, /\belse:/, 'drawer() has no default-branch else clause');
   // Sliced up to the function's own return statement, not to the end of
@@ -476,62 +585,95 @@ test('default: build/assemble.py\'s drawer() default branch stays plain "JOIN TH
 
 // ------------------------------------------ content pages + blog (technique 4)
 
-const SHARED_CHROME_PAGES = [
-  'how-it-works.html', 'faq.html', 'about.html', 'contact.html',
-  'accountability-challenges.html', 'blog.html',
-  'blog/best-accountability-apps-2026.html', 'blog/why-you-dont-achieve-your-goals.html',
-];
+// The launched build: every content page's shared chrome is in App Store
+// mode (build/assemble.py's NAV_PILL_LIVE and CLOSING_BLOCK_LIVE, applied by
+// apply_content_app_store_switch()), read here from the committed pages.
+const NAV_PILL_LIVE_RE = new RegExp(
+  `<a data-hz-desknav href="${escapeRe(APP_STORE_URL)}" style="display:inline-flex;align-items:center;gap:10px;border-radius:999px;font:700 11px[^>]*>`
+  + '<svg aria-hidden="true" viewBox="0 0 384 512" width="15px" height="15px"[^>]*>[\\s\\S]*?<\\/svg><span>Download app<\\/span><\\/a>');
+const CLOSING_CTA_LIVE_RE = new RegExp(
+  `<a href="${escapeRe(APP_STORE_URL)}" style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;border-radius:999px;[^>]*>`
+  + '<svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px"[^>]*>[\\s\\S]*?<\\/svg><span>Download app<\\/span><\\/a>');
+const ANDROID_LINK_RE = /<a href="\/#waitlist" style="font:600 11px[^>]*>Not on iPhone\? Get notified for Android\.<\/a>/;
 
 for (const rel of SHARED_CHROME_PAGES) {
-  test(`default: ${rel} still carries the shared waitlist nav pill and closing CTA block`, () => {
+  test(`live: ${rel} carries the shared App Store nav pill and closing block, and no waitlist chrome`, () => {
     const t = fs.readFileSync(path.join(ROOT, rel), 'utf8');
-    assert.match(t, /<a data-hz-desknav href="\/#waitlist" style="font:700 11px[^>]*>JOIN THE WAITLIST<\/a>/,
-      'desktop nav pill missing or changed');
-    assert.match(t, /Ready when you are<span style="color:#C24E1F">\.<\/span>/, 'closing heading missing or changed');
-    assert.match(t, /Join the waitlist and we'll email you when the first Hunts open\./, 'closing paragraph missing or changed');
-    assert.match(t, /<a href="\/#waitlist" style="display:inline-block[^>]*>JOIN THE WAITLIST &#8594;<\/a>/,
-      'closing button missing or changed');
-    assert.doesNotMatch(t, /Huntz is on the App Store/);
-    assert.doesNotMatch(t, /Download app/);
-    assert.doesNotMatch(t, APPLE_MARK_RE);
+    assert.match(t, NAV_PILL_LIVE_RE, 'desktop nav pill missing or changed');
+    assert.match(t, /Huntz is on the App Store<span style="color:#C24E1F">\.<\/span>/, 'closing heading missing or changed');
+    assert.match(t, CLOSING_CTA_LIVE_RE, 'closing button missing or changed');
+    // The Android fallback (the home page's relocated form) is the only
+    // thing left pointing at the waitlist, under the heading and ahead of
+    // the store button.
+    assert.match(t, ANDROID_LINK_RE, 'Android fallback link missing or changed');
+    assert.equal((t.match(/href="\/#waitlist"/g) || []).length, 1, 'expected the Android fallback to be the only /#waitlist link');
+    assert.ok(t.search(ANDROID_LINK_RE) < t.search(CLOSING_CTA_LIVE_RE), 'the Android link should come before the store button');
+    // Pre-launch chrome is gone entirely.
+    assert.doesNotMatch(t, /JOIN THE WAITLIST/);
+    assert.doesNotMatch(t, /Ready when you are/);
+    assert.doesNotMatch(t, /Join the waitlist and we'll email you when the first Hunts open\./);
+    // Nav pill, closing button and drawer: exactly three store links, three
+    // labels and three marks per page, so nothing else claims the listing.
+    assert.equal((t.match(/Download app/g) || []).length, 3);
+    assert.equal((t.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 3);
   });
 }
 
-// Each of these four pages also carries its own in-copy waitlist sentence
-// (build/pages/<slug>.json), separate from the shared chrome above.
-test('default: about.html\'s in-copy sentence still points at the waitlist', () => {
+// Each of these pages also carries its own in-copy sentence or meta
+// description (build/pages/<slug>.json, rewritten at build time by
+// CONTENT_LIVE_COPY), separate from the shared chrome above. The pre-launch
+// wording is asserted gone as well, so a page cannot carry both.
+test('live: about.html\'s in-copy sentence points at the app, and its meta description says it is available', () => {
   const t = fs.readFileSync(path.join(ROOT, 'about.html'), 'utf8');
-  assert.match(t, /Self-service tools for creators to launch Hunts independently are planned for later\. The <a href="\/#waitlist"[^>]*>waitlist<\/a> is the way in\./);
+  assert.match(t, new RegExp(`Self-service tools for creators to launch Hunts independently are planned for later\\. The <a href="${escapeRe(APP_STORE_URL)}"[^>]*>app</a> is the way in\\.`));
+  assert.doesNotMatch(t, /waitlist<\/a> is the way in\./);
+  assert.match(t, /<meta name="description" content="[^"]*Built in Oakland by Huntz, Inc\. Available now on the App Store\.">/);
+  assert.doesNotMatch(t, /Pre-launch, waitlist open/);
 });
 
-test('default: faq.html\'s "Is Huntz available right now?" answer still says "Not yet."', () => {
+test('live: faq.html\'s "Is Huntz available right now?" answer says "Yes." with a download link, and its meta description drops "waitlist"', () => {
   const t = fs.readFileSync(path.join(ROOT, 'faq.html'), 'utf8');
-  assert.match(t, /Not yet\. The first Hunts are being developed now with our first creators\. <a href="\/#waitlist"[^>]*>Join the waitlist<\/a> and we will email you when they open\./);
+  assert.match(t, new RegExp(`Yes\\. Huntz is live on the App Store, with the first Hunts developed directly with our first creators\\. <a href="${escapeRe(APP_STORE_URL)}"[^>]*>Download the app</a> to join one\\. Huntz is for adults 18 and up\\.`));
+  assert.doesNotMatch(t, /Not yet\. The first Hunts are being developed now/);
+  assert.match(t, /<meta name="description" content="[^"]*Huntz is live: the iOS app is available now on the App Store\.">/);
+  assert.doesNotMatch(t, /waitlist at huntz\.ai is open/);
 });
 
-test('default: how-it-works.html\'s in-copy sentence still points at the waitlist', () => {
+test('live: how-it-works.html\'s in-copy sentence says the first Hunts are live in the app', () => {
   const t = fs.readFileSync(path.join(ROOT, 'how-it-works.html'), 'utf8');
-  assert.match(t, /The first Hunts are being developed now, directly with our first creators\. <a href="\/#waitlist"[^>]*>Join the waitlist<\/a> and we will email you when they open\./);
+  assert.match(t, new RegExp(`The first Hunts are live in <a href="${escapeRe(APP_STORE_URL)}"[^>]*>the app</a>\\.</p>`));
+  assert.doesNotMatch(t, /Join the waitlist<\/a> and we will email you when they open\./);
 });
 
-test('default: contact.html\'s troubleshooting bullet still says "the waitlist"', () => {
+test('live: contact.html\'s troubleshooting bullet and meta description say "the app", not "the waitlist"', () => {
   const t = fs.readFileSync(path.join(ROOT, 'contact.html'), 'utf8');
-  assert.match(t, /Problems with the waitlist or this website: tell us what broke and on what device\./);
+  assert.match(t, /Problems with the app or this website: tell us what broke and on what device\./);
+  assert.doesNotMatch(t, /Problems with the waitlist or this website/);
+  assert.match(t, /<meta name="description" content="Reach the Huntz team\. Questions about accountability challenges, the app, privacy, or partnerships: team@huntz\.ai\. Based in Oakland, California\.">/);
 });
 
-// The explicit byte-for-byte guarantee (README/build/assemble.py's own
-// promise, section 1 of this feature): pinned as a hash rather than a huge
-// inline literal, so any change at all to the default-state page, however
-// small, fails this test rather than only the broader checks above.
-test('default: about.html is byte-for-byte the committed page (sha256 pin)', () => {
+test('live: accountability-challenges.html\'s meta description says the app is available', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'accountability-challenges.html'), 'utf8');
+  assert.match(t, /<meta name="description" content="[^"]*stakes and published rules\. Available now on the App Store\.">/);
+  assert.doesNotMatch(t, /Pre-launch; iOS waitlist open/);
+});
+
+// The explicit byte-for-byte guarantee, pinned as a hash rather than a huge
+// inline literal: the committed about.html is the launched page, so any
+// change at all to it, however small (a rebuild with the switch flipped
+// back, a drifted shell template), fails here rather than only in the
+// broader checks above. Update the pin deliberately when the page changes
+// on purpose.
+test('live: about.html is byte-for-byte the committed launched page (sha256 pin)', () => {
   const bytes = fs.readFileSync(path.join(ROOT, 'about.html'));
   const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  assert.equal(hash, '51749417cfb8b0985b8e058d8fe12c5fc983905dbcd4f20991b0612cf15f6109',
-    'about.html changed: the default (empty APP_STORE_URL) state must stay byte-for-byte identical to the committed page');
+  assert.equal(hash, 'cedc6c8a8028afb7b7946adb25c672ac7609f54781a48540d85aaf5da44d7d2d',
+    'about.html changed: the launched (APP_STORE_URL set) state must stay byte-for-byte identical to the committed page');
 });
 
-// ---- live state: build/assemble.py source (content pages cannot show a
-// second state from one committed build; see the header comment above) ----
+// ---- live state as build/assemble.py's source generates it: the committed
+// pages above are its output, these pin the input (see the header comment
+// above) ----
 
 // Sliced up to the next comment/assignment, not all the way to the next
 // constant, so neither slice picks up build/assemble.py's own prose (which
@@ -602,6 +744,40 @@ test('live: faq.json\'s "Is Huntz available right now?" answer becomes "Yes." wi
 test('live: how-it-works.json\'s in-copy sentence becomes "The first Hunts are live in the app."', () => {
   assert.match(assemblePy, /The first Hunts are live in /);
   assert.match(assemblePy, />the app<\/a>\.<\/p>/);
+});
+
+// --------------------------- "What happens next" rows ((S-2b), launch day)
+
+// The home page's "What happens next" card is static markup patched at
+// Python build time (build/assemble.py's (S-2b) block), not reactive, so
+// like the drawer it reads the same in both renders and is asserted on the
+// committed page: the pre-launch "iOS & Android app / COMING SOON" row
+// becomes a live iOS row plus an Android row still to come. The switch-off
+// row can only be read from the source.
+const NEXT_ROW_RE = (label, pill) => new RegExp(
+  '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba\\(22,19,14,\\.1\\)">'
+  + `<span style="[^"]*">${escapeRe(label)}</span><span style="[^"]*">${escapeRe(pill)}</span></div>`);
+
+test('live: the "What happens next" list marks the iOS app ON THE APP STORE, with Android still COMING SOON', () => {
+  const start = html.indexOf('WHAT HAPPENS NEXT');
+  assert.notEqual(start, -1, 'the "What happens next" card was not found');
+  const card = html.slice(start, html.indexOf('</section>', start));
+  const ios = card.search(NEXT_ROW_RE('iOS app', 'ON THE APP STORE'));
+  const android = card.search(NEXT_ROW_RE('Android app', 'COMING SOON'));
+  assert.notEqual(ios, -1, 'iOS row missing or changed');
+  assert.notEqual(android, -1, 'Android row missing or changed');
+  assert.ok(ios < android, 'the live iOS row should come first');
+  assert.equal((card.match(/ON THE APP STORE/g) || []).length, 1);
+  assert.equal((card.match(/COMING SOON/g) || []).length, 3, 'Android, creator-hosted hunts and private hunts stay COMING SOON');
+  assert.doesNotMatch(html, /iOS &amp; Android app/, 'the pre-launch combined row should be gone');
+});
+
+test('default: build/assemble.py keeps the single "iOS & Android app / COMING SOON" row while APP_STORE_URL is empty', () => {
+  const s2b = assemblePy.slice(assemblePy.indexOf('# (S-2b)'), assemblePy.indexOf('# (AS-1)'));
+  assert.ok(s2b.length > 0, 'build/assemble.py: could not isolate the (S-2b) block');
+  assert.match(s2b, /iOS &amp; Android app<\/span>'\n\s*f'<span \{ROW_PILL\}>COMING SOON<\/span><\/div>'\)/);
+  assert.match(s2b, /\nassert old in html/, 'the pre-launch row is asserted present in the template regardless of mode');
+  assert.match(s2b, /\nif APP_STORE_URL:\n\s+html = html\.replace\(old,/, 'the split is gated on the switch');
 });
 
 // -------------------------------------------------------------- meta tag
