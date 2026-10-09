@@ -103,12 +103,29 @@ for path, fname in PAGES.items():
         if not (ROOT / asset.lstrip("/")).exists():
             fail(f"{path}: references missing asset {asset}")
 
+    # Smart App Banner (2026-09-25): every public page, safe to ship ahead of
+    # approval since Safari only shows the banner once the id resolves.
+    if '<meta name="apple-itunes-app" content="app-id=6802558635">' not in t:
+        fail(f"{path}: apple-itunes-app Smart App Banner meta tag missing")
+
 # Home-specific: legal documents must NOT be embedded, labels must exist.
 home = (ROOT / "index.html").read_text()
+
+# Whether this build was generated with APP_STORE_URL set (2026-09-25):
+# detected once from a content page's own static nav pill rather than from
+# index.html, since index.html's Component is reactive and always carries
+# both states' copy as JS literals (see test/app-store-launch.test.js's own
+# header comment for why), while a content page carries only whichever
+# branch build/assemble.py's apply_content_app_store_switch() baked in.
+# Checks below that differ between the two states branch on this.
+APP_STORE_LIVE = 'data-hz-desknav href="https://apps.apple.com/app/id6802558635"' in (ROOT / "about.html").read_text()
 for marker in ("Governing law", "BINDING", "Arbitration Association", "hz-terms-doc"):
     if marker in home:
         fail(f"/: legal-document marker {marker!r} still embedded in home")
-if home.count('aria-label="Email address"') != 2:
+# 2 today (hero + closing CTA) plus 1 more (2026-09-25): the App Store launch
+# switch's relocated Android form, present in the source year-round behind
+# sc-if and only ever rendered instead of the hero, never alongside it.
+if home.count('aria-label="Email address"') != 3:
     fail("/: email inputs missing aria-label")
 if "Example outcome. Each Hunt's rules and verification method are shown before you join." not in home:
     fail("/: example-outcome caption missing")
@@ -186,7 +203,15 @@ for path in ("/about", "/contact", "/faq", "/how-it-works", "/accountability-cha
         if marker in body:
             fail(f"{path}: status-strip language {marker!r} still in body")
     full = (ROOT / PAGES[path]).read_text()
-    if "Join the waitlist and we'll email you when the first Hunts open." not in full:
+    # 2026-09-25: the closing CTA reads differently once APP_STORE_URL is
+    # live (build/assemble.py's CLOSING_BLOCK_LIVE), so this checks whichever
+    # sentence the current build actually shipped, not always the pre-launch one.
+    if APP_STORE_LIVE:
+        # The trailing period is styled in its own <span> (the site's usual
+        # heading treatment), so the marker stops short of it.
+        if "Huntz is on the App Store<span" not in full:
+            fail(f"{path}: launch-state closing CTA missing")
+    elif "Join the waitlist and we'll email you when the first Hunts open." not in full:
         fail(f"{path}: corrected CTA sentence missing")
 
 # ---- icons and share images ----
@@ -306,8 +331,14 @@ for path, fname in NAV_PAGES.items():
     for r in ROUTES:
         if f'<a href="{r}" data-hz-drawerlink' not in t:
             fail(f"{path}: mobile menu missing {r}")
-    if t.count("JOIN THE WAITLIST") < 1:
-        fail(f"{path}: mobile menu missing the waitlist action")
+    # 2026-09-25: index.html's Component is reactive and always keeps both
+    # states' copy as source (see APP_STORE_LIVE's own comment above), so
+    # "JOIN THE WAITLIST" is always present there regardless of build state;
+    # a content/blog page's static drawer carries only whichever one build
+    # produced, so this still has to branch for those.
+    action_text = "Download app" if APP_STORE_LIVE else "JOIN THE WAITLIST"
+    if t.count(action_text) < 1:
+        fail(f"{path}: mobile menu missing the {action_text!r} action")
     # Active route is baked in at build time: no JS, no flash, works with JS off.
     marked = re.findall(r'<a href="([^"]+)"[^>]*aria-current="page"', t)
     # An article has no navigation entry of its own, so the nav marks the
@@ -350,9 +381,11 @@ for path in ("/terms", "/privacy"):
 MC_ENDPOINT = "huntz.us18.list-manage.com/subscribe/post"
 if home.count(MC_ENDPOINT) != 1:
     fail(f"/: expected 1 Mailchimp endpoint, found {home.count(MC_ENDPOINT)}")
+# 3 since the App Store launch switch (2026-09-25) added the relocated
+# Android form; see the aria-label count above.
 n_email = home.count('type="email"')
-if n_email != 2:
-    fail(f"/: expected the 2 existing waitlist email inputs, found {n_email}")
+if n_email != 3:
+    fail(f"/: expected the 3 existing waitlist email inputs, found {n_email}")
 if "b_b7144d02c740628b3280ff55f_3ee28a30af" not in home:
     fail("/: Mailchimp honeypot field missing")
 if "INTEREST" not in home:
@@ -536,9 +569,14 @@ for route in ARTICLES:
     if 'href="/#waitlist"' not in t:
         fail(f"{route}: does not use the real waitlist CTA")
 
-    # External citations open safely and are absolute.
-    for href in re.findall(r'<a href="(https://[^"]+)"[^>]*>', t):
-        tag = re.search(r'<a href="' + re.escape(href) + r'"[^>]*>', t).group(0)
+    # External citations open safely and are absolute. Scoped to <article>,
+    # not the whole page: shared chrome (header/drawer/footer) can itself
+    # carry an absolute https link once the App Store launch switch is live
+    # (the drawer's own "Download app" link, build/assemble.py's drawer()),
+    # and that same-site, same-tab download link is not a citation.
+    article_body = t[t.index("<article>"):t.index("</article>")]
+    for href in re.findall(r'<a href="(https://[^"]+)"[^>]*>', article_body):
+        tag = re.search(r'<a href="' + re.escape(href) + r'"[^>]*>', article_body).group(0)
         if 'rel="noopener noreferrer"' not in tag or 'target="_blank"' not in tag:
             fail(f"{route}: external link {href} is not target=_blank + rel=noopener noreferrer")
 
@@ -745,6 +783,8 @@ else:
         fail("hunt-fallback.html is not noindex")
     if "<link rel=\"canonical\"" in hunt:
         fail("hunt-fallback.html declares a canonical - it is one file for many URLs")
+    if "apple-itunes-app" in hunt:
+        fail("hunt-fallback.html is a noindex utility page - it must not carry the Smart App Banner")
     if 'href="/#waitlist"' not in hunt:
         fail("hunt-fallback.html does not offer the real waitlist CTA")
     if "limited beta" not in hunt:
@@ -877,6 +917,8 @@ else:
         fail("auth/callback.html is not noindex")
     if '<link rel="canonical"' in cb:
         fail("auth/callback.html declares a canonical - it is one file for many URLs")
+    if "apple-itunes-app" in cb:
+        fail("auth/callback.html is a noindex utility page - it must not carry the Smart App Banner")
 
     # No specimen auth value may be baked into the served bytes.
     for leak in ["?code=", "&code=", "access_token", "refresh_token", "token_hash",
