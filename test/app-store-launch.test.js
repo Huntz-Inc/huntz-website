@@ -545,29 +545,31 @@ test('live: build/assemble.py\'s drawer() carries the Apple mark and reads "Down
   assert.doesNotMatch(liveBranch, /JOIN THE WAITLIST/);
 });
 
-// hunt-fallback.html ("limited beta", no App Store claims) and auth/callback
-// .html (account-agnostic, no App Store claims) each embed this same shared
-// drawer but must never show the App Store link, regardless of the site-wide
-// switch -- their own build/check.py rules forbid it outright. With
-// APP_STORE_URL live, a regression here is visible on the committed pages
-// themselves, so both the call sites and their output are checked.
-test('drawer() call sites: hunt-fallback.html and auth/callback.html opt out of the App Store link (app_store=False)', () => {
-  for (const route of ['/hunt', '/auth/callback']) {
-    const call = new RegExp(`drawer\\("${escapeRe(route)}",\\s*"[^"]*",\\s*app_store=False\\)`);
-    assert.match(assemblePy, call, `build/assemble.py: drawer("${route}", ...) should pass app_store=False`);
-  }
-  for (const rel of ['api/_lib/hunt-fallback.html', 'auth/callback.html']) {
-    const t = fs.readFileSync(path.join(ROOT, rel), 'utf8');
-    const d = drawerOf(t);
-    assert.match(d, /<a href="\/#waitlist"[^>]*>JOIN THE WAITLIST<\/a>/, `${rel}: drawer waitlist link missing`);
-    assert.doesNotMatch(d, /Download app/, `${rel}: drawer claims App Store availability`);
-    assert.doesNotMatch(t, /apps\.apple\.com/, `${rel}: App Store URL leaked in`);
-    assert.doesNotMatch(t, APPLE_MARK_RE, `${rel}: Apple mark leaked in`);
+// auth/callback.html (account-agnostic, no App Store claims) embeds this same
+// shared drawer but must never show the App Store link, regardless of the
+// site-wide switch: its own build/check.py rule forbids it outright. With
+// APP_STORE_URL live, a regression here is visible on the committed page
+// itself, so both the call site and its output are checked. (The /hunt
+// fallback opted out the same way until launch day; see its own test in the
+// launch-leftovers section below.)
+test('drawer() call site: auth/callback.html opts out of the App Store link (app_store=False)', () => {
+  assert.match(assemblePy, /drawer\("\/auth\/callback",\s*"[^"]*",\s*app_store=False\)/,
+    'build/assemble.py: drawer("/auth/callback", ...) should pass app_store=False');
+  const t = fs.readFileSync(path.join(ROOT, 'auth/callback.html'), 'utf8');
+  const d = drawerOf(t);
+  assert.match(d, /<a href="\/#waitlist"[^>]*>JOIN THE WAITLIST<\/a>/, 'drawer waitlist link missing');
+  assert.doesNotMatch(d, /Download app/, 'drawer claims App Store availability');
+  assert.doesNotMatch(t, /apps\.apple\.com/, 'App Store URL leaked in');
+  assert.doesNotMatch(t, APPLE_MARK_RE, 'Apple mark leaked in');
+  // Its own copy never claims the app is unavailable either: every branch
+  // sends the reader to the app they already have.
+  for (const stale of [/limited beta/i, /publicly available/i, /coming soon/i, /not yet available/i]) {
+    assert.doesNotMatch(t, stale, `auth/callback.html says ${stale}`);
   }
 });
 
-// With the shared switch on, only the two opt-out pages above still render
-// this branch; its source is pinned here so it stays exactly as it was.
+// With the shared switch on, only the opt-out page above still renders this
+// branch; its source is pinned here so it stays exactly as it was.
 test('default: build/assemble.py\'s drawer() default branch stays plain "JOIN THE WAITLIST" with no Apple mark', () => {
   assert.match(drawerSrc, /\belse:/, 'drawer() has no default-branch else clause');
   // Sliced up to the function's own return statement, not to the end of
@@ -667,7 +669,7 @@ test('live: accountability-challenges.html\'s meta description says the app is a
 test('live: about.html is byte-for-byte the committed launched page (sha256 pin)', () => {
   const bytes = fs.readFileSync(path.join(ROOT, 'about.html'));
   const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  assert.equal(hash, 'cedc6c8a8028afb7b7946adb25c672ac7609f54781a48540d85aaf5da44d7d2d',
+  assert.equal(hash, '29c69a6263c1de390c935c60e8d475e3049f454bfc153c44b82d15b5d46c93ed',
     'about.html changed: the launched (APP_STORE_URL set) state must stay byte-for-byte identical to the committed page');
 });
 
@@ -778,6 +780,83 @@ test('default: build/assemble.py keeps the single "iOS & Android app / COMING SO
   assert.match(s2b, /iOS &amp; Android app<\/span>'\n\s*f'<span \{ROW_PILL\}>COMING SOON<\/span><\/div>'\)/);
   assert.match(s2b, /\nassert old in html/, 'the pre-launch row is asserted present in the template regardless of mode');
   assert.match(s2b, /\nif APP_STORE_URL:\n\s+html = html\.replace\(old,/, 'the split is gated on the switch');
+});
+
+// ------------------------------------------- launch leftovers (2026-10-09)
+
+// The statements the launch switch did not reach on its own, each fixed in
+// build/assemble.py (HEAD_META, CONTENT_LIVE_COPY) the day the app went live.
+
+test('live: the home meta description says Huntz is on the App Store, in under 160 characters', () => {
+  const m = html.match(/<meta name="description" content="([^"]*)">/);
+  assert.ok(m, 'home meta description missing');
+  assert.match(m[1], /Huntz is on the App Store\.$/);
+  assert.doesNotMatch(m[1], /pre-launch/i);
+  assert.ok(m[1].length < 160, `home meta description is ${m[1].length} chars`);
+});
+
+test('live: how-it-works.html\'s meta description drops "Pre-launch"', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'how-it-works.html'), 'utf8');
+  assert.match(t, /<meta name="description" content="How a Hunt works: rules published before anyone joins, a committed stake, proof on a schedule, finishers recover their stake plus forfeit shares\.">/);
+  assert.doesNotMatch(t, /Pre-launch/);
+});
+
+test('live: about.html says Huntz is live on the App Store, in step with faq.html', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'about.html'), 'utf8');
+  assert.match(t, /Huntz is live on the App Store, with the first Hunts developed directly with selected creators for their communities\. Self-service tools/);
+  assert.doesNotMatch(t, /being developed now/);
+});
+
+test('live: the Android notify section names the Android launch, and nothing visible on the live page still says WHEN WE LAUNCH', () => {
+  // The no-spam line is always rendered; the confirmation stamp sits behind
+  // sc-if sub1 (a fresh page has not submitted), so it is read from the
+  // section's own source.
+  assert.equal((LIVE_VISIBLE.match(/WHEN ANDROID LAUNCHES/g) || []).length, 1, 'the no-spam line');
+  const sectionStart = html.indexOf('data-screen-label="Android Waitlist"');
+  assert.notEqual(sectionStart, -1, 'the Android section was not found');
+  const section = html.slice(sectionStart, html.indexOf('</section>', sectionStart));
+  assert.equal((section.match(/WHEN ANDROID LAUNCHES/g) || []).length, 2, 'the confirmation stamp and the no-spam line');
+  assert.doesNotMatch(section, /WHEN WE LAUNCH/);
+  assert.doesNotMatch(LIVE_VISIBLE, /WHEN WE LAUNCH/);
+  // The switched-off hero keeps its own wording: there "we" is unambiguous.
+  assert.match(DEFAULT_REACTIVE, /WHEN WE LAUNCH/);
+  assert.doesNotMatch(DEFAULT_REACTIVE, /WHEN ANDROID LAUNCHES/);
+});
+
+test('the hero eyebrow separates HUNTZ from the brand line with a colon, and no em dash is left in the home page\'s visible markup', () => {
+  assert.match(LIVE_VISIBLE, />HUNTZ: THE MARKETPLACE FOR ACCOUNTABILITY</);
+  assert.doesNotMatch(LIVE_VISIBLE, /HUNTZ — THE MARKETPLACE/);
+  assert.doesNotMatch(visibleMarkup(html), /—/);
+});
+
+// The /hunt invitation fallback used to opt out of the switch too ("limited
+// beta", join the waitlist). Since launch day it is the launched page: the
+// shared drawer link, the shared nav pill and its own store button all send
+// the recipient to the listing, and no pre-launch copy is left anywhere in
+// the served bytes. build/check.py enforces the same, deliberately inverted
+// from its pre-launch rule.
+const HUNT_STORE_BTN_RE = new RegExp(
+  `<a href="${escapeRe(APP_STORE_URL)}" style="display:inline-flex;align-items:center;gap:10px;margin-top:22px;border-radius:999px;[^>]*>`
+  + '<svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px"[^>]*>[\\s\\S]*?<\\/svg><span>Get Huntz on the App Store<\\/span><\\/a>');
+
+test('live: api/_lib/hunt-fallback.html sends the recipient to the App Store (drawer, nav pill and its own button) with no pre-launch copy left', () => {
+  assert.match(assemblePy, /drawer\("\/hunt",\s*"[^"]*"\)/, 'build/assemble.py: drawer("/hunt", ...) should follow the shared switch');
+  const t = fs.readFileSync(path.join(ROOT, 'api/_lib/hunt-fallback.html'), 'utf8');
+  assert.match(drawerOf(t), DRAWER_LIVE_LINK_RE, 'drawer App Store link missing or changed');
+  assert.match(t, NAV_PILL_LIVE_RE, 'desktop nav pill missing or changed');
+  assert.match(t, HUNT_STORE_BTN_RE, 'store button missing or changed');
+  assert.equal((t.match(new RegExp(escapeRe(APP_STORE_URL), 'g')) || []).length, 3, 'nav pill, drawer and the button: exactly three store links');
+  assert.equal((t.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 3);
+  assert.match(t, /open the original invitation again/, 'the reopen instruction must survive');
+  assert.match(t, /<meta name="description" content="This Hunt invitation opens in the Huntz app\. Get Huntz on the App Store, then open your invitation again on your iPhone to see the Hunt and join\.">/);
+  for (const stale of [/limited beta/i, /waitlist/i, /publicly available/i, /TestFlight/i, /&#8212;/, /—/]) {
+    assert.doesNotMatch(t, stale, `hunt-fallback.html still carries ${stale}`);
+  }
+  // The last-resort copy embedded in api/hunt.js says the same thing.
+  const js = fs.readFileSync(path.join(ROOT, 'api/hunt.js'), 'utf8');
+  assert.doesNotMatch(js, /limited beta/i);
+  assert.doesNotMatch(js, /waitlist/i);
+  assert.match(js, /Get Huntz on the App Store/);
 });
 
 // -------------------------------------------------------------- meta tag

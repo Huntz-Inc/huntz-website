@@ -16,6 +16,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = "https://www.huntz.ai"
+APP_STORE_URL = "https://apps.apple.com/app/id6802558635"
 
 PAGES = {
     "/": "index.html",
@@ -118,7 +119,7 @@ home = (ROOT / "index.html").read_text()
 # header comment for why), while a content page carries only whichever
 # branch build/assemble.py's apply_content_app_store_switch() baked in.
 # Checks below that differ between the two states branch on this.
-APP_STORE_LIVE = 'data-hz-desknav href="https://apps.apple.com/app/id6802558635"' in (ROOT / "about.html").read_text()
+APP_STORE_LIVE = f'data-hz-desknav href="{APP_STORE_URL}"' in (ROOT / "about.html").read_text()
 for marker in ("Governing law", "BINDING", "Arbitration Association", "hz-terms-doc"):
     if marker in home:
         fail(f"/: legal-document marker {marker!r} still embedded in home")
@@ -785,18 +786,24 @@ else:
         fail("hunt-fallback.html declares a canonical - it is one file for many URLs")
     if "apple-itunes-app" in hunt:
         fail("hunt-fallback.html is a noindex utility page - it must not carry the Smart App Banner")
-    if 'href="/#waitlist"' not in hunt:
-        fail("hunt-fallback.html does not offer the real waitlist CTA")
-    if "limited beta" not in hunt:
-        fail("hunt-fallback.html does not explain that Huntz is in limited beta")
+    # Launch day, 2026-10-09: the app is on the App Store, so the page sends the
+    # recipient to the listing with the home page's own store button. Until
+    # then this rule forbade any App Store wording here and required the
+    # waitlist CTA instead; it now requires the opposite, deliberately.
+    store_links = re.findall(r'<a href="' + re.escape(APP_STORE_URL) + r'"[^>]*>(.*?)</a>', hunt, re.S)
+    store_btn = [inner for inner in store_links if "Get Huntz on the App Store" in inner]
+    if len(store_btn) != 1:
+        fail("hunt-fallback.html does not carry exactly one 'Get Huntz on the App Store' button to the listing")
+    elif 'viewBox="0 0 384 512"' not in store_btn[0]:
+        fail("hunt-fallback.html's store button lacks the shared Apple mark")
     if "reopen" not in hunt.lower() and "open the original invitation" not in hunt.lower():
         fail("hunt-fallback.html does not tell the recipient to reopen the invitation after installing")
 
-    # Claims Huntz cannot make yet.
-    for phrase in ["App Store", "apps.apple.com", "TestFlight", "testflight.apple.com",
-                   "Download the app", "automatically join", "automatically added"]:
+    # Pre-launch copy that must not come back, and claims Huntz still cannot make.
+    for phrase in ["limited beta", "waitlist", "publicly available", "TestFlight",
+                   "testflight.apple.com", "automatically join", "automatically added"]:
         if phrase.lower() in hunt.lower():
-            fail(f"hunt-fallback.html claims {phrase!r}, which is not true of a limited beta")
+            fail(f"hunt-fallback.html says {phrase!r}, which is not true of the launched app")
 
     if f"<loc>{SITE}/hunt" in (ROOT / "sitemap.xml").read_text():
         fail("sitemap lists a /hunt URL - invitation pages must stay unindexed")

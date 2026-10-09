@@ -352,13 +352,16 @@ html = html.replace(STYLE_ANCHOR,
 
 # (7) No em dashes anywhere in the copy. Each one is repunctuated for its own
 # sentence rather than swapped for a single substitute, so the rhythm survives:
-# a colon where a list follows, a period where two statements were joined, the
-# site's own "·" separator in the eyebrow.
+# a colon where a list follows, a period where two statements were joined.
 #
-# The hero eyebrow deliberately keeps its em dash (founder's call, 2026-07-29):
-# a middot got lost against the page's dot-grid background at that letter
-# spacing, and the dash carries the brand line better.
+# The hero eyebrow kept its em dash from 2026-07-29 (a middot got lost against
+# the page's dot-grid background at that letter spacing) until launch day,
+# 2026-10-09, when the no-dashes rule was extended to it. A colon rather than
+# a middot, for that same legibility reason. The export carries this eyebrow
+# pattern exactly once, so one swap covers both the home page and the artifact.
 EM_DASH_COPY = [
+    ("HUNTZ — THE MARKETPLACE FOR ACCOUNTABILITY",
+     "HUNTZ: THE MARKETPLACE FOR ACCOUNTABILITY"),
     ("Finish and you get 100% back — plus a share of the stakes forfeited by everyone who quit.",
      "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit."),
     ("One proof per session — a photo, a screenshot, a check-in.",
@@ -543,11 +546,12 @@ def drawer(current: str, waitlist_href: str, *, app_store: bool = True) -> str:
     (defined with the rest of the App Store launch switch patch, in 2f below),
     so this one shared function renders the right thing on every page from a
     single build-time constant, with no parameter threaded through most call
-    sites. app_store=False overrides that for the couple of routes that must
-    never claim App Store availability regardless of the site-wide switch
-    (hunt-fallback.html's limited-beta copy, auth/callback.html's account-
-    agnostic copy - see their own build/check.py rules): they keep this link
-    reading "JOIN THE WAITLIST" even once APP_STORE_URL is live."""
+    sites. app_store=False overrides that for the one route that must never
+    claim App Store availability regardless of the site-wide switch
+    (auth/callback.html's account-agnostic copy - see its own build/check.py
+    rule): it keeps this link reading "JOIN THE WAITLIST" even once
+    APP_STORE_URL is live. The /hunt fallback opted out the same way until
+    the app launched (2026-10-09); it follows the switch now."""
     links = []
     for href, _label, head_label, _in_head, _wide in ROUTES:
         on = href == current
@@ -825,7 +829,9 @@ html = html.replace(old,
 # Android, once the App Store link is live. Reuses the hero's own form
 # state/handler (heroIdle/sub1/err1/busy1/submitHero): the two are mutually
 # exclusive, since the hero is a plain link whenever this section renders,
-# rather than adding a second, redundant set of fields.
+# rather than adding a second, redundant set of fields. Since launch day
+# (2026-10-09) its confirmation and no-spam lines say which launch they
+# mean: Android's, now that "when we launch" would read as the iOS one.
 old = '</section>\n\n<footer data-screen-label="Footer"'
 assert html.count(old) == 1, "footer anchor not found"
 android_section = '''<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><section id="waitlist" data-screen-label="Android Waitlist" style="position:relative;border-top:1px solid rgba(22,19,14,.16);padding:clamp(40px,6vh,64px) clamp(20px,5vw,64px);scroll-margin-top:110px">
@@ -839,9 +845,9 @@ android_section = '''<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ 
       </form>
     </sc-if>
     <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
-      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN WE LAUNCH.</div>
+      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN ANDROID LAUNCHES.</div>
     </sc-if>
-    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>
+    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN ANDROID LAUNCHES.</div>
   </div>
 </section></sc-if>
 
@@ -1075,7 +1081,7 @@ def breadcrumb_ld(title: str, slug: str) -> str:
 # social card keeps the brand line, which the visible hero also carries, so
 # metadata and visible copy agree in both places.
 HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</title>
-<meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is currently in pre-launch.">
+<meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is on the App Store.">
 <link rel="canonical" href="{SITE_URL}/">
 <meta property="og:site_name" content="Huntz">
 <meta property="og:title" content="Huntz · Put your money where your goals are.">
@@ -1499,8 +1505,9 @@ CONTENT_LIVE_COPY = {
             '<a href="/#waitlist" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
             'rgba(194,78,31,.4)">waitlist</a> is the way in.</p>',
             '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
-            'text-wrap:pretty">The first Hunts are being developed now, directly with selected creators for their '
-            'communities. Self-service tools for creators to launch Hunts independently are planned for later. The '
+            'text-wrap:pretty">Huntz is live on the App Store, with the first Hunts developed directly with selected '
+            'creators for their communities. Self-service tools for creators to launch Hunts independently are planned '
+            'for later. The '
             f'<a href="{APP_STORE_URL}" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid '
             'rgba(194,78,31,.4)">app</a> is the way in.</p>',
         )],
@@ -1552,6 +1559,12 @@ CONTENT_LIVE_COPY = {
         )],
     },
     "how-it-works": {
+        "meta": (
+            "How a Hunt works: rules published before anyone joins, a committed stake, proof on a schedule, "
+            "finishers recover their stake plus forfeit shares. Pre-launch.",
+            "How a Hunt works: rules published before anyone joins, a committed stake, proof on a schedule, "
+            "finishers recover their stake plus forfeit shares.",
+        ),
         "body": [(
             '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
             'text-wrap:pretty">The first Hunts are being developed now, directly with our first creators. '
@@ -1913,27 +1926,39 @@ for rel in AASA_PATHS:
 # serves verbatim whenever it cannot resolve a per-Hunt preview - API non-200,
 # unreachable, slow, or no id in the URL at all - and it is also what a
 # per-Hunt response starts from: only its <title>/description/og:* values get
-# replaced, so the rest of the page (nav, waitlist CTA, the id-display script)
+# replaced, so the rest of the page (nav, store button, the id-display script)
 # is guaranteed byte-identical in every case. ?ref=/?via= are still never read
 # server-side beyond api/hunt.js's own id/code parsing; neither ever reaches
 # this template, a request, or a log line. "/hunt" is not in ROUTES, so it
 # stays out of the nav, and not in SITEMAP_PATHS, so it stays unindexed.
 HUNT_TITLE_TAG = "Hunt invitation | Huntz"
-HUNT_DESC = ("This Hunt invitation opens in the Huntz app. Huntz is in limited beta - "
-             "join the waitlist, then reopen your invitation once you have the app.")
-hunt_page = ((BUILD / "hunt-page.html").read_text()
+HUNT_DESC = ("This Hunt invitation opens in the Huntz app. Get Huntz on the App Store, "
+             "then open your invitation again on your iPhone to see the Hunt and join.")
+# Launch day, 2026-10-09: rewritten for the launched app. The page sends the
+# recipient to the live listing (the home page's own store-button pill with
+# the 18px Apple mark; build/check.py requires the link) and keeps no
+# pre-launch variant, so it needs the switch on: with APP_STORE_URL empty
+# the build stops here rather than shipping a page that claims an
+# availability the rest of the site would deny.
+assert APP_STORE_URL, ("api/_lib/hunt-fallback.html is written for the launched app (2026-10-09): "
+                       "set APP_STORE_URL, or give build/hunt-page.html a pre-launch variant first")
+hunt_tpl = (BUILD / "hunt-page.html").read_text()
+# The desktop nav pill is the one the content pages carry, swapped by the
+# same switch (2g above); the drawer reads the switch on its own.
+assert hunt_tpl.count(NAV_PILL_OLD) == 1, "hunt page desktop nav pill not found"
+hunt_page = (hunt_tpl
+             .replace(NAV_PILL_OLD, NAV_PILL_LIVE)
              .replace("{{TITLE_TAG}}", HUNT_TITLE_TAG)
              .replace("{{DESC}}", HUNT_DESC)
              .replace("{{SITE}}", SITE_URL)
+             .replace("{{APP_STORE_URL}}", APP_STORE_URL)
+             .replace("{{APPLE_MARK}}", apple_mark(18))
              .replace("{{ICONS}}", ICON_LINKS)
              .replace("{{FONTS_HREF}}", FONTS_HREF)
              .replace("{{NAV_CSS}}", NAV_CSS)
              .replace("{{HEADER_NAV}}", header_nav("/hunt"))
              .replace("{{MENU_BUTTON}}", MENU_BUTTON)
-             # app_store=False: this page must stay "limited beta" and never
-             # claim App Store availability (build/check.py), regardless of
-             # the marketing site's own APP_STORE_URL switch.
-             .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist", app_store=False))
+             .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist"))
              .replace("{{FOOTER_NAV}}", footer_nav("/hunt"))
              .replace("{{NAV_JS}}", NAV_JS))
 assert "{{" not in hunt_page, "unfilled placeholder in hunt-fallback.html"

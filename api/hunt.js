@@ -19,7 +19,7 @@
 // unreachable, or a lookup slower than ~1.5s), this serves the exact same
 // bytes the old static hunt.html served for every invitation. Only a
 // confirmed 200 with a usable body changes anything, and even then only the
-// <title>/description/og:* meta: the body, nav, waitlist CTA and the
+// <title>/description/og:* meta: the body, nav, store button and the
 // id-display script are byte-identical to the fallback in every case (see
 // build/assemble.py's HUNT_FALLBACK_PATH comment and build/check.py).
 //
@@ -52,19 +52,19 @@ const FALLBACK_PATH = path.join(process.cwd(), 'api', '_lib', 'hunt-fallback.htm
 // api/_lib/hunt-fallback.html bundled (see vercel.json's
 // functions["api/hunt.js"].includeFiles). Belt and suspenders, never
 // expected in production. Kept honest against the same non-negotiables
-// build/check.py asserts on the real file: noindex, no canonical, the real
-// waitlist CTA, no claim Huntz cannot make in a limited beta.
+// build/check.py asserts on the real file: noindex, no canonical, the App
+// Store link, no claim Huntz cannot make.
 const HARD_FALLBACK_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hunt invitation | Huntz</title>
-<meta name="description" content="This Hunt invitation opens in the Huntz app. Huntz is in limited beta - join the waitlist, then reopen your invitation once you have the app.">
+<meta name="description" content="This Hunt invitation opens in the Huntz app. Get Huntz on the App Store, then open your invitation again on your iPhone to see the Hunt and join.">
 <meta name="robots" content="noindex">
 <meta property="og:site_name" content="Huntz">
 <meta property="og:title" content="Hunt invitation | Huntz">
-<meta property="og:description" content="This Hunt invitation opens in the Huntz app. Huntz is in limited beta - join the waitlist, then reopen your invitation once you have the app.">
+<meta property="og:description" content="This Hunt invitation opens in the Huntz app. Get Huntz on the App Store, then open your invitation again on your iPhone to see the Hunt and join.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${SITE_URL}/">
 <meta property="og:image" content="${SITE_URL}/og-image.jpg">
@@ -72,8 +72,8 @@ const HARD_FALLBACK_HTML = `<!DOCTYPE html>
 </head>
 <body>
 <h1>You&#8217;ve been invited to a Hunt.</h1>
-<p>Huntz is in limited beta, so this invitation can&#8217;t open on the web yet.</p>
-<p><a href="/#waitlist">Join the waitlist</a></p>
+<p>Hunts run in the Huntz app, so this invitation opens there rather than on the web.</p>
+<p><a href="https://apps.apple.com/app/id6802558635">Get Huntz on the App Store</a>, then open this link again on your iPhone.</p>
 </body>
 </html>
 `;
