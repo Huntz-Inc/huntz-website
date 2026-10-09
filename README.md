@@ -90,6 +90,13 @@ class field (sitting next to `WAITLIST_ENDPOINT`) and the shared drawer
 (`build/assemble.py`'s `drawer()`) directly, so one rebuild keeps both in
 sync.
 
+*(Update, 2026-10-09)* The switch is on. `APP_STORE_URL` has pointed at the
+live listing since launch day, so the committed pages are the launched site
+and the steps below are the record of how it was flipped. The `/hunt`
+invitation fallback (`build/hunt-page.html`) was rewritten for the launched app
+the same day and keeps no pre-launch variant: `build/assemble.py` stops if it is
+run with the switch off.
+
 On approval day:
 
 1. In `build/assemble.py`'s App Store launch switch patch, set
