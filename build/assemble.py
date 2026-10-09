@@ -707,8 +707,9 @@ html = html.replace(old, old + "\n    " + MENU_BUTTON)
 # badge instead of a pill (founder revision, 2026-10-09: see the badge block
 # below); the five interest plates go inert (no click handler, no button
 # role, no aria-label); and the waitlist form survives as a relocated,
-# retitled Android fallback. See README.md, "App Store launch switch", for
-# the day-of-approval steps.
+# retitled Android fallback, directly under the closing badge, with a small
+# link to it under the hero's badge. See README.md, "App Store launch
+# switch", for the day-of-approval steps.
 #
 # This is the one value to change on launch day: it feeds the Component
 # class field directly (AS-5 below) and drawer() reads it too, so both
@@ -868,9 +869,22 @@ old = ('<div id="waitlist" style="animation:hzRise .7s ease .74s both;scroll-mar
 assert html.count(old) == 1, "hero waitlist block not found"
 # The block's own entrance (one rise, like every other hero element) is the
 # page's, not the badge's: the badge has no motion of its own.
+#
+# Under it, founder revision 2026-10-09: a small text link, "Not on iPhone? Get
+# notified for Android", in the muted colour and the size of the hero sub,
+# which scrolls to the Android form (#waitlist, now under the closing badge;
+# FOCUS_JS's delegated handler takes any a[href="#waitlist"]). It rises in a
+# beat after the badge, where the old "no spam" note did, and sits 22px below
+# it: Apple wants a quarter of the badge height (12px) kept clear.
 hero_appstore = (
     '<div style="animation:hzRise .7s ease .74s both">\n'
     '        ' + APP_STORE_BADGE_LINK + '\n'
+    '      </div>\n'
+    '      <div style="margin-top:22px;animation:hzRise .7s ease .84s both">\n'
+    '        <a href="#waitlist" data-android-link="" '
+    f'style="font:500 clamp(15px,1.4vw,18px)/1.5 {SANS};color:{MUTED};text-decoration:underline;'
+    'text-underline-offset:3px;text-decoration-thickness:1px" style-hover="color:#C24E1F">'
+    'Not on iPhone? Get notified for Android <span aria-hidden="true">&#8594;</span></a>\n'
     '      </div>'
 )
 html = html.replace(old,
@@ -894,34 +908,44 @@ html = html.replace(old,
     + '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + fin_appstore + '</sc-if>'
     + fin_close)
 
-# (AS-4) New section: the waitlist survives here, relocated and retitled for
-# Android, once the App Store link is live. Reuses the hero's own form
-# state/handler (heroIdle/sub1/err1/busy1/submitHero): the two are mutually
-# exclusive, since the hero is a plain link whenever this section renders,
-# rather than adding a second, redundant set of fields. Since launch day
-# (2026-10-09) its confirmation and no-spam lines say which launch they
-# mean: Android's, now that "when we launch" would read as the iOS one.
-old = '</section>\n\n<footer data-screen-label="Footer"'
-assert html.count(old) == 1, "footer anchor not found"
-android_section = '''<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><section id="waitlist" data-screen-label="Android Waitlist" style="position:relative;border-top:1px solid rgba(22,19,14,.16);padding:clamp(40px,6vh,64px) clamp(20px,5vw,64px);scroll-margin-top:110px">
-  <div style="max-width:1220px;margin:0 auto">
-    <h2 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h2>
-    <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
-      <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
-        <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
-        <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ notifyBtn }}</button>
-        <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>
-      </form>
-    </sc-if>
-    <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
-      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN ANDROID LAUNCHES.</div>
-    </sc-if>
-    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN ANDROID LAUNCHES.</div>
-  </div>
-</section></sc-if>
-
-'''
-html = html.replace(old, '</section>\n\n' + android_section + '<footer data-screen-label="Footer"')
+# (AS-4) The waitlist survives here, relocated and retitled for Android, once
+# the App Store link is live. Reuses the hero's own form state/handler
+# (heroIdle/sub1/err1/busy1/submitHero): the two are mutually exclusive, since
+# the hero is a plain link whenever this form renders, rather than adding a
+# second, redundant set of fields. Since launch day (2026-10-09) its
+# confirmation and no-spam lines say which launch they mean: Android's, now
+# that "when we launch" would read as the iOS one.
+#
+# Founder revision, the same day: the form no longer has a section of its own
+# between the closing section and the footer. It sits directly under the
+# closing section's badge, inside #fin-form, so it rises in with the badge
+# (and FOCUS_JS shows it at once when a link brings the visitor straight
+# here). The form, its id (the one #waitlist) and its Mailchimp wiring are
+# exactly what they were; only the wrapper (a div where the section was) and
+# the heading level (an h3 under the closing headline's h2) changed. The
+# hero's small link to it is in (AS-2).
+ANDROID_FORM = '''<div id="waitlist" data-screen-label="Android Waitlist" style="margin-top:clamp(32px,5vh,48px);max-width:640px;scroll-margin-top:110px">
+            <h3 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h3>
+            <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
+              <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
+                <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
+                <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ notifyBtn }}</button>
+                <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>
+              </form>
+            </sc-if>
+            <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN ANDROID LAUNCHES.</div>
+            </sc-if>
+            <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN ANDROID LAUNCHES.</div>
+          </div>'''
+old = APP_STORE_BADGE_LINK + '\n        </sc-if></div>'
+assert html.count(old) == 1, "closing badge not found at the end of #fin-form"
+html = html.replace(old, APP_STORE_BADGE_LINK + '\n          ' + ANDROID_FORM + '\n        </sc-if></div>')
+# The one #waitlist in the live DOM is this form (the hero's own is the switched-off
+# branch), and no section of its own sits between the closing section and the footer.
+assert html.count('id="waitlist"') == 2, "expected the hero's default form and this one"
+assert '<section id="waitlist"' not in html
+assert html.count('</section>\n\n<footer data-screen-label="Footer"') == 1, "footer anchor not found"
 
 # (AS-5) Component class: the launch-switch constant itself, alongside
 # WAITLIST_ENDPOINT/WAITLIST_HONEYPOT so all three "flip this to go live"
@@ -1481,6 +1505,11 @@ FOCUS_JS = """<script>
   function focusWaitlist() {
     var w = document.getElementById('waitlist');
     if (!w) return;
+    // The Android form sits inside the closing section's reveal (#fin-form fades
+    // in on a stagger once that section scrolls into view). Arriving by link,
+    // show it at once, so there is something to land on and the caret is visible.
+    var reveal = w.closest('#fin-form');
+    if (reveal) { reveal.style.transition = 'none'; reveal.style.opacity = '1'; reveal.style.transform = 'none'; }
     var r = w.getBoundingClientRect();
     glideTo(r.top + pageYOffset - Math.max(72, (innerHeight - r.height) / 2));
     // preventScroll so the caret landing in the field does not fight the tween.

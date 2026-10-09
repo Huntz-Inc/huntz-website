@@ -401,11 +401,16 @@ test('live: the hero renders Apple\'s badge as a plain App Store link, not a for
   assert.doesNotMatch(heroToPhone, /NO SPAM/, 'the email-specific "no spam" note should not survive next to a download link');
 });
 
-test('live: the closing CTA renders Apple\'s badge as a plain App Store link, not a form', () => {
+test('live: the closing CTA renders Apple\'s badge as a plain App Store link, and the only form under it is the Android notify form', () => {
   const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf("WHAT'S LIVE"));
   assert.match(ctaSection, BADGE_LINK_RE);
   assert.doesNotMatch(ctaSection, /Download app/, 'the pill label is gone from the closing CTA');
-  assert.doesNotMatch(ctaSection, /<form/);
+  // The badge is not itself a form, and the closing form of the pre-launch
+  // page is not rendered: the one form here is the Android one, after the badge.
+  assert.equal((ctaSection.match(/<form/g) || []).length, 1);
+  const afterBadge = ctaSection.slice(ctaSection.search(BADGE_LINK_RE));
+  assert.match(afterBadge, /<form onSubmit="fn"[\s\S]*?>NOTIFY ME<\/button>/);
+  assert.doesNotMatch(ctaSection, /JOIN THE WAITLIST|JOINING/);
 });
 
 test('live: id="fin-form" still exists (the scroll-reveal animation keys off it in both modes)', () => {
@@ -462,21 +467,27 @@ test('live: the Apple mark is 15px in the nav link, with a 10px gap', () => {
   assert.match(desktopNav, /gap:10px/, 'nav: expected a 10px icon-to-label gap');
 });
 
-test('live: the waitlist form survives exactly once, relocated to the bottom and retitled for Android, with the same Mailchimp endpoint', () => {
+test('live: the waitlist form survives exactly once, relocated under the closing badge and retitled for Android, with the same Mailchimp endpoint', () => {
   assert.equal((LIVE_VISIBLE.match(/id="waitlist"/g) || []).length, 1, 'exactly one #waitlist in the live DOM');
-  assert.equal((LIVE_VISIBLE.match(/Not on iPhone\? Get notified for Android/g) || []).length, 1);
+  // Two mentions: the form's own heading, and the small link to it under the hero badge
+  // (test/android-notify.test.js).
+  assert.equal((LIVE_VISIBLE.match(/Not on iPhone\? Get notified for Android/g) || []).length, 2);
   assert.equal((LIVE_VISIBLE.match(/NOTIFY ME/g) || []).length, 1);
 
-  const androidSectionStart = LIVE_VISIBLE.indexOf('Not on iPhone');
-  const androidSection = LIVE_VISIBLE.slice(LIVE_VISIBLE.lastIndexOf('<section', androidSectionStart));
-  assert.match(androidSection, /id="waitlist"/, 'the relocated section carries the #waitlist id');
-  assert.match(androidSection, /<input type="email"/);
-  assert.match(androidSection, />NOTIFY ME</);
+  const androidStart = LIVE_VISIBLE.indexOf('id="waitlist"');
+  const androidBlock = LIVE_VISIBLE.slice(androidStart, LIVE_VISIBLE.indexOf("WHAT'S LIVE", androidStart));
+  assert.match(androidBlock, /^id="waitlist" data-screen-label="Android Waitlist"/, 'the relocated block carries the #waitlist id');
+  assert.match(androidBlock, /<input type="email"/);
+  assert.match(androidBlock, />NOTIFY ME</);
 
-  // It is physically the last section before the footer.
-  const footerIdx = LIVE_VISIBLE.indexOf('<footer');
-  assert.ok(androidSectionStart < footerIdx && footerIdx - androidSectionStart < 2000,
-    'the Android waitlist section should sit immediately before the footer');
+  // It sits directly under the closing section's badge, inside the closing section,
+  // so it is ahead of the footer (and of its brand block) and no section of its own
+  // sits between the two any more.
+  const badgeIdx = LIVE_VISIBLE.search(new RegExp(BADGE_LINK_RE.source + '\\s*<div id="waitlist"'));
+  assert.notEqual(badgeIdx, -1, 'the Android block should follow the closing badge directly');
+  assert.ok(badgeIdx < androidStart && androidStart < LIVE_VISIBLE.indexOf('<footer'));
+  assert.doesNotMatch(html, /<section id="waitlist"/);
+  assert.match(html, /<\/section>\n\n<footer data-screen-label="Footer"/, 'the footer follows the closing section directly');
 
   // Same backend as before: no second Mailchimp integration was introduced.
   // (The generic "list-manage.com/subscribe/post?u=..." pattern also matches
@@ -820,8 +831,8 @@ test('live: the Android notify section names the Android launch, and nothing vis
   // section's own source.
   assert.equal((LIVE_VISIBLE.match(/WHEN ANDROID LAUNCHES/g) || []).length, 1, 'the no-spam line');
   const sectionStart = html.indexOf('data-screen-label="Android Waitlist"');
-  assert.notEqual(sectionStart, -1, 'the Android section was not found');
-  const section = html.slice(sectionStart, html.indexOf('</section>', sectionStart));
+  assert.notEqual(sectionStart, -1, 'the Android block was not found');
+  const section = html.slice(sectionStart, html.indexOf("WHAT'S LIVE", sectionStart));
   assert.equal((section.match(/WHEN ANDROID LAUNCHES/g) || []).length, 2, 'the confirmation stamp and the no-spam line');
   assert.doesNotMatch(section, /WHEN WE LAUNCH/);
   assert.doesNotMatch(LIVE_VISIBLE, /WHEN WE LAUNCH/);

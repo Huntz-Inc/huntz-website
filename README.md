@@ -126,9 +126,13 @@ unchanged); the hero and the closing CTA carry Apple's own "Download on the App
 Store" badge, linked to the same URL (see "The App Store badge" below); the
 plates under **Upcoming** link to the live Hunts in either state (since the
 launch copy mix, 2026-10-09); and the waitlist form survives as a fallback,
-relocated to the bottom of the page and retitled "Not on iPhone? Get notified
-for Android.", with its button reading "NOTIFY ME" and posting to the same
-Mailchimp audience and honeypot as before.
+relocated directly under the closing section's badge (it used to be a section
+of its own above the footer) and retitled "Not on iPhone? Get notified for
+Android.", with its button reading "NOTIFY ME" and posting to the same
+Mailchimp audience and honeypot as before. A small muted link under the hero's
+badge, "Not on iPhone? Get notified for Android", scrolls to it (`#waitlist`,
+still the one anchor; arriving by link shows the form at once instead of
+waiting for the closing section's fade-in).
 
 ### The App Store badge
 

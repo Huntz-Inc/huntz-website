@@ -180,6 +180,12 @@ badge_css = re.search(r"\[data-appstore-badge\] img\{display:block;height:(\d+)p
                       r"@media \(max-width:640px\)\{\[data-appstore-badge\] img\{height:(\d+)px\}\}", home)
 if not badge_css or min(int(badge_css.group(1)), int(badge_css.group(2))) < 40:
     fail("/: the App Store badge is under Apple's 40px minimum height (or its sizing rules are missing)")
+# The Android notify form sits directly under the closing badge (no section of its
+# own above the footer), and a small link under the hero's badge points at it.
+if home.count("data-android-link") != 1 or '<section id="waitlist"' in home:
+    fail("/: the Android notify form's hero link is missing, or the form is back in a section of its own")
+if not re.search(r'data-appstore-badge="" aria-label="Download on the App Store"><img [^>]*></a>\s*<div id="waitlist"', home):
+    fail("/: the Android notify form does not follow the closing section's badge directly")
 
 # Content pages: no em dashes in marketing copy (legal keeps counsel's own).
 # The contact form's success line is the founder's exact wording and is the

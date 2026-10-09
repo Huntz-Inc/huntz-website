@@ -136,6 +136,9 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
       <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; animation: hzRise .7s ease .84s both; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div></sc-if>
       <sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><div style="animation:hzRise .7s ease .74s both">
         <a href="{{ appStoreUrl }}" data-appstore-badge="" aria-label="Download on the App Store"><img src="/assets/app-store-badge-black.a26fc5b3.svg" alt="Download on the App Store" width="144" height="48"></a>
+      </div>
+      <div style="margin-top:22px;animation:hzRise .7s ease .84s both">
+        <a href="#waitlist" data-android-link="" style="font:500 clamp(15px,1.4vw,18px)/1.5 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px" style-hover="color:#C24E1F">Not on iPhone? Get notified for Android <span aria-hidden="true">&#8594;</span></a>
       </div></sc-if>
     </div>
     <div style="flex:0 1 330px;display:flex;justify-content:center;animation:hzRise .9s ease .5s both">
@@ -509,6 +512,20 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
           <div style="margin-top:16px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759">NO SPAM · ONE EMAIL WHEN WE LAUNCH</div>
         </sc-if><sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">
           <a href="{{ appStoreUrl }}" data-appstore-badge="" aria-label="Download on the App Store"><img src="/assets/app-store-badge-black.a26fc5b3.svg" alt="Download on the App Store" width="144" height="48"></a>
+          <div id="waitlist" data-screen-label="Android Waitlist" style="margin-top:clamp(32px,5vh,48px);max-width:640px;scroll-margin-top:110px">
+            <h3 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h3>
+            <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
+              <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
+                <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
+                <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ notifyBtn }}</button>
+                <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>
+              </form>
+            </sc-if>
+            <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN ANDROID LAUNCHES.</div>
+            </sc-if>
+            <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN ANDROID LAUNCHES.</div>
+          </div>
         </sc-if></div>
       </div>
       <div data-plate="" style="flex:0 1 380px;min-width:280px;padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));box-shadow:0 1px 0 rgba(255,255,255,.85) inset,0 26px 44px -34px rgba(22,19,14,.6)">
@@ -531,23 +548,6 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
     </div>
   </div>
 </section>
-
-<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><section id="waitlist" data-screen-label="Android Waitlist" style="position:relative;border-top:1px solid rgba(22,19,14,.16);padding:clamp(40px,6vh,64px) clamp(20px,5vw,64px);scroll-margin-top:110px">
-  <div style="max-width:1220px;margin:0 auto">
-    <h2 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h2>
-    <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
-      <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
-        <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
-        <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ notifyBtn }}</button>
-        <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>
-      </form>
-    </sc-if>
-    <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
-      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN ANDROID LAUNCHES.</div>
-    </sc-if>
-    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN ANDROID LAUNCHES.</div>
-  </div>
-</section></sc-if>
 
 <footer data-screen-label="Footer" style="border-top:1px solid rgba(22,19,14,.16);padding:clamp(34px,5vh,52px) clamp(20px,5vw,64px) 34px">
   <div style="max-width:1220px;margin:0 auto">
@@ -1033,6 +1033,11 @@ class Component extends DCLogic {
   function focusWaitlist() {
     var w = document.getElementById('waitlist');
     if (!w) return;
+    // The Android form sits inside the closing section's reveal (#fin-form fades
+    // in on a stagger once that section scrolls into view). Arriving by link,
+    // show it at once, so there is something to land on and the caret is visible.
+    var reveal = w.closest('#fin-form');
+    if (reveal) { reveal.style.transition = 'none'; reveal.style.opacity = '1'; reveal.style.transform = 'none'; }
     var r = w.getBoundingClientRect();
     glideTo(r.top + pageYOffset - Math.max(72, (innerHeight - r.height) / 2));
     // preventScroll so the caret landing in the field does not fight the tween.
