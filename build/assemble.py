@@ -352,13 +352,16 @@ html = html.replace(STYLE_ANCHOR,
 
 # (7) No em dashes anywhere in the copy. Each one is repunctuated for its own
 # sentence rather than swapped for a single substitute, so the rhythm survives:
-# a colon where a list follows, a period where two statements were joined, the
-# site's own "·" separator in the eyebrow.
+# a colon where a list follows, a period where two statements were joined.
 #
-# The hero eyebrow deliberately keeps its em dash (founder's call, 2026-07-29):
-# a middot got lost against the page's dot-grid background at that letter
-# spacing, and the dash carries the brand line better.
+# The hero eyebrow kept its em dash from 2026-07-29 (a middot got lost against
+# the page's dot-grid background at that letter spacing) until launch day,
+# 2026-10-09, when the no-dashes rule was extended to it. A colon rather than
+# a middot, for that same legibility reason. The export carries this eyebrow
+# pattern exactly once, so one swap covers both the home page and the artifact.
 EM_DASH_COPY = [
+    ("HUNTZ — THE MARKETPLACE FOR ACCOUNTABILITY",
+     "HUNTZ: THE MARKETPLACE FOR ACCOUNTABILITY"),
     ("Finish and you get 100% back — plus a share of the stakes forfeited by everyone who quit.",
      "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit."),
     ("One proof per session — a photo, a screenshot, a check-in.",

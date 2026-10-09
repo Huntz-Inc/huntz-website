@@ -821,6 +821,12 @@ test('live: the Android notify section names the Android launch, and nothing vis
   assert.doesNotMatch(DEFAULT_REACTIVE, /WHEN ANDROID LAUNCHES/);
 });
 
+test('the hero eyebrow separates HUNTZ from the brand line with a colon, and no em dash is left in the home page\'s visible markup', () => {
+  assert.match(LIVE_VISIBLE, />HUNTZ: THE MARKETPLACE FOR ACCOUNTABILITY</);
+  assert.doesNotMatch(LIVE_VISIBLE, /HUNTZ — THE MARKETPLACE/);
+  assert.doesNotMatch(visibleMarkup(html), /—/);
+});
+
 // -------------------------------------------------------------- meta tag
 
 const APPLE_ITUNES_META = '<meta name="apple-itunes-app" content="app-id=6802558635">';
