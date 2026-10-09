@@ -70,9 +70,11 @@ Behaviour worth knowing:
 - Invalid addresses are rejected client-side, then Mailchimp's own message
   (e.g. "This email address looks fake or invalid") is shown inline.
 - Someone already on the list is treated as success, not an error.
-- Clicking a card in **Upcoming** attaches that Hunt's name and submits it as
-  the `INTEREST` merge field. Capturing it requires an `INTEREST` text field on
-  the Mailchimp audience; without one, Mailchimp silently drops the value.
+- The cards under **Upcoming** are the Hunts open on Discover (hard-coded,
+  dated, in `build/assemble.py`'s `LIVE_HUNTS`; a live feed is a later change)
+  and each links to its `/hunt/<id>` universal link. They used to attach an
+  interest to the waitlist signup; the `INTEREST` merge field is still sent,
+  empty, so the Mailchimp audience needs no change either way.
 - The audience is single opt-in, so Mailchimp sends nothing on signup. The page
   shows its own confirmation. A welcome email needs a Mailchimp automation, and
   is best set up *after* sending-domain authentication so it comes from
@@ -121,8 +123,8 @@ With `APP_STORE_URL` set: the nav link, the hero button and the closing CTA
 become pill-shaped "Download app" links to that URL, each with a small inline
 Apple mark ahead of the label (a single SVG path, no external asset or badge
 artwork; the site's existing button font, colours and size are otherwise
-unchanged); the five interest plates under **Upcoming** stop being click
-targets (their look and copy are unchanged); and the waitlist form survives
+unchanged); the plates under **Upcoming** link to the live Hunts in either
+state (since the launch copy mix, 2026-10-09); and the waitlist form survives
 as a fallback, relocated to the bottom of the page and retitled "Not on
 iPhone? Get notified for Android.", with its button reading "NOTIFY ME" and
 posting to the same Mailchimp audience and honeypot as before.
@@ -268,8 +270,14 @@ Changes currently applied on top of the design:
 - Terms of Service and Privacy Policy are added as hash-routed full pages
   (`#/terms`, `#/privacy`) — **drafts, pending legal review**.
 - Social/OG metadata, a favicon, and the share card.
-- Upcoming cards became explicit "I want this hunt" actions with a removable
-  chip, so a curious click cannot silently record an interest.
+- Upcoming cards list the Hunts open on Discover (`LIVE_HUNTS`, dated) and
+  each "I want this hunt" is a link to that Hunt's universal link.
+- Launch copy mix (2026-10-09, founder-approved): the hero reads "You don't
+  need motivation. You need consequences." with the $20 to $500 stake, a
+  "Sound familiar?" block follows the marquee strip, the closing section reads
+  "Become someone who finishes." over "Quitting just got expensive.", and the
+  closing card is "What's live" (iOS app, creator-hosted and private Hunts
+  live; Android coming soon). No em or en dashes, no exclamation marks.
 - Keyboard support and focus rings on the FAQ and cards; muted grey darkened
   for contrast.
 - Below 641px the bar is logo + menu button, and a modal sheet carries every
