@@ -141,6 +141,23 @@ for phrase in ("48H", "48h", "48 hours", "48-hour", "48 hour"):
         fail(f"/: unsupported 48-hour settlement promise {phrase!r} outside the example card")
 if "IN PRE-LAUNCH" in home:
     fail("/: removed hero pre-launch disclaimer has reappeared")
+# Launch copy mix (2026-10-09, founder-approved; build/assemble.py 2h): the
+# home page's visible copy keeps to the founder's rules (no em or en dash, no
+# exclamation mark, the minimum stake is $20), and its four new pieces are on
+# the page. test/launch-copy.test.js pins the wording; this keeps a Python-only
+# build run honest too.
+home_text = re.sub(r"<[^>]+>", " ", re.sub(r"<(script|style)[^>]*>.*?</\1>", "", home, flags=re.S))
+for ch, what in (("—", "em dash"), ("–", "en dash"), ("!", "exclamation mark")):
+    if ch in home_text:
+        fail(f"/: {what} in the home page's visible copy")
+for stale in ("FROM $50", "Stake $50", "Put your money</span>", "Hunt&nbsp;", "READY WHEN YOU ARE", "WHAT HAPPENS NEXT"):
+    if stale in home:
+        fail(f"/: pre-launch copy {stale!r} is back on the home page")
+for needle in (">motivation.</span>", ">consequences<span", 'id="familiar"', "Sound familiar?",
+               "nothing-to-lose problem.", 'data-hunt-link="" href="https://www.huntz.ai/hunt/',
+               "finishes<span", 'id="fin-sub"', "Quitting just got expensive.", "WHAT'S LIVE"):
+    if needle not in home:
+        fail(f"/: launch copy {needle!r} missing from the home page")
 for link in ("/how-it-works", "/accountability-challenges", "/faq", "/about", "/contact", "/terms", "/privacy"):
     if f'href="{link}"' not in home:
         fail(f"/: footer link to {link} missing")

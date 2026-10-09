@@ -7,7 +7,7 @@
 <link rel="canonical" href="https://www.huntz.ai/">
 <meta property="og:site_name" content="Huntz">
 <meta property="og:title" content="Huntz · Put your money where your goals are.">
-<meta property="og:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back, plus a share of the stakes forfeited by everyone who quit.">
+<meta property="og:description" content="Stake $20 to $500 of your own money on your goal. Post proof every day. Finish and you get all of it back, plus a cut of what the quitters lost.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.huntz.ai/">
 <meta property="og:image" content="https://www.huntz.ai/og-image.jpg">
@@ -15,7 +15,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Huntz · Put your money where your goals are.">
-<meta name="twitter:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back.">
+<meta name="twitter:description" content="Stake $20 to $500 on your goal. Post proof every day. Finish and you get all of it back.">
 <meta name="twitter:image" content="https://www.huntz.ai/og-image.jpg">
 <meta name="apple-itunes-app" content="app-id=6802558635">
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
@@ -71,6 +71,7 @@ body{margin:0;font-family:'Figtree',Arial,Helvetica,sans-serif;background:#F1EBE
 html{overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none}
 body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%)}
 #ch-rail{overscroll-behavior-x:contain}
+[data-plate] a[data-hunt-link]::after{content:'';position:absolute;inset:0}
 a{color:#16130E}a:hover{color:#C24E1F}
 ::selection{background:#C24E1F;color:#F3EFE7}
 input::placeholder{color:#6E6759}
@@ -107,15 +108,16 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
     <div style="flex:1 1 540px;min-width:0">
       <div style="font: 600 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .2em; color: #6E6759; margin-bottom: 26px; animation: hzRise .7s ease .02s both; font-family:'Figtree',Arial,Helvetica,sans-serif; font-size: 15px">HUNTZ: THE MARKETPLACE FOR ACCOUNTABILITY</div>
       <h1 style="margin:0 0 28px;font:600 clamp(46px,6.8vw,104px)/1.05 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">
-        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.08s both">Put</span>
-        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.16s both">your</span>
-        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.24s both">money</span>
-        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.32s both">where</span>
-        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.40s both">your</span>
-        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.48s both">goals</span>
-        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.56s both;font-style:italic">are<span style="color:#C24E1F;font-style:normal">.</span></span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.08s both">You</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.16s both">don't</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.24s both">need</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.32s both">motivation.</span>
+        <br>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.40s both">You</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.48s both">need</span>
+        <span style="display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) 0.56s both;font-style:italic">consequences<span style="color:#C24E1F;font-style:normal">.</span></span>
       </h1>
-      <p style="margin: 0 0 34px; max-width: 520px; font: 400 clamp(15px,1.4vw,18px)/1.6 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; animation: hzRise .7s ease .62s both; font-family:'Figtree',Arial,Helvetica,sans-serif">Stake $50–$500 of your own money on your own goal. Post proof every day. Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.</p>
+      <p style="margin: 0 0 34px; max-width: 520px; font: 400 clamp(15px,1.4vw,18px)/1.6 'Figtree',Arial,Helvetica,sans-serif; color: #4A453C; text-wrap: pretty; animation: hzRise .7s ease .62s both; font-family:'Figtree',Arial,Helvetica,sans-serif">Stake $20 to $500 of your own money on your goal. Post proof every day. Finish and you get all of it back, plus a cut of what the quitters lost.</p>
       <sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}"><div id="waitlist" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">
         <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
           <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
@@ -219,6 +221,18 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
         <span style="width:8px;height:8px;border-radius:50%;background:#C24E1F;flex:none"></span>
       </div>
     </sc-for>
+  </div>
+</section>
+
+<section id="familiar" data-screen-label="Sound familiar" style="position:relative;padding:clamp(64px,9vh,104px) clamp(20px,5vw,64px) clamp(8px,2vh,24px)">
+  <div style="max-width:1220px;margin:0 auto">
+    <h2 style="margin:0 0 clamp(22px,3.5vh,34px);font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759">Sound familiar?</h2>
+    <div style="display:flex;flex-direction:column;gap:clamp(14px,2.4vh,24px)">
+      <p style="margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E">Third gym membership. Zero workouts.</p>
+      <p style="margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E">You said Monday. It is now October.</p>
+      <p style="margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E">Your camera roll is full of day-one screenshots. There is no day two.</p>
+      <p style="margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#C24E1F">You don't have a discipline problem. You have a nothing-to-lose problem.</p>
+    </div>
   </div>
 </section>
 
@@ -357,74 +371,52 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
       </div>
     </div>
     <div id="ch-rail" style="display:flex;gap:clamp(12px,1.6vw,20px);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px 0 20px;scrollbar-width:none">
-        <div data-plate="" onClick="{{ pick0 }}" onKeyDown="{{ pickkey0 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria0 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div data-plate="" style="position:relative;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
           <div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
               <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 01</span>
               <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">01</span>
             </div>
-            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Apply to jobs</div>
+            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">45-Minute Exercise Streak</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:9px">
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">5 JOBS / DAY</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">3 WEEKS</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">1 CHECK-IN A DAY</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">14 DAYS</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $20</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STARTS</span><span style="font-weight:700">OCT 12</span></div>
+            <a data-hunt-link="" href="https://www.huntz.ai/hunt/07bfc657-8dba-4a48-9842-63ea34d0f5e3" aria-label="I want this hunt: 45-Minute Exercise Streak" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor;text-decoration:none"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></a>
           </div>
         </div>
-        <div data-plate="" onClick="{{ pick1 }}" onKeyDown="{{ pickkey1 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria1 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div data-plate="" style="position:relative;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
           <div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
               <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 02</span>
               <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">02</span>
             </div>
-            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Post content</div>
+            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Post daily on your platform</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:9px">
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">1× DAILY</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">4 WEEKS</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">1 CHECK-IN A DAY</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">30 DAYS</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $20</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STARTS</span><span style="font-weight:700">OCT 12</span></div>
+            <a data-hunt-link="" href="https://www.huntz.ai/hunt/70b48ded-9210-4aff-ab43-8a6a5fc0b9a9" aria-label="I want this hunt: Post daily on your platform" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor;text-decoration:none"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></a>
           </div>
         </div>
-        <div data-plate="" onClick="{{ pick2 }}" onKeyDown="{{ pickkey2 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria2 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
+        <div data-plate="" style="position:relative;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
           <div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
               <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 03</span>
               <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">03</span>
             </div>
-            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Read books</div>
+            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Read 20 Minutes a Day</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:9px">
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">5 PAGES DAILY</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">4 WEEKS</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>
-          </div>
-        </div>
-        <div data-plate="" onClick="{{ pick3 }}" onKeyDown="{{ pickkey3 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria3 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
-          <div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
-              <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 04</span>
-              <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">04</span>
-            </div>
-            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Stay fit</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:9px">
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">4× A WEEK</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">6 WEEKS</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>
-          </div>
-        </div>
-        <div data-plate="" onClick="{{ pick4 }}" onKeyDown="{{ pickkey4 }}" role="{{ plateRole }}" tabIndex="{{ plateTabIndex }}" aria-label="{{ pickAria4 }}" style="cursor:pointer;scroll-snap-align:start;flex:0 0 calc((100% - 2 * clamp(12px,1.6vw,20px)) / 3);min-width:250px;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(22px,3vh,34px);padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.32));color:#16130E;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 22px 38px -30px rgba(22,19,14,.55);transition:transform .45s cubic-bezier(.22,1.2,.36,1),box-shadow .45s ease,border-color .45s ease,background .45s ease,color .45s ease" style-hover="background:#C24E1F;color:#F3EFE7;border-color:#C24E1F;transform:translateY(-3px);box-shadow:0 26px 44px -28px rgba(194,78,31,.75)">
-          <div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">
-              <span style="font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88">HUNT 05</span>
-              <span style="font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1">05</span>
-            </div>
-            <div style="font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor">Live stream</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:9px">
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">5× A WEEK</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">3 WEEKS</span></div>
-            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $50</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">CADENCE</span><span style="font-weight:700">1 CHECK-IN A DAY</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">LENGTH</span><span style="font-weight:700">30 DAYS</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STAKE</span><span style="font-weight:700">FROM $20</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor"><span style="opacity:.85">STARTS</span><span style="font-weight:700">OCT 12</span></div>
+            <a data-hunt-link="" href="https://www.huntz.ai/hunt/a2c3422e-209d-460c-8c60-1ee57fd8d548" aria-label="I want this hunt: Read 20 Minutes a Day" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor;text-decoration:none"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></a>
           </div>
         </div>
     </div>
@@ -494,12 +486,11 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
   <div style="position:relative;max-width:1220px;margin:0 auto;width:100%">
     <div style="display:flex;flex-wrap:wrap;gap:clamp(28px,4vw,64px);align-items:flex-start;justify-content:space-between">
       <div style="flex:1 1 480px;min-width:300px">
-        <div id="fin-eyebrow" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;color:#6E6759;margin-bottom:16px;opacity:0;transform:translateY(16px)">READY WHEN YOU ARE</div>
-        <h2 style="margin:0 0 clamp(24px,4vh,34px);font:600 clamp(40px,5.6vw,78px)/1.03 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E">
-          <span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)">Hunt&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)">your&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)">goals<span style="color:#C24E1F">.</span></span>
-          <br>
-          <span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic">Stop&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic">hiding<span style="color:#C24E1F;font-style:normal">.</span></span>
+        <div id="fin-eyebrow" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;color:#6E6759;margin-bottom:16px;opacity:0;transform:translateY(16px)">YOUR MOVE</div>
+        <h2 style="margin:0 0 clamp(14px,2.4vh,20px);font:600 clamp(40px,5.6vw,78px)/1.03 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E">
+          <span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)">Become&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)">someone&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)">who&nbsp;</span><span data-fw="" style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic">finishes<span style="color:#C24E1F;font-style:normal">.</span></span>
         </h2>
+        <p id="fin-sub" style="margin:0 0 clamp(24px,4vh,34px);font:500 italic clamp(19px,2vw,27px)/1.3 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:#4A453C;text-wrap:balance;opacity:0;transform:translateY(20px)">Quitting just got expensive.</p>
         <div id="fin-form" style="opacity:0;transform:translateY(20px)"><sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">
           <sc-if value="{{ interest }}"><div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:14px;padding:6px 8px 6px 12px;border:1px solid rgba(194,78,31,.45);border-radius:20px;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#C24E1F;text-transform:uppercase">Joining for: {{ interest }}<button type="button" onClick="{{ clearInterest }}" aria-label="Remove this interest" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:rgba(194,78,31,.12);color:#C24E1F;font:400 11px 'Figtree',Arial,Helvetica,sans-serif;cursor:pointer;padding:0" style-hover="background:#C24E1F;color:#F3EFE7">&#10005;</button></div></sc-if>
           <sc-if value="{{ finalIdle }}" hint-placeholder-val="{{ true }}">
@@ -518,12 +509,12 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
         </sc-if></div>
       </div>
       <div data-plate="" style="flex:0 1 380px;min-width:280px;padding:clamp(20px,2.2vw,26px);border:1px solid rgba(22,19,14,.12);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34));box-shadow:0 1px 0 rgba(255,255,255,.85) inset,0 26px 44px -34px rgba(22,19,14,.6)">
-        <div style="font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:#6E6759;margin-bottom:16px">WHAT HAPPENS NEXT</div>
+        <div style="font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:#6E6759;margin-bottom:16px">WHAT'S LIVE</div>
         <div style="display:flex;flex-direction:column">
           <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">iOS app</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">ON THE APP STORE</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">Android app</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">COMING SOON</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">Creator-hosted hunts</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">COMING SOON</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">Private hunts with friends</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">COMING SOON</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">Creator-hosted hunts</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">LIVE</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">Private hunts with friends</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">LIVE</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0"><span style="font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em">Android app</span><span style="font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;color:#C24E1F;white-space:nowrap">COMING SOON</span></div>
         </div>
         <div style="display:flex;align-items:baseline;gap:9px;margin-top:20px;flex-wrap:wrap">
         <span style="font:500 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759">QUESTIONS?</span>
@@ -875,13 +866,6 @@ class Component extends DCLogic {
   submitHero = (e) => this.submit(e, 1);
   submitFinal = (e) => this.submit(e, 2);
   clearInterest = () => this.setState({ interest: '' });
-  pickHunt(name) {
-    this.setState({ interest: name });
-    this.playFinale(true);
-    const cta = document.getElementById('cta');
-    if (cta) cta.scrollIntoView({ block: 'start' });
-    setTimeout(() => { const i = document.querySelector('#fin-form input'); if (i) i.focus({ preventScroll: true }); }, 80);
-  }
   renderVals() {
     if (!this._ticker) {
       const phrases = ['STAKE IT', 'PROVE IT DAILY', '100% BACK IF YOU FINISH', 'QUITTERS PAY THE FINISHERS'];
@@ -901,11 +885,6 @@ class Component extends DCLogic {
     if (!this._chNav) this._chNav = { prev: () => this.scrollRail(-1), next: () => this.scrollRail(1) };
     if (!this._faqToggles) this._faqToggles = [0, 1, 2, 3, 4].map(i => () => this.toggleFaq(i));
     if (!this._faqKeys) this._faqKeys = [0, 1, 2, 3, 4].map(i => (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.toggleFaq(i); } });
-    if (!this._picks) {
-      const names = ['Apply to jobs', 'Post content', 'Read books', 'Stay fit', 'Live stream'];
-      this._picks = names.map(n => () => this.pickHunt(n));
-      this._pickKeys = names.map(n => (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.pickHunt(n); } });
-    }
     const appStoreMode = !!this.APP_STORE_URL;
     return {
       setRoot: this.setRoot, submitHero: this.submitHero, submitFinal: this.submitFinal,
@@ -915,20 +894,12 @@ class Component extends DCLogic {
       chPrev: this._chNav.prev, chNext: this._chNav.next,
       toggle0: this._faqToggles[0], toggle1: this._faqToggles[1], toggle2: this._faqToggles[2], toggle3: this._faqToggles[3], toggle4: this._faqToggles[4],
       faqkey0: this._faqKeys[0], faqkey1: this._faqKeys[1], faqkey2: this._faqKeys[2], faqkey3: this._faqKeys[3], faqkey4: this._faqKeys[4],
-      pick0: appStoreMode ? undefined : this._picks[0], pick1: appStoreMode ? undefined : this._picks[1], pick2: appStoreMode ? undefined : this._picks[2], pick3: appStoreMode ? undefined : this._picks[3], pick4: appStoreMode ? undefined : this._picks[4],
-      pickkey0: appStoreMode ? undefined : this._pickKeys[0], pickkey1: appStoreMode ? undefined : this._pickKeys[1], pickkey2: appStoreMode ? undefined : this._pickKeys[2], pickkey3: appStoreMode ? undefined : this._pickKeys[3], pickkey4: appStoreMode ? undefined : this._pickKeys[4],
       err1: this.state.err1, err2: this.state.err2, busy1: this.state.busy1, busy2: this.state.busy2,
       interest: this.state.interest, clearInterest: this.clearInterest,
       heroBtn: this.state.busy1 ? 'JOINING…' : 'JOIN THE WAITLIST',
       finalBtn: this.state.busy2 ? 'JOINING…' : 'JOIN THE WAITLIST',
       appStoreMode: appStoreMode, appStoreUrl: this.APP_STORE_URL, appStoreLabel: 'Download app',
-      notifyBtn: this.state.busy1 ? 'JOINING…' : 'NOTIFY ME',
-      plateRole: appStoreMode ? undefined : 'button', plateTabIndex: appStoreMode ? undefined : '0',
-      pickAria0: appStoreMode ? undefined : 'Join the waitlist: interested in Apply to jobs',
-      pickAria1: appStoreMode ? undefined : 'Join the waitlist: interested in Post content',
-      pickAria2: appStoreMode ? undefined : 'Join the waitlist: interested in Read books',
-      pickAria3: appStoreMode ? undefined : 'Join the waitlist: interested in Stay fit',
-      pickAria4: appStoreMode ? undefined : 'Join the waitlist: interested in Live stream'
+      notifyBtn: this.state.busy1 ? 'JOINING…' : 'NOTIFY ME'
     };
   }
 }

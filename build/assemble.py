@@ -745,23 +745,40 @@ HOME_NAV_CSS = ('@media (max-width:640px){#hz-nav a[href="#waitlist"],'
                  '{display:none !important}}\n')
 
 # (S-2b) Launch day, 2026-10-09: the iOS app is on the App Store, so the
-# "What happens next" list stops calling it COMING SOON. The row splits into
-# the live iOS app and the Android app still to come. Only when the store
-# switch is on; before launch the design's own row stands.
+# "What happens next" card stops calling it COMING SOON. Extended the same day
+# by the founder-approved launch copy mix (2h below): the card is retitled
+# "What's live", creator-hosted and private Hunts are LIVE in the shipped app
+# (the same accent pill), and the Android app is the one row still to come, so
+# it moves to the end. Only when the store switch is on; before launch the
+# design's own card stands, title and pre-launch rows included.
 ROW_STYLE = ('style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;'
              'padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"')
+# The design rules under every row but the last; whichever row is last keeps that.
+ROW_LAST_STYLE = ('style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;'
+                  'padding:11px 0"')
 ROW_LABEL = "style=\"font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em\""
 ROW_PILL = ("style=\"font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;"
             "color:#C24E1F;white-space:nowrap\"")
+
+def live_row(label: str, pill: str, *, last: bool = False) -> str:
+    return (f'<div {ROW_LAST_STYLE if last else ROW_STYLE}><span {ROW_LABEL}>{label}</span>'
+            f'<span {ROW_PILL}>{pill}</span></div>')
+
 old = (f'<div {ROW_STYLE}><span {ROW_LABEL}>iOS &amp; Android app</span>'
        f'<span {ROW_PILL}>COMING SOON</span></div>')
 assert old in html, "what-happens-next iOS row not found"
+old_creator = live_row("Creator-hosted hunts", "COMING SOON")
+old_private = live_row("Private hunts with friends", "COMING SOON", last=True)
+old_title = ">WHAT HAPPENS NEXT</div>"
+for frag in (old_creator, old_private, old_title):
+    assert html.count(frag) == 1, "what-happens-next row/title not found: " + frag[-64:]
 if APP_STORE_URL:
-    html = html.replace(old,
-        f'<div {ROW_STYLE}><span {ROW_LABEL}>iOS app</span>'
-        f'<span {ROW_PILL}>ON THE APP STORE</span></div>\n'
-        f'          <div {ROW_STYLE}><span {ROW_LABEL}>Android app</span>'
-        f'<span {ROW_PILL}>COMING SOON</span></div>')
+    html = html.replace(old, live_row("iOS app", "ON THE APP STORE"))
+    html = html.replace(old_creator, live_row("Creator-hosted hunts", "LIVE"))
+    html = html.replace(old_private,
+        live_row("Private hunts with friends", "LIVE") + "\n          "
+        + live_row("Android app", "COMING SOON", last=True))
+    html = html.replace(old_title, ">WHAT'S LIVE</div>")
 
 # (AS-1) Nav CTA: the default anchor is left completely untouched in its own
 # branch; a second branch swaps in the App Store link with identical font,
@@ -977,6 +994,271 @@ def apply_content_app_store_switch(tpl: str) -> str:
         tpl = tpl.replace(NAV_PILL_OLD, NAV_PILL_LIVE).replace(CLOSING_BLOCK_OLD, CLOSING_BLOCK_LIVE)
     return tpl
 
+# ---- 2h. Launch copy mix (2026-10-09, founder-approved) ----
+# The hero, a new "Sound familiar?" block, the Upcoming plates and the closing
+# section carry the launch copy; the "What's live" card is folded into (S-2b)
+# above, which already owned that card. Everything else on the home page is
+# left exactly as it was: the marquee strips, the mechanic and its four steps,
+# the example card, the FAQ, the Android notify form, the footer. Copy rules
+# for this pass, enforced by test/launch-copy.test.js: sentence case, no em or
+# en dashes, no exclamation marks, "service fee" never "join fee", no provider
+# or platform names, the minimum stake is $20, never "free".
+
+# (LC-1) Hero. The headline keeps the design's word-by-word rise (one span per
+# word, the same 80 ms stagger) and its accent treatment on the last word
+# (italic, with the full stop in clay); the second sentence starts on its own
+# line. The sub keeps its paragraph styling and changes only its sentence.
+HERO_H1_STYLE = ("style=\"margin:0 0 28px;font:600 clamp(46px,6.8vw,104px)/1.05 'Playfair Display',"
+                 "'Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance\"")
+
+def _hero_word(i: int, word: str, *, last: bool = False) -> str:
+    style = f"display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) {0.08 * (i + 1):.2f}s both"
+    if last:
+        return (f'<span style="{style};font-style:italic">{word.rstrip(".")}'
+                '<span style="color:#C24E1F;font-style:normal">.</span></span>')
+    return f'<span style="{style}">{word}</span>'
+
+_old_words = ["Put", "your", "money", "where", "your", "goals", "are."]
+HERO_H1_OLD = (f"<h1 {HERO_H1_STYLE}>\n        "
+               + "\n        ".join(_hero_word(i, w, last=i == 6) for i, w in enumerate(_old_words))
+               + "\n      </h1>")
+assert html.count(HERO_H1_OLD) == 1, "hero headline not found"
+HERO_WORDS = ["You", "don't", "need", "motivation.", "You", "need", "consequences."]
+HERO_H1_NEW = (f"<h1 {HERO_H1_STYLE}>\n        "
+               + "\n        ".join(_hero_word(i, w, last=i == 6) + ("\n        <br>" if i == 3 else "")
+                                   for i, w in enumerate(HERO_WORDS))
+               + "\n      </h1>")
+html = html.replace(HERO_H1_OLD, HERO_H1_NEW)
+
+HERO_SUB_OLD = ("Stake $50–$500 of your own money on your own goal. Post proof every day. "
+                "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.")
+HERO_SUB_NEW = ("Stake $20 to $500 of your own money on your goal. Post proof every day. "
+                "Finish and you get all of it back, plus a cut of what the quitters lost.")
+assert html.count(HERO_SUB_OLD) == 1, "hero sub not found"
+html = html.replace(HERO_SUB_OLD, HERO_SUB_NEW)
+
+# (LC-2) "Sound familiar?": a new block directly after the hero's marquee strip
+# and before the mechanic, built from the mechanic's own section pattern (the
+# same container width, side padding and label eyebrow). The label is the
+# section's heading; the four lines sit in the display serif at a size between
+# the hero sub and the mechanic headline, each on its own line, left-aligned,
+# no icons. The last line is the payoff and takes the accent colour, the way
+# the page emphasises everywhere else. The bottom padding is shorter than the
+# top so the block reads as the lead-in to "The mechanic" that answers it.
+FAMILIAR_LINES = [
+    "Third gym membership. Zero workouts.",
+    "You said Monday. It is now October.",
+    "Your camera roll is full of day-one screenshots. There is no day two.",
+    "You don't have a discipline problem. You have a nothing-to-lose problem.",
+]
+FAMILIAR_LINE_STYLE = (f"margin:0;font:600 clamp(21px,2.3vw,32px)/1.25 {SERIF};letter-spacing:-.012em;"
+                       "text-wrap:balance;color:")
+familiar_lines = "\n      ".join(
+    f'<p style="{FAMILIAR_LINE_STYLE}{CLAY if i == len(FAMILIAR_LINES) - 1 else INK}">{line}</p>'
+    for i, line in enumerate(FAMILIAR_LINES))
+FAMILIAR_SECTION = f"""<section id="familiar" data-screen-label="Sound familiar" style="position:relative;padding:clamp(64px,9vh,104px) clamp(20px,5vw,64px) clamp(8px,2vh,24px)">
+  <div style="max-width:1220px;margin:0 auto">
+    <h2 style="margin:0 0 clamp(22px,3.5vh,34px);font:600 11px {SANS};letter-spacing:.2em;text-transform:uppercase;color:{MUTED}">Sound familiar?</h2>
+    <div style="display:flex;flex-direction:column;gap:clamp(14px,2.4vh,24px)">
+      {familiar_lines}
+    </div>
+  </div>
+</section>
+
+"""
+old = '<section id="mechanic" data-screen-label="Mechanic"'
+assert html.count(old) == 1, "mechanic section not found"
+assert html.count('data-screen-label="Ticker"') == 1
+assert html.index('data-screen-label="Ticker"') < html.index(old)
+html = html.replace(old, FAMILIAR_SECTION + old)
+
+# (LC-3) Upcoming: the five placeholder plates become the Hunts actually open
+# on Discover. Fetched once from the public API,
+# https://api.huntz.ai/v1/hunts?limit=50, on 2026-10-09: it listed three
+# Hunts, all enrolling, all starting 2026-10-12, so all three qualify (start
+# on or after the build date, ordered by start date, at most five). The list
+# is hard-coded on purpose, with that date; a live feed is a later change, and
+# this constant is what it replaces. Each plate keeps the design's card (the
+# same style, header, title and row treatment are reused verbatim, asserted
+# below); the rows read the Hunt's cadence, length, minimum stake and start
+# date, and the "I want this hunt" row is a real link to the Hunt's universal
+# link, which opens the app when it is installed and the /hunt page otherwise.
+# The link also covers the whole card (a positioned ::after, in the style
+# block), so the card is one tap on a phone while the focus ring and the
+# accessible name stay on the row itself.
+LIVE_HUNTS = [
+    {"id": "07bfc657-8dba-4a48-9842-63ea34d0f5e3", "title": "45-Minute Exercise Streak",
+     "windows": 14, "unit": "day", "start_at": "2026-10-12T07:00:00.000Z", "tz": "America/Los_Angeles"},
+    {"id": "70b48ded-9210-4aff-ab43-8a6a5fc0b9a9", "title": "Post daily on your platform",
+     "windows": 30, "unit": "day", "start_at": "2026-10-12T07:00:00.000Z", "tz": "America/Los_Angeles"},
+    {"id": "a2c3422e-209d-460c-8c60-1ee57fd8d548", "title": "Read 20 Minutes a Day",
+     "windows": 30, "unit": "day", "start_at": "2026-10-12T07:00:00.000Z", "tz": "America/Los_Angeles"},
+]
+assert 1 <= len(LIVE_HUNTS) <= 5
+HUNT_LINK = SITE_URL + "/hunt/{id}"
+# The API carries stakeRange.minMinor as a minor-unit string ("2000"); every
+# listed Hunt opens at the platform minimum, so the plates say so directly.
+HUNT_STAKE = "FROM $20"
+HUNT_CADENCE = {"day": "1 CHECK-IN A DAY", "week": "1 CHECK-IN A WEEK"}
+MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+
+def hunt_starts(h: dict) -> str:
+    """'OCT 12': the Hunt's first day in its own time zone, not the viewer's."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    d = datetime.fromisoformat(h["start_at"].replace("Z", "+00:00")).astimezone(ZoneInfo(h["tz"]))
+    return f"{MONTHS[d.month - 1]} {d.day}"
+
+def hunt_length(h: dict) -> str:
+    n, unit = h["windows"], h["unit"].upper()
+    return f"{n} {unit}{'S' if n != 1 else ''}"
+
+rail_start = html.index('<div id="ch-rail"')
+rail_end = html.index('<section id="why"', rail_start)
+old_rail = html[rail_start:rail_end]
+RAIL_CLOSE = "\n    </div>\n  </div>\n</section>\n\n"
+assert old_rail.endswith(RAIL_CLOSE), "Upcoming rail does not close as expected"
+rail_open = old_rail[:old_rail.index(">") + 1]
+plates_old = old_rail[len(rail_open):-len(RAIL_CLOSE)]
+assert plates_old.count('<div data-plate=""') == 5, "expected the five placeholder plates"
+
+# The design's plate, lifted from the first plate as (I-2) left it: its own
+# card style and hover, the header row, the title, the two row styles and
+# the CTA row. Each is asserted against the old rail so the new plates cannot
+# drift from the design's card.
+m = re.search(r'<div data-plate="" onClick="\{\{ pick0 \}\}"[^>]*? style="cursor:pointer;([^"]*)" style-hover="([^"]*)">', plates_old)
+assert m, "first plate's style not found"
+PLATE_STYLE, PLATE_HOVER = m.group(1), m.group(2)
+assert PLATE_STYLE.startswith("scroll-snap-align:start;") and "position:" not in PLATE_STYLE
+PLATE_HEAD = ('<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">\n'
+              "              <span style=\"font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88\">HUNT {nn}</span>\n"
+              "              <span style=\"font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1\">{nn}</span>\n"
+              "            </div>\n"
+              "            <div style=\"font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor\">{title}</div>")
+ROW_RULED = ("<div style=\"display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;"
+             "font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor\">"
+             '<span style="opacity:.85">{k}</span><span style="font-weight:700">{v}</span></div>')
+ROW_PLAIN = ("<div style=\"display:flex;justify-content:space-between;gap:10px;"
+             "font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor\">"
+             '<span style="opacity:.85">{k}</span><span style="font-weight:700">{v}</span></div>')
+CTA_STYLE = ("display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;"
+             "border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor")
+CTA_OLD = f'<div style="{CTA_STYLE}"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>'
+assert PLATE_HEAD.format(nn="01", title="Apply to jobs") in plates_old, "plate header/title markup drifted"
+assert ROW_RULED.format(k="CADENCE", v="5 JOBS / DAY") in plates_old, "ruled row markup drifted"
+assert ROW_PLAIN.format(k="STAKE", v="FROM $50") in plates_old, "plain row markup drifted"
+assert plates_old.count(CTA_OLD) == 5, "I WANT THIS HUNT rows not found"
+
+def _esc(s: str) -> str:
+    """Text and double-quoted attribute escaping for the Hunt titles, which are
+    creator-written and arrive from the API, not from this file."""
+    import html as _h
+    return _h.escape(s, quote=True)
+
+def hunt_plate(i: int, h: dict) -> str:
+    nn = f"{i + 1:02d}"
+    title = _esc(h["title"])
+    link = (f'<a data-hunt-link="" href="{HUNT_LINK.format(id=h["id"])}" aria-label="I want this hunt: {title}" '
+            f'style="{CTA_STYLE};text-decoration:none"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></a>')
+    return (f'        <div data-plate="" style="position:relative;{PLATE_STYLE}" style-hover="{PLATE_HOVER}">\n'
+            f'          <div>\n'
+            f'            {PLATE_HEAD.format(nn=nn, title=title)}\n'
+            f'          </div>\n'
+            f'          <div style="display:flex;flex-direction:column;gap:9px">\n'
+            f'            {ROW_RULED.format(k="CADENCE", v=HUNT_CADENCE[h["unit"]])}\n'
+            f'            {ROW_RULED.format(k="LENGTH", v=hunt_length(h))}\n'
+            f'            {ROW_RULED.format(k="STAKE", v=HUNT_STAKE)}\n'
+            f'            {ROW_PLAIN.format(k="STARTS", v=hunt_starts(h))}\n'
+            f'            {link}\n'
+            f'          </div>\n'
+            f'        </div>')
+
+plates_new = "\n".join(hunt_plate(i, h) for i, h in enumerate(LIVE_HUNTS))
+html = html[:rail_start] + rail_open + "\n" + plates_new + RAIL_CLOSE + html[rail_end:]
+assert html.count('<div data-plate=""') == 5 + len(LIVE_HUNTS), "plate count off (4 mechanic steps + the closing card + the Hunts)"
+assert "FROM $50" not in html
+
+# One tap anywhere on the card follows its link.
+old = "#ch-rail{overscroll-behavior-x:contain}\n"
+assert html.count(old) == 1, "rail style rule not found"
+html = html.replace(old, old + "[data-plate] a[data-hunt-link]::after{content:'';position:absolute;inset:0}\n")
+
+# The plates stopped being waitlist "interest" pickers, so the handlers, the
+# button semantics and the placeholder names that existed only for that are
+# retired here: (I-2), (I-5b), (AS-6) and (AS-8) above still assert the design
+# and build them, this is where they come back out. The interest chip, its
+# clear button and the INTEREST merge field stay as inert plumbing: nothing
+# sets the interest any more, and the field goes out empty.
+PICK_METHOD = """
+  pickHunt(name) {
+    this.setState({ interest: name });
+    this.playFinale(true);
+    const cta = document.getElementById('cta');
+    if (cta) cta.scrollIntoView({ block: 'start' });
+    setTimeout(() => { const i = document.querySelector('#fin-form input'); if (i) i.focus({ preventScroll: true }); }, 80);
+  }"""
+PICKS_BLOCK = """
+    if (!this._picks) {
+      const names = ['Apply to jobs', 'Post content', 'Read books', 'Stay fit', 'Live stream'];
+      this._picks = names.map(n => () => this.pickHunt(n));
+      this._pickKeys = names.map(n => (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.pickHunt(n); } });
+    }"""
+PICK_VALS = ("\n      pick0: appStoreMode ? undefined : this._picks[0], pick1: appStoreMode ? undefined : this._picks[1], "
+             "pick2: appStoreMode ? undefined : this._picks[2], pick3: appStoreMode ? undefined : this._picks[3], "
+             "pick4: appStoreMode ? undefined : this._picks[4],\n"
+             "      pickkey0: appStoreMode ? undefined : this._pickKeys[0], pickkey1: appStoreMode ? undefined : this._pickKeys[1], "
+             "pickkey2: appStoreMode ? undefined : this._pickKeys[2], pickkey3: appStoreMode ? undefined : this._pickKeys[3], "
+             "pickkey4: appStoreMode ? undefined : this._pickKeys[4],")
+PLATE_VALS = """,
+      plateRole: appStoreMode ? undefined : 'button', plateTabIndex: appStoreMode ? undefined : '0',
+      pickAria0: appStoreMode ? undefined : 'Join the waitlist: interested in Apply to jobs',
+      pickAria1: appStoreMode ? undefined : 'Join the waitlist: interested in Post content',
+      pickAria2: appStoreMode ? undefined : 'Join the waitlist: interested in Read books',
+      pickAria3: appStoreMode ? undefined : 'Join the waitlist: interested in Stay fit',
+      pickAria4: appStoreMode ? undefined : 'Join the waitlist: interested in Live stream'"""
+for dead in (PICK_METHOD, PICKS_BLOCK, PICK_VALS, PLATE_VALS):
+    assert html.count(dead) == 1, "interest-picker code not found: " + dead.strip()[:48]
+    html = html.replace(dead, "")
+for name in HUNT_NAMES:
+    assert name not in html, f"placeholder Hunt {name!r} survived"
+for token in ("pickHunt", "_picks", "_pickKeys", "plateRole", "plateTabIndex", "pickAria", "pickkey"):
+    assert token not in html, f"{token} survived"
+
+# (LC-4) Closing section. The headline keeps the design's per-word reveal
+# (data-fw spans, animated by playFinale) and the accent treatment on the
+# last word; "Quitting just got expensive." sits under it as #fin-sub, an id
+# the design's own finBits list already looks for, so it rises in with the
+# eyebrow and the button. The eyebrow becomes YOUR MOVE. The Download app
+# button below is untouched (AS-3).
+FW_STYLE = 'style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)"'
+FW_ITALIC_STYLE = 'style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic"'
+CLOSING_H2_STYLE_OLD = ("style=\"margin:0 0 clamp(24px,4vh,34px);font:600 clamp(40px,5.6vw,78px)/1.03 'Playfair Display',"
+                        "'Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E\"")
+CLOSING_H2_OLD = (
+    f"<h2 {CLOSING_H2_STYLE_OLD}>\n"
+    f'          <span data-fw="" {FW_STYLE}>Hunt&nbsp;</span><span data-fw="" {FW_STYLE}>your&nbsp;</span>'
+    f'<span data-fw="" {FW_STYLE}>goals<span style="color:#C24E1F">.</span></span>\n'
+    "          <br>\n"
+    f'          <span data-fw="" {FW_ITALIC_STYLE}>Stop&nbsp;</span>'
+    f'<span data-fw="" {FW_ITALIC_STYLE}>hiding<span style="color:#C24E1F;font-style:normal">.</span></span>\n'
+    "        </h2>")
+assert html.count(CLOSING_H2_OLD) == 1, "closing headline not found"
+CLOSING_H2_NEW = (
+    f"<h2 {CLOSING_H2_STYLE_OLD.replace('margin:0 0 clamp(24px,4vh,34px)', 'margin:0 0 clamp(14px,2.4vh,20px)')}>\n"
+    f'          <span data-fw="" {FW_STYLE}>Become&nbsp;</span><span data-fw="" {FW_STYLE}>someone&nbsp;</span>'
+    f'<span data-fw="" {FW_STYLE}>who&nbsp;</span>'
+    f'<span data-fw="" {FW_ITALIC_STYLE}>finishes<span style="color:#C24E1F;font-style:normal">.</span></span>\n'
+    "        </h2>\n"
+    '        <p id="fin-sub" style="margin:0 0 clamp(24px,4vh,34px);font:500 italic clamp(19px,2vw,27px)/1.3 '
+    f"{SERIF};letter-spacing:-.01em;color:{BODYC};text-wrap:balance;opacity:0;transform:translateY(20px)\">"
+    "Quitting just got expensive.</p>")
+html = html.replace(CLOSING_H2_OLD, CLOSING_H2_NEW)
+assert "$('fin-sub')" in html, "the design's finBits no longer looks for #fin-sub"
+
+old = ">READY WHEN YOU ARE</div>"
+assert html.count(old) == 1, "closing eyebrow not found"
+html = html.replace(old, ">YOUR MOVE</div>")
+
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
     # keep inline <script> content safe; \/ == / inside JS strings/regexes
@@ -1078,14 +1360,15 @@ def breadcrumb_ld(title: str, slug: str) -> str:
                    {"@type": "ListItem", "position": 2, "name": title, "item": f"{SITE_URL}/{slug}"}]})
 
 # Search metadata leads with the category (per the approved SEO plan); the
-# social card keeps the brand line, which the visible hero also carries, so
-# metadata and visible copy agree in both places.
+# social card keeps the brand line, which the footer tagline on the visible
+# page still carries, and its description is the hero sub's own sentence (the
+# launch copy mix, 2h above), so metadata and visible copy agree in both places.
 HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</title>
 <meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is on the App Store.">
 <link rel="canonical" href="{SITE_URL}/">
 <meta property="og:site_name" content="Huntz">
 <meta property="og:title" content="Huntz · Put your money where your goals are.">
-<meta property="og:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back, plus a share of the stakes forfeited by everyone who quit.">
+<meta property="og:description" content="{HERO_SUB_NEW}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{SITE_URL}/">
 <meta property="og:image" content="{SITE_URL}/og-image.jpg">
@@ -1093,7 +1376,7 @@ HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Huntz · Put your money where your goals are.">
-<meta name="twitter:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back.">
+<meta name="twitter:description" content="Stake $20 to $500 on your goal. Post proof every day. Finish and you get all of it back.">
 <meta name="twitter:image" content="{SITE_URL}/og-image.jpg">
 <meta name="apple-itunes-app" content="app-id=6802558635">
 {ICON_LINKS}
