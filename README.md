@@ -70,9 +70,11 @@ Behaviour worth knowing:
 - Invalid addresses are rejected client-side, then Mailchimp's own message
   (e.g. "This email address looks fake or invalid") is shown inline.
 - Someone already on the list is treated as success, not an error.
-- Clicking a card in **Upcoming** attaches that Hunt's name and submits it as
-  the `INTEREST` merge field. Capturing it requires an `INTEREST` text field on
-  the Mailchimp audience; without one, Mailchimp silently drops the value.
+- The cards under **Upcoming** are the Hunts open on Discover (hard-coded,
+  dated, in `build/assemble.py`'s `LIVE_HUNTS`; a live feed is a later change)
+  and each links to its `/hunt/<id>` universal link. They used to attach an
+  interest to the waitlist signup; the `INTEREST` merge field is still sent,
+  empty, so the Mailchimp audience needs no change either way.
 - The audience is single opt-in, so Mailchimp sends nothing on signup. The page
   shows its own confirmation. A welcome email needs a Mailchimp automation, and
   is best set up *after* sending-domain authentication so it comes from
@@ -117,15 +119,47 @@ constant (CSS cannot), and it is already set correctly, so it needs no change
 on launch day. Only touch it if the listing URL itself ever changes, and keep
 it equal to `APP_STORE_URL`'s own value once that is live.
 
-With `APP_STORE_URL` set: the nav link, the hero button and the closing CTA
-become pill-shaped "Download app" links to that URL, each with a small inline
-Apple mark ahead of the label (a single SVG path, no external asset or badge
-artwork; the site's existing button font, colours and size are otherwise
-unchanged); the five interest plates under **Upcoming** stop being click
-targets (their look and copy are unchanged); and the waitlist form survives
-as a fallback, relocated to the bottom of the page and retitled "Not on
-iPhone? Get notified for Android.", with its button reading "NOTIFY ME" and
-posting to the same Mailchimp audience and honeypot as before.
+With `APP_STORE_URL` set: the nav link becomes a pill-shaped "Download app"
+link to that URL, with a small inline Apple mark ahead of the label (a single
+SVG path; the site's existing button font, colours and size are otherwise
+unchanged); the hero and the closing CTA carry Apple's own "Download on the App
+Store" badge, linked to the same URL (see "The App Store badge" below); the
+plates under **Upcoming** link to the live Hunts in either state (since the
+launch copy mix, 2026-10-09); and the waitlist form survives as a fallback,
+relocated directly under the closing section's badge (it used to be a section
+of its own above the footer) and retitled "Not on iPhone? Get notified for
+Android.", with its button reading "NOTIFY ME" and posting to the same
+Mailchimp audience and honeypot as before. A small muted link under the hero's
+badge, "Not on iPhone? Get notified for Android", scrolls to it (`#waitlist`,
+still the one anchor; arriving by link shows the form at once instead of
+waiting for the closing section's fade-in).
+
+### The App Store badge
+
+*(2026-10-09, founder revision)* The two big accent pills in the hero and the
+closing section were replaced by Apple's official badge, black, English
+(US-UK). It is Apple's file, used unaltered: no recolouring, no inlining, no
+filter, no hover state, nothing animated on the badge itself. Our small accent
+pill stays in the nav and the drawer.
+
+- **Source.** Apple's App Store Marketing Tools (the page
+  `tools.applemediaservices.com/app-store/` now forwards there), for this app:
+  <https://toolbox.marketingtools.apple.com/en-us/app-store/us/app/6802558635>.
+  Its "Download Badges" button serves
+  `https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us/download`,
+  a zip whose `black.svg` is `build/source/app-store-badge-black-en-us.svg`
+  (fetched 2026-10-09; its SHA-256 is pinned in `build/assemble.py`, so the
+  build stops if the file is edited). Apple's rules are at
+  <https://developer.apple.com/app-store/marketing/guidelines/>.
+- **Served.** `build/assemble.py` copies the bytes to
+  `assets/app-store-badge-black.<hash>.svg` (content-hashed like the other
+  shared assets, so the immutable cache is safe) and the hero and closing
+  links reference it with an `<img>`. If Apple ever reissues the badge,
+  replace the source file and its pin in `build/assemble.py` on purpose.
+- **Size and space.** 48px high on desktop and 44px at 640px and below (Apple's
+  minimum on screen is 40px); whatever sits beside or under a badge is at
+  least a quarter of its height away. `test/app-store-badge.test.js` pins all
+  of this.
 
 The mobile hamburger drawer's own link (`build/assemble.py`'s `drawer()`,
 static markup shared with every other page, outside `index.html`'s reactive
@@ -268,8 +302,26 @@ Changes currently applied on top of the design:
 - Terms of Service and Privacy Policy are added as hash-routed full pages
   (`#/terms`, `#/privacy`) — **drafts, pending legal review**.
 - Social/OG metadata, a favicon, and the share card.
-- Upcoming cards became explicit "I want this hunt" actions with a removable
-  chip, so a curious click cannot silently record an interest.
+- Upcoming cards list the Hunts open on Discover (`LIVE_HUNTS`, dated) and
+  each "I want this hunt" is a link to that Hunt's universal link.
+- Launch copy mix (2026-10-09, founder-approved): the hero reads "You don't
+  need motivation. You need consequences." over "Pick a goal. Put $20 to $500
+  on the line. Prove it daily. ..." (the share card's og and twitter
+  descriptions repeat that sentence), a "Sound familiar?" block follows the
+  marquee strip (a headline in the mechanic's style over three cards, "THE
+  GYM", "THE MONDAY" and "THE CAMERA ROLL", on the mechanic steps' own card
+  styles: three across on desktop, stacked on phones), the closing section
+  reads "Become someone who finishes." over "Quitting just got expensive.",
+  and the closing card is "What's live" (iOS app, creator-hosted and private
+  Hunts live; Android coming soon). The hero and the closing section carry
+  Apple's App Store badge (see "The App Store badge" above), with the Android
+  notify form under the closing one and a small link to it under the hero's.
+  The giant HUNTZ. wordmark at the very bottom of the closing section stands
+  on its own (the line under it, "Put your money where your goals are.", is
+  gone), so the footer brand block's "The marketplace for accountability." is
+  the page's one tagline; the inner pages' footers have none. The share card's
+  og:title and twitter:title read "Huntz: Become someone who finishes.". No em
+  or en dashes, no exclamation marks.
 - Keyboard support and focus rings on the FAQ and cards; muted grey darkened
   for contrast.
 - Below 641px the bar is logo + menu button, and a modal sheet carries every

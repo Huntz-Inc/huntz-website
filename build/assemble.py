@@ -701,13 +701,15 @@ html = html.replace(old, old + "\n    " + MENU_BUTTON)
 # page, from "join the waitlist" to "download on the App Store". Empty
 # (default) leaves every existing waitlist piece exactly as it renders today:
 # each patch below has its own untouched default branch. Set APP_STORE_URL to
-# the live App Store listing and: the nav CTA, the hero button, the closing
-# CTA and the drawer's own link (2e above) all become "Download app" links,
-# with the Apple mark below, to that URL; the five interest plates go inert
-# (no click handler, no button role, no aria-label); and the waitlist form
-# survives as a relocated, retitled Android fallback at the bottom of the
-# page. See README.md, "App Store launch switch", for the day-of-approval
-# steps.
+# the live App Store listing and: the nav CTA and the drawer's own link (2e
+# above) become "Download app" links, with the Apple mark below, to that URL;
+# the hero and the closing CTA carry Apple's own "Download on the App Store"
+# badge instead of a pill (founder revision, 2026-10-09: see the badge block
+# below); the five interest plates go inert (no click handler, no button
+# role, no aria-label); and the waitlist form survives as a relocated,
+# retitled Android fallback, directly under the closing badge, with a small
+# link to it under the hero's badge. See README.md, "App Store launch
+# switch", for the day-of-approval steps.
 #
 # This is the one value to change on launch day: it feeds the Component
 # class field directly (AS-5 below) and drawer() reads it too, so both
@@ -721,12 +723,14 @@ APP_STORE_URL = "https://apps.apple.com/app/id6802558635"
 # and keep it equal to APP_STORE_URL's own value once that goes live.
 APP_STORE_URL_LITERAL = "https://apps.apple.com/app/id6802558635"
 
-# Single-path Apple logo mark for the three App Store buttons and the
-# drawer's own link, once APP_STORE_URL is live. No external asset: fill is
-# currentColor, so it always matches its own link's text colour with no
+# Single-path Apple logo mark for our own accent pills (the nav link, the
+# drawer's own link, and the inner pages' and /hunt buttons), once
+# APP_STORE_URL is live. (The hero and closing CTA carry Apple's badge
+# instead, below; this mark is not Apple's artwork.) No external asset: fill
+# is currentColor, so it always matches its own link's text colour with no
 # colour of its own, and vertically centred by their flex styling. A function
-# rather than a constant because the nav link (smaller text) and the hero/
-# closing-CTA/drawer links (larger text) each need a different fixed pixel
+# rather than a constant because the nav link (smaller text) and the
+# drawer/page links (larger text) each need a different fixed pixel
 # size (2026-09-25 founder feedback: the original 0.8em read as "super tiny"
 # at ~10px, so this is sized in px against each button's actual rendered
 # size instead of scaling off font-size again) - the viewBox keeps the glyph
@@ -735,6 +739,64 @@ def apple_mark(px: int) -> str:
     return (f'<svg aria-hidden="true" viewBox="0 0 384 512" width="{px}px" height="{px}px" '
             'style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg">'
             '<path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>')
+
+# Apple's official "Download on the App Store" badge, black version, English
+# (US-UK), for the hero and the closing CTA (founder revision, 2026-10-09:
+# the two big pills become the badge; our small accent pill stays in the nav
+# and the drawer). The artwork is Apple's, used unaltered as a referenced
+# file: never inlined, recoloured, filtered, faded, animated or given a hover
+# state, and its link carries no animation of its own. What Apple's marketing
+# guidelines (https://developer.apple.com/app-store/marketing/guidelines/,
+# "Graphic Standards") ask for, and where it is met:
+#   - the artwork exactly as supplied, grey outline included: the file below
+#     is pinned by SHA-256, so the build stops if it is ever edited;
+#   - at least 40px high on screen: 48px, and 44px at 640px and below, in the
+#     style block (APP_STORE_BADGE_CSS);
+#   - clear space of a quarter of the badge height on every side (12px at
+#     48px, 11px at 44px): whatever sits beside or under a badge is 20px or
+#     more away;
+#   - one badge per layout: the hero and the closing section are two layouts
+#     a full page apart.
+#
+# Source: Apple's App Store Marketing Tools, which tools.applemediaservices.com/
+# app-store/ now forwards to, for this app's listing:
+#   https://toolbox.marketingtools.apple.com/en-us/app-store/us/app/6802558635
+# Its "Download Badges" button serves
+#   https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us/download
+# a zip whose black.svg is this file (the same bytes the tool's own embed code
+# serves from .../badges/download-on-the-app-store/black/en-us), fetched
+# 2026-10-09. The file's own <title> is
+# Download_on_the_App_Store_Badge_US-UK_RGB_blk_4SVG_092917; it is 119.66 x 40
+# user units, so the on-screen width follows from the height. If Apple ever
+# reissues the badge, replace the file and update the pin on purpose.
+#
+# build/source/ holds the file as downloaded; section 4 serves it from
+# assets/ under a content-hashed name, like the other shared assets, so the
+# one-year immutable cache that vercel.json gives /assets/ is safe.
+import hashlib
+APP_STORE_BADGE_SRC = SRC / "app-store-badge-black-en-us.svg"
+APP_STORE_BADGE_SHA256 = "a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f"
+APP_STORE_BADGE_BYTES = APP_STORE_BADGE_SRC.read_bytes()
+assert hashlib.sha256(APP_STORE_BADGE_BYTES).hexdigest() == APP_STORE_BADGE_SHA256, (
+    "build/source/app-store-badge-black-en-us.svg is not the badge Apple supplied (SHA-256 pin)")
+APP_STORE_BADGE_HREF = f"/assets/app-store-badge-black.{APP_STORE_BADGE_SHA256[:8]}.svg"
+APP_STORE_BADGE_ALT = "Download on the App Store"
+# 144 x 48 is the badge's own 2.99:1 shape at the desktop height; the CSS below
+# sets the displayed height and lets the width follow.
+APP_STORE_BADGE_LINK = (
+    '<a href="{{ appStoreUrl }}" data-appstore-badge="" '
+    f'aria-label="{APP_STORE_BADGE_ALT}">'
+    f'<img src="{APP_STORE_BADGE_HREF}" alt="{APP_STORE_BADGE_ALT}" width="144" height="48"></a>')
+# The link only shrink-wraps the image (a rounded box, so the keyboard focus
+# ring from (I-3b) follows the badge's own corners); the image has no
+# transition, transform or filter, and nothing here reacts to hover.
+APP_STORE_BADGE_CSS = (
+    "[data-appstore-badge]{display:inline-block;line-height:0;border-radius:11px}\n"
+    "[data-appstore-badge] img{display:block;height:48px;width:auto}\n"
+    "@media (max-width:640px){[data-appstore-badge] img{height:44px}}\n")
+old = "#ch-rail{overscroll-behavior-x:contain}\n"
+assert html.count(old) == 1, "rail style rule not found (badge CSS anchor)"
+html = html.replace(old, old + APP_STORE_BADGE_CSS)
 
 # Below 641px the bar is logo + menu button: the three section anchors were
 # already hidden by (I-4b), and the CTA moves into the sheet. The second
@@ -745,23 +807,40 @@ HOME_NAV_CSS = ('@media (max-width:640px){#hz-nav a[href="#waitlist"],'
                  '{display:none !important}}\n')
 
 # (S-2b) Launch day, 2026-10-09: the iOS app is on the App Store, so the
-# "What happens next" list stops calling it COMING SOON. The row splits into
-# the live iOS app and the Android app still to come. Only when the store
-# switch is on; before launch the design's own row stands.
+# "What happens next" card stops calling it COMING SOON. Extended the same day
+# by the founder-approved launch copy mix (2h below): the card is retitled
+# "What's live", creator-hosted and private Hunts are LIVE in the shipped app
+# (the same accent pill), and the Android app is the one row still to come, so
+# it moves to the end. Only when the store switch is on; before launch the
+# design's own card stands, title and pre-launch rows included.
 ROW_STYLE = ('style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;'
              'padding:11px 0;border-bottom:1px solid rgba(22,19,14,.1)"')
+# The design rules under every row but the last; whichever row is last keeps that.
+ROW_LAST_STYLE = ('style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;'
+                  'padding:11px 0"')
 ROW_LABEL = "style=\"font:600 15px 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em\""
 ROW_PILL = ("style=\"font:700 8.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;"
             "color:#C24E1F;white-space:nowrap\"")
+
+def live_row(label: str, pill: str, *, last: bool = False) -> str:
+    return (f'<div {ROW_LAST_STYLE if last else ROW_STYLE}><span {ROW_LABEL}>{label}</span>'
+            f'<span {ROW_PILL}>{pill}</span></div>')
+
 old = (f'<div {ROW_STYLE}><span {ROW_LABEL}>iOS &amp; Android app</span>'
        f'<span {ROW_PILL}>COMING SOON</span></div>')
 assert old in html, "what-happens-next iOS row not found"
+old_creator = live_row("Creator-hosted hunts", "COMING SOON")
+old_private = live_row("Private hunts with friends", "COMING SOON", last=True)
+old_title = ">WHAT HAPPENS NEXT</div>"
+for frag in (old_creator, old_private, old_title):
+    assert html.count(frag) == 1, "what-happens-next row/title not found: " + frag[-64:]
 if APP_STORE_URL:
-    html = html.replace(old,
-        f'<div {ROW_STYLE}><span {ROW_LABEL}>iOS app</span>'
-        f'<span {ROW_PILL}>ON THE APP STORE</span></div>\n'
-        f'          <div {ROW_STYLE}><span {ROW_LABEL}>Android app</span>'
-        f'<span {ROW_PILL}>COMING SOON</span></div>')
+    html = html.replace(old, live_row("iOS app", "ON THE APP STORE"))
+    html = html.replace(old_creator, live_row("Creator-hosted hunts", "LIVE"))
+    html = html.replace(old_private,
+        live_row("Private hunts with friends", "LIVE") + "\n          "
+        + live_row("Android app", "COMING SOON", last=True))
+    html = html.replace(old_title, ">WHAT'S LIVE</div>")
 
 # (AS-1) Nav CTA: the default anchor is left completely untouched in its own
 # branch; a second branch swaps in the App Store link with identical font,
@@ -782,20 +861,30 @@ html = html.replace(old,
     '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + nav_appstore + '</sc-if>')
 
 # (AS-2) Hero CTA: default form/confirmation/"no spam" note is left untouched
-# in its own branch; a second branch renders one App Store link in their
-# place. #waitlist itself only exists in the default branch: the id moves to
-# the relocated section below once appStoreMode is on, so it is never
-# duplicated in the live DOM.
+# in its own branch; a second branch renders Apple's badge, linked to the App
+# Store, in their place. #waitlist itself only exists in the default branch:
+# the id moves to the relocated form below once appStoreMode is on, so it is
+# never duplicated in the live DOM.
 old = ('<div id="waitlist" style="animation:hzRise .7s ease .74s both;scroll-margin-top:110px">\n        <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">\n          <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">\n            <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px \'Figtree\',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">\n            <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ heroBtn }}</button>\n            <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>\n          </form>\n        </sc-if>\n        <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">\n          <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU\'RE IN. WE\'LL EMAIL YOU WHEN WE LAUNCH.</div>\n        </sc-if>\n      </div>\n      <div style="margin-top: 20px; font: 500 11px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; animation: hzRise .7s ease .84s both; font-family:\'Figtree\',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div>')
 assert html.count(old) == 1, "hero waitlist block not found"
+# The block's own entrance (one rise, like every other hero element) is the
+# page's, not the badge's: the badge has no motion of its own.
+#
+# Under it, founder revision 2026-10-09: a small text link, "Not on iPhone? Get
+# notified for Android", in the muted colour and the size of the hero sub,
+# which scrolls to the Android form (#waitlist, now under the closing badge;
+# FOCUS_JS's delegated handler takes any a[href="#waitlist"]). It rises in a
+# beat after the badge, where the old "no spam" note did, and sits 22px below
+# it: Apple wants a quarter of the badge height (12px) kept clear.
 hero_appstore = (
     '<div style="animation:hzRise .7s ease .74s both">\n'
-    '        <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
-    'gap:10px;padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; '
-    'font: 700 12px \'Figtree\',Arial,Helvetica,sans-serif; letter-spacing: .12em; text-decoration: none; '
-    'border-radius: 999px; font-family:\'Figtree\',Arial,Helvetica,sans-serif; transition: background .25s ease, '
-    'border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" '
-    'style-active="transform:translateY(2px)">' + apple_mark(18) + '<span>{{ appStoreLabel }}</span></a>\n'
+    '        ' + APP_STORE_BADGE_LINK + '\n'
+    '      </div>\n'
+    '      <div style="margin-top:22px;animation:hzRise .7s ease .84s both">\n'
+    '        <a href="#waitlist" data-android-link="" '
+    f'style="font:500 clamp(15px,1.4vw,18px)/1.5 {SANS};color:{MUTED};text-decoration:underline;'
+    'text-underline-offset:3px;text-decoration-thickness:1px" style-hover="color:#C24E1F">'
+    'Not on iPhone? Get notified for Android <span aria-hidden="true">&#8594;</span></a>\n'
     '      </div>'
 )
 html = html.replace(old,
@@ -804,55 +893,59 @@ html = html.replace(old,
 
 # (AS-3) Closing CTA: id="fin-form" stays put in both branches, since the
 # scroll-reveal animation (componentDidMount's finBits) targets it by id
-# regardless of mode. Only the content inside it swaps.
+# regardless of mode. Only the content inside it swaps; live, it is Apple's
+# badge, like the hero's.
 fin_open = '<div id="fin-form" style="opacity:0;transform:translateY(20px)">'
 fin_close = '</div>'
 old = (fin_open + '\n          <sc-if value="{{ interest }}"><div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:14px;padding:6px 8px 6px 12px;border:1px solid rgba(194,78,31,.45);border-radius:20px;font:700 9.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.14em;color:#C24E1F;text-transform:uppercase">Joining for: {{ interest }}<button type="button" onClick="{{ clearInterest }}" aria-label="Remove this interest" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:rgba(194,78,31,.12);color:#C24E1F;font:400 11px \'Figtree\',Arial,Helvetica,sans-serif;cursor:pointer;padding:0" style-hover="background:#C24E1F;color:#F3EFE7">&#10005;</button></div></sc-if>\n          <sc-if value="{{ finalIdle }}" hint-placeholder-val="{{ true }}">\n            <form onSubmit="{{ submitFinal }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">\n              <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex:1 1 220px;padding:17px 18px;border:1px solid rgba(22,19,14,.28);border-radius:14px;background:rgba(255,255,255,.6);font:500 15px \'Figtree\',Arial,Helvetica,sans-serif;color:#16130E;outline:none" style-focus="border-color:#C24E1F">\n              <button type="submit" disabled="{{ busy2 }}" style="padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:14px;color:#F3EFE7;font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;cursor:pointer;box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,transform .15s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ finalBtn }}</button>\n              <sc-if value="{{ err2 }}"><div style="flex:1 1 100%;font:600 11.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err2 }}</div></sc-if>\n            </form>\n          </sc-if>\n          <sc-if value="{{ sub2 }}" hint-placeholder-val="{{ false }}">\n            <div style="display:inline-block;border:2px solid #C24E1F;border-radius:14px;color:#C24E1F;padding:17px 24px;font:700 clamp(13px,1.4vw,17px) \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.04em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU\'RE IN.</div>\n          </sc-if>\n          <div style="margin-top:16px;font:500 10.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759">NO SPAM · ONE EMAIL WHEN WE LAUNCH</div>\n        </div>')
 assert html.count(old) == 1, "closing CTA fin-form block not found"
 assert old.startswith(fin_open) and old.endswith(fin_close)
 fin_inner_default = old[len(fin_open):-len(fin_close)]
-fin_appstore = (
-    '\n          <a href="{{ appStoreUrl }}" style="display:inline-flex;align-items:center;justify-content:center;'
-    'gap:10px;padding:17px 28px;background:#C24E1F;border:1px solid #C24E1F;border-radius:999px;color:#F3EFE7;'
-    'font:700 12.5px \'Figtree\',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;'
-    'box-shadow:0 18px 30px -22px rgba(194,78,31,.9);transition:background .3s ease,border-color .3s ease,'
-    'transform .15s ease" style-hover="background:#16130E;border-color:#16130E" '
-    'style-active="transform:translateY(2px)">' + apple_mark(18) + '<span>{{ appStoreLabel }}</span></a>\n        '
-)
+fin_appstore = '\n          ' + APP_STORE_BADGE_LINK + '\n        '
 html = html.replace(old,
     fin_open
     + '<sc-if value="{{ !appStoreMode }}" hint-placeholder-val="{{ true }}">' + fin_inner_default + '</sc-if>'
     + '<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">' + fin_appstore + '</sc-if>'
     + fin_close)
 
-# (AS-4) New section: the waitlist survives here, relocated and retitled for
-# Android, once the App Store link is live. Reuses the hero's own form
-# state/handler (heroIdle/sub1/err1/busy1/submitHero): the two are mutually
-# exclusive, since the hero is a plain link whenever this section renders,
-# rather than adding a second, redundant set of fields. Since launch day
-# (2026-10-09) its confirmation and no-spam lines say which launch they
-# mean: Android's, now that "when we launch" would read as the iOS one.
-old = '</section>\n\n<footer data-screen-label="Footer"'
-assert html.count(old) == 1, "footer anchor not found"
-android_section = '''<sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><section id="waitlist" data-screen-label="Android Waitlist" style="position:relative;border-top:1px solid rgba(22,19,14,.16);padding:clamp(40px,6vh,64px) clamp(20px,5vw,64px);scroll-margin-top:110px">
-  <div style="max-width:1220px;margin:0 auto">
-    <h2 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h2>
-    <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
-      <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
-        <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
-        <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ notifyBtn }}</button>
-        <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>
-      </form>
-    </sc-if>
-    <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
-      <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN ANDROID LAUNCHES.</div>
-    </sc-if>
-    <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN ANDROID LAUNCHES.</div>
-  </div>
-</section></sc-if>
-
-'''
-html = html.replace(old, '</section>\n\n' + android_section + '<footer data-screen-label="Footer"')
+# (AS-4) The waitlist survives here, relocated and retitled for Android, once
+# the App Store link is live. Reuses the hero's own form state/handler
+# (heroIdle/sub1/err1/busy1/submitHero): the two are mutually exclusive, since
+# the hero is a plain link whenever this form renders, rather than adding a
+# second, redundant set of fields. Since launch day (2026-10-09) its
+# confirmation and no-spam lines say which launch they mean: Android's, now
+# that "when we launch" would read as the iOS one.
+#
+# Founder revision, the same day: the form no longer has a section of its own
+# between the closing section and the footer. It sits directly under the
+# closing section's badge, inside #fin-form, so it rises in with the badge
+# (and FOCUS_JS shows it at once when a link brings the visitor straight
+# here). The form, its id (the one #waitlist) and its Mailchimp wiring are
+# exactly what they were; only the wrapper (a div where the section was) and
+# the heading level (an h3 under the closing headline's h2) changed. The
+# hero's small link to it is in (AS-2).
+ANDROID_FORM = '''<div id="waitlist" data-screen-label="Android Waitlist" style="margin-top:clamp(32px,5vh,48px);max-width:640px;scroll-margin-top:110px">
+            <h3 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h3>
+            <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
+              <form onSubmit="{{ submitHero }}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">
+                <input type="email" required="" aria-label="Email address" placeholder="you@email.com" style="flex: 1 1 220px; padding: 15px 16px; border: 1.5px solid #16130E; background: transparent; font: 500 14px 'Figtree',Arial,Helvetica,sans-serif; color: #16130E; outline: none; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: border-color .25s ease" style-focus="border-color:#C24E1F">
+                <button type="submit" disabled="{{ busy1 }}" style="padding: 15px 24px; background: #C24E1F; border: 1.5px solid #C24E1F; color: #F3EFE7; font: 700 12px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .12em; cursor: pointer; border-radius: 0; font-family:'Figtree',Arial,Helvetica,sans-serif; transition: background .25s ease, border-color .25s ease, transform .12s ease" style-hover="background:#16130E;border-color:#16130E" style-active="transform:translateY(2px)">{{ notifyBtn }}</button>
+                <sc-if value="{{ err1 }}"><div style="flex:1 1 100%;font:600 11.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#C24E1F">{{ err1 }}</div></sc-if>
+              </form>
+            </sc-if>
+            <sc-if value="{{ sub1 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:inline-block;border:2px solid #C24E1F;color:#C24E1F;padding:15px 22px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;animation:hzStamp .55s cubic-bezier(.2,1.6,.4,1) both">YOU'RE IN. WE'LL EMAIL YOU WHEN ANDROID LAUNCHES.</div>
+            </sc-if>
+            <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN ANDROID LAUNCHES.</div>
+          </div>'''
+old = APP_STORE_BADGE_LINK + '\n        </sc-if></div>'
+assert html.count(old) == 1, "closing badge not found at the end of #fin-form"
+html = html.replace(old, APP_STORE_BADGE_LINK + '\n          ' + ANDROID_FORM + '\n        </sc-if></div>')
+# The one #waitlist in the live DOM is this form (the hero's own is the switched-off
+# branch), and no section of its own sits between the closing section and the footer.
+assert html.count('id="waitlist"') == 2, "expected the hero's default form and this one"
+assert '<section id="waitlist"' not in html
+assert html.count('</section>\n\n<footer data-screen-label="Footer"') == 1, "footer anchor not found"
 
 # (AS-5) Component class: the launch-switch constant itself, alongside
 # WAITLIST_ENDPOINT/WAITLIST_HONEYPOT so all three "flip this to go live"
@@ -977,6 +1070,337 @@ def apply_content_app_store_switch(tpl: str) -> str:
         tpl = tpl.replace(NAV_PILL_OLD, NAV_PILL_LIVE).replace(CLOSING_BLOCK_OLD, CLOSING_BLOCK_LIVE)
     return tpl
 
+# ---- 2h. Launch copy mix (2026-10-09, founder-approved) ----
+# The hero, a new "Sound familiar?" block, the Upcoming plates and the closing
+# section carry the launch copy; the "What's live" card is folded into (S-2b)
+# above, which already owned that card. Everything else on the home page is
+# left exactly as it was: the marquee strips, the mechanic and its four steps,
+# the example card, the FAQ, the Android notify form, the footer. Copy rules
+# for this pass, enforced by test/launch-copy.test.js: sentence case, no em or
+# en dashes, no exclamation marks, "service fee" never "join fee", no provider
+# or platform names, the minimum stake is $20, never "free".
+
+# (LC-1) Hero. The headline keeps the design's word-by-word rise (one span per
+# word, the same 80 ms stagger) and its accent treatment on the last word
+# (italic, with the full stop in clay); the second sentence starts on its own
+# line. The sub keeps its paragraph styling and changes only its sentence;
+# founder revisions, later the same day: the sentence is the one below (the
+# second revision of it), and HEAD_META's og:description and
+# twitter:description both repeat it.
+HERO_H1_STYLE = ("style=\"margin:0 0 28px;font:600 clamp(46px,6.8vw,104px)/1.05 'Playfair Display',"
+                 "'Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance\"")
+
+def _hero_word(i: int, word: str, *, last: bool = False) -> str:
+    style = f"display:inline-block;animation:hzWord .9s cubic-bezier(.18,1.25,.4,1) {0.08 * (i + 1):.2f}s both"
+    if last:
+        return (f'<span style="{style};font-style:italic">{word.rstrip(".")}'
+                '<span style="color:#C24E1F;font-style:normal">.</span></span>')
+    return f'<span style="{style}">{word}</span>'
+
+_old_words = ["Put", "your", "money", "where", "your", "goals", "are."]
+HERO_H1_OLD = (f"<h1 {HERO_H1_STYLE}>\n        "
+               + "\n        ".join(_hero_word(i, w, last=i == 6) for i, w in enumerate(_old_words))
+               + "\n      </h1>")
+assert html.count(HERO_H1_OLD) == 1, "hero headline not found"
+HERO_WORDS = ["You", "don't", "need", "motivation.", "You", "need", "consequences."]
+HERO_H1_NEW = (f"<h1 {HERO_H1_STYLE}>\n        "
+               + "\n        ".join(_hero_word(i, w, last=i == 6) + ("\n        <br>" if i == 3 else "")
+                                   for i, w in enumerate(HERO_WORDS))
+               + "\n      </h1>")
+html = html.replace(HERO_H1_OLD, HERO_H1_NEW)
+
+HERO_SUB_OLD = ("Stake $50–$500 of your own money on your own goal. Post proof every day. "
+                "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.")
+HERO_SUB_NEW = ("Pick a goal. Put $20 to $500 on the line. Prove it daily. "
+                "Finish and get it all back, plus a cut of what the quitters lost.")
+assert html.count(HERO_SUB_OLD) == 1, "hero sub not found"
+html = html.replace(HERO_SUB_OLD, HERO_SUB_NEW)
+
+# (LC-2) "Sound familiar?": a block directly after the hero's marquee strip and
+# before the mechanic, built from the mechanic's own pieces. Founder revision,
+# 2026-10-09: it began as a plain block of four text lines; it now sits on the
+# page's card system, like the four mechanic steps.
+#   - The section pattern (container width, side padding) and the eyebrow are
+#     the mechanic's: "SOUND FAMILIAR?" wears THE MECHANIC's label style, set
+#     uppercase by CSS so the source stays in sentence case.
+#   - The headline is "You don't have a discipline problem. You have a
+#     nothing-to-lose problem." in the style and size of the mechanic's "Lock
+#     in or you lose.", with the accent full stop on its last word.
+#   - Under it, three cards in a row, stacked at 960px and below (so on every
+#     phone). Each takes its surface, radius, shadow, hover, label chip and big
+#     index number from the mechanic's first step card, read out of that card's
+#     markup below rather than retyped, so they cannot drift from it; each is
+#     one chip and one line, the line in the card title's display serif.
+#     They are not data-plate cards: that marker is the mechanic steps' and the
+#     Hunts' (counted in (LC-3)).
+# The bottom padding is shorter than the top so the block reads as the lead-in
+# to "The mechanic" that answers it.
+# "nothing-to-lose" is kept whole (no break after "nothing-") so that on a phone
+# the last line reads "nothing-to-lose problem." rather than splitting the compound.
+FAMILIAR_HEADLINE = ("You don't have a discipline problem. You have a "
+                     '<span style="white-space:nowrap">nothing-to-lose</span> problem')
+FAMILIAR_CARDS = [
+    ("THE GYM", "Third gym membership. Zero workouts."),
+    ("THE MONDAY", "You said Monday. It is now October."),
+    ("THE CAMERA ROLL", "Your camera roll is full of day-one screenshots. There is no day two."),
+]
+_step = re.search(
+    r'<div data-plate="" style="position:relative;margin-right:clamp\(0px,4vw,42px\);([^"]*)" style-hover="([^"]*)">\s*'
+    r'<div style="([^"]*)">01</div>\s*'
+    r'<div style="([^"]*)">STAKE</div>\s*'
+    r'<h3 style="margin:0 0 7px;([^"]*)">Stake what hurts to lose', html)
+assert _step, "the mechanic's first step card was not found"
+CARD_FACE, CARD_HOVER, CARD_NUMBER, CARD_CHIP, CARD_TITLE = _step.groups()
+assert CARD_FACE.startswith("padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,24px);border:1px solid rgba(22,19,14,.12);"
+                            "border-radius:16px;background:linear-gradient("), "mechanic card surface drifted"
+assert "box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 20px 34px -30px rgba(22,19,14,.55)" in CARD_FACE
+assert CARD_NUMBER.startswith("position:absolute;top:clamp(14px,1.8vw,20px);right:clamp(16px,2vw,22px);"
+                              "font:400 clamp(26px,3vw,38px) 'Playfair Display'"), "mechanic index number drifted"
+assert CARD_CHIP.startswith("display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;"), \
+    "mechanic label chip drifted"
+assert CARD_TITLE.startswith("padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 "), "mechanic card title drifted"
+_headline = re.search(r'<h2 style="margin:0;(font:600 clamp\(34px,4\.4vw,60px\)/1\.06 [^"]*)">'
+                      r'Lock in or you lose<span style="color:#C24E1F">\.</span></h2>', html)
+assert _headline, "the mechanic's headline was not found"
+_eyebrow = re.search(r'<div style="([^"]*)">THE MECHANIC</div>', html)
+assert _eyebrow, "THE MECHANIC eyebrow was not found"
+
+CARD_LINE_STYLE = "margin:0;" + CARD_TITLE + ";text-wrap:balance"
+familiar_cards = "\n      ".join(
+    f'<div data-familiar-card="" style="position:relative;{CARD_FACE}" style-hover="{CARD_HOVER}">\n'
+    f'        <div style="{CARD_NUMBER}">{i + 1:02d}</div>\n'
+    f'        <div style="{CARD_CHIP}">{chip}</div>\n'
+    f'        <p style="{CARD_LINE_STYLE}">{line}</p>\n'
+    '      </div>'
+    for i, (chip, line) in enumerate(FAMILIAR_CARDS))
+FAMILIAR_SECTION = f"""<section id="familiar" data-screen-label="Sound familiar" style="position:relative;padding:clamp(64px,9vh,104px) clamp(20px,5vw,64px) clamp(8px,2vh,24px)">
+  <div style="max-width:1220px;margin:0 auto">
+    <div style="{_eyebrow.group(1)};text-transform:uppercase">Sound familiar?</div>
+    <h2 style="margin:0 0 clamp(26px,4vh,42px);{_headline.group(1)}">{FAMILIAR_HEADLINE}<span style="color:#C24E1F">.</span></h2>
+    <div data-familiar-cards="">
+      {familiar_cards}
+    </div>
+  </div>
+</section>
+
+"""
+old = '<section id="mechanic" data-screen-label="Mechanic"'
+assert html.count(old) == 1, "mechanic section not found"
+assert html.count('data-screen-label="Ticker"') == 1
+assert html.index('data-screen-label="Ticker"') < html.index(old)
+html = html.replace(old, FAMILIAR_SECTION + old)
+# Three across, then one column from 960px down: with the section's side
+# padding that keeps every card wide enough for its longest line.
+FAMILIAR_CSS = ("[data-familiar-cards]{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.6vw,20px)}\n"
+                "@media (max-width:960px){[data-familiar-cards]{grid-template-columns:1fr}}\n")
+old = "#ch-rail{overscroll-behavior-x:contain}\n"
+assert html.count(old) == 1, "rail style rule not found (familiar CSS anchor)"
+html = html.replace(old, old + FAMILIAR_CSS)
+
+# (LC-3) Upcoming: the five placeholder plates become the Hunts actually open
+# on Discover. Fetched once from the public API,
+# https://api.huntz.ai/v1/hunts?limit=50, on 2026-10-09: it listed three
+# Hunts, all enrolling, all starting 2026-10-12, so all three qualify (start
+# on or after the build date, ordered by start date, at most five). The list
+# is hard-coded on purpose, with that date; a live feed is a later change, and
+# this constant is what it replaces. Each plate keeps the design's card (the
+# same style, header, title and row treatment are reused verbatim, asserted
+# below); the rows read the Hunt's cadence, length, minimum stake and start
+# date, and the "I want this hunt" row is a real link to the Hunt's universal
+# link, which opens the app when it is installed and the /hunt page otherwise.
+# The link also covers the whole card (a positioned ::after, in the style
+# block), so the card is one tap on a phone while the focus ring and the
+# accessible name stay on the row itself.
+LIVE_HUNTS = [
+    {"id": "07bfc657-8dba-4a48-9842-63ea34d0f5e3", "title": "45-Minute Exercise Streak",
+     "windows": 14, "unit": "day", "start_at": "2026-10-12T07:00:00.000Z", "tz": "America/Los_Angeles"},
+    {"id": "70b48ded-9210-4aff-ab43-8a6a5fc0b9a9", "title": "Post daily on your platform",
+     "windows": 30, "unit": "day", "start_at": "2026-10-12T07:00:00.000Z", "tz": "America/Los_Angeles"},
+    {"id": "a2c3422e-209d-460c-8c60-1ee57fd8d548", "title": "Read 20 Minutes a Day",
+     "windows": 30, "unit": "day", "start_at": "2026-10-12T07:00:00.000Z", "tz": "America/Los_Angeles"},
+]
+assert 1 <= len(LIVE_HUNTS) <= 5
+HUNT_LINK = SITE_URL + "/hunt/{id}"
+# The API carries stakeRange.minMinor as a minor-unit string ("2000"); every
+# listed Hunt opens at the platform minimum, so the plates say so directly.
+HUNT_STAKE = "FROM $20"
+HUNT_CADENCE = {"day": "1 CHECK-IN A DAY", "week": "1 CHECK-IN A WEEK"}
+MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+
+def hunt_starts(h: dict) -> str:
+    """'OCT 12': the Hunt's first day in its own time zone, not the viewer's."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    d = datetime.fromisoformat(h["start_at"].replace("Z", "+00:00")).astimezone(ZoneInfo(h["tz"]))
+    return f"{MONTHS[d.month - 1]} {d.day}"
+
+def hunt_length(h: dict) -> str:
+    n, unit = h["windows"], h["unit"].upper()
+    return f"{n} {unit}{'S' if n != 1 else ''}"
+
+rail_start = html.index('<div id="ch-rail"')
+rail_end = html.index('<section id="why"', rail_start)
+old_rail = html[rail_start:rail_end]
+RAIL_CLOSE = "\n    </div>\n  </div>\n</section>\n\n"
+assert old_rail.endswith(RAIL_CLOSE), "Upcoming rail does not close as expected"
+rail_open = old_rail[:old_rail.index(">") + 1]
+plates_old = old_rail[len(rail_open):-len(RAIL_CLOSE)]
+assert plates_old.count('<div data-plate=""') == 5, "expected the five placeholder plates"
+
+# The design's plate, lifted from the first plate as (I-2) left it: its own
+# card style and hover, the header row, the title, the two row styles and
+# the CTA row. Each is asserted against the old rail so the new plates cannot
+# drift from the design's card.
+m = re.search(r'<div data-plate="" onClick="\{\{ pick0 \}\}"[^>]*? style="cursor:pointer;([^"]*)" style-hover="([^"]*)">', plates_old)
+assert m, "first plate's style not found"
+PLATE_STYLE, PLATE_HOVER = m.group(1), m.group(2)
+assert PLATE_STYLE.startswith("scroll-snap-align:start;") and "position:" not in PLATE_STYLE
+PLATE_HEAD = ('<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:clamp(26px,4vh,44px)">\n'
+              "              <span style=\"font:700 9px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.16em;color:currentColor;opacity:.88\">HUNT {nn}</span>\n"
+              "              <span style=\"font:400 clamp(24px,2.4vw,34px) 'Playfair Display','Times New Roman',serif;letter-spacing:-.01em;color:currentColor;opacity:.17;line-height:1\">{nn}</span>\n"
+              "            </div>\n"
+              "            <div style=\"font:600 clamp(22px,2.2vw,30px)/1.15 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:currentColor\">{title}</div>")
+ROW_RULED = ("<div style=\"display:flex;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid currentColor;"
+             "font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor\">"
+             '<span style="opacity:.85">{k}</span><span style="font-weight:700">{v}</span></div>')
+ROW_PLAIN = ("<div style=\"display:flex;justify-content:space-between;gap:10px;"
+             "font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.1em;color:currentColor\">"
+             '<span style="opacity:.85">{k}</span><span style="font-weight:700">{v}</span></div>')
+CTA_STYLE = ("display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;"
+             "border-top:1px solid currentColor;font:700 9.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.15em;color:currentColor")
+CTA_OLD = f'<div style="{CTA_STYLE}"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></div>'
+assert PLATE_HEAD.format(nn="01", title="Apply to jobs") in plates_old, "plate header/title markup drifted"
+assert ROW_RULED.format(k="CADENCE", v="5 JOBS / DAY") in plates_old, "ruled row markup drifted"
+assert ROW_PLAIN.format(k="STAKE", v="FROM $50") in plates_old, "plain row markup drifted"
+assert plates_old.count(CTA_OLD) == 5, "I WANT THIS HUNT rows not found"
+
+def _esc(s: str) -> str:
+    """Text and double-quoted attribute escaping for the Hunt titles, which are
+    creator-written and arrive from the API, not from this file."""
+    import html as _h
+    return _h.escape(s, quote=True)
+
+def hunt_plate(i: int, h: dict) -> str:
+    nn = f"{i + 1:02d}"
+    title = _esc(h["title"])
+    link = (f'<a data-hunt-link="" href="{HUNT_LINK.format(id=h["id"])}" aria-label="I want this hunt: {title}" '
+            f'style="{CTA_STYLE};text-decoration:none"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></a>')
+    return (f'        <div data-plate="" style="position:relative;{PLATE_STYLE}" style-hover="{PLATE_HOVER}">\n'
+            f'          <div>\n'
+            f'            {PLATE_HEAD.format(nn=nn, title=title)}\n'
+            f'          </div>\n'
+            f'          <div style="display:flex;flex-direction:column;gap:9px">\n'
+            f'            {ROW_RULED.format(k="CADENCE", v=HUNT_CADENCE[h["unit"]])}\n'
+            f'            {ROW_RULED.format(k="LENGTH", v=hunt_length(h))}\n'
+            f'            {ROW_RULED.format(k="STAKE", v=HUNT_STAKE)}\n'
+            f'            {ROW_PLAIN.format(k="STARTS", v=hunt_starts(h))}\n'
+            f'            {link}\n'
+            f'          </div>\n'
+            f'        </div>')
+
+plates_new = "\n".join(hunt_plate(i, h) for i, h in enumerate(LIVE_HUNTS))
+html = html[:rail_start] + rail_open + "\n" + plates_new + RAIL_CLOSE + html[rail_end:]
+assert html.count('<div data-plate=""') == 5 + len(LIVE_HUNTS), "plate count off (4 mechanic steps + the closing card + the Hunts)"
+assert "FROM $50" not in html
+
+# One tap anywhere on the card follows its link.
+old = "#ch-rail{overscroll-behavior-x:contain}\n"
+assert html.count(old) == 1, "rail style rule not found"
+html = html.replace(old, old + "[data-plate] a[data-hunt-link]::after{content:'';position:absolute;inset:0}\n")
+
+# The plates stopped being waitlist "interest" pickers, so the handlers, the
+# button semantics and the placeholder names that existed only for that are
+# retired here: (I-2), (I-5b), (AS-6) and (AS-8) above still assert the design
+# and build them, this is where they come back out. The interest chip, its
+# clear button and the INTEREST merge field stay as inert plumbing: nothing
+# sets the interest any more, and the field goes out empty.
+PICK_METHOD = """
+  pickHunt(name) {
+    this.setState({ interest: name });
+    this.playFinale(true);
+    const cta = document.getElementById('cta');
+    if (cta) cta.scrollIntoView({ block: 'start' });
+    setTimeout(() => { const i = document.querySelector('#fin-form input'); if (i) i.focus({ preventScroll: true }); }, 80);
+  }"""
+PICKS_BLOCK = """
+    if (!this._picks) {
+      const names = ['Apply to jobs', 'Post content', 'Read books', 'Stay fit', 'Live stream'];
+      this._picks = names.map(n => () => this.pickHunt(n));
+      this._pickKeys = names.map(n => (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.pickHunt(n); } });
+    }"""
+PICK_VALS = ("\n      pick0: appStoreMode ? undefined : this._picks[0], pick1: appStoreMode ? undefined : this._picks[1], "
+             "pick2: appStoreMode ? undefined : this._picks[2], pick3: appStoreMode ? undefined : this._picks[3], "
+             "pick4: appStoreMode ? undefined : this._picks[4],\n"
+             "      pickkey0: appStoreMode ? undefined : this._pickKeys[0], pickkey1: appStoreMode ? undefined : this._pickKeys[1], "
+             "pickkey2: appStoreMode ? undefined : this._pickKeys[2], pickkey3: appStoreMode ? undefined : this._pickKeys[3], "
+             "pickkey4: appStoreMode ? undefined : this._pickKeys[4],")
+PLATE_VALS = """,
+      plateRole: appStoreMode ? undefined : 'button', plateTabIndex: appStoreMode ? undefined : '0',
+      pickAria0: appStoreMode ? undefined : 'Join the waitlist: interested in Apply to jobs',
+      pickAria1: appStoreMode ? undefined : 'Join the waitlist: interested in Post content',
+      pickAria2: appStoreMode ? undefined : 'Join the waitlist: interested in Read books',
+      pickAria3: appStoreMode ? undefined : 'Join the waitlist: interested in Stay fit',
+      pickAria4: appStoreMode ? undefined : 'Join the waitlist: interested in Live stream'"""
+for dead in (PICK_METHOD, PICKS_BLOCK, PICK_VALS, PLATE_VALS):
+    assert html.count(dead) == 1, "interest-picker code not found: " + dead.strip()[:48]
+    html = html.replace(dead, "")
+for name in HUNT_NAMES:
+    assert name not in html, f"placeholder Hunt {name!r} survived"
+for token in ("pickHunt", "_picks", "_pickKeys", "plateRole", "plateTabIndex", "pickAria", "pickkey"):
+    assert token not in html, f"{token} survived"
+
+# (LC-4) Closing section. The headline keeps the design's per-word reveal
+# (data-fw spans, animated by playFinale) and the accent treatment on the
+# last word; "Quitting just got expensive." sits under it as #fin-sub, an id
+# the design's own finBits list already looks for, so it rises in with the
+# eyebrow and the button. The eyebrow becomes YOUR MOVE. The store badge
+# below it, and the Android form under that, are (AS-3) and (AS-4).
+FW_STYLE = 'style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)"'
+FW_ITALIC_STYLE = 'style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic"'
+CLOSING_H2_STYLE_OLD = ("style=\"margin:0 0 clamp(24px,4vh,34px);font:600 clamp(40px,5.6vw,78px)/1.03 'Playfair Display',"
+                        "'Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance;color:#16130E\"")
+CLOSING_H2_OLD = (
+    f"<h2 {CLOSING_H2_STYLE_OLD}>\n"
+    f'          <span data-fw="" {FW_STYLE}>Hunt&nbsp;</span><span data-fw="" {FW_STYLE}>your&nbsp;</span>'
+    f'<span data-fw="" {FW_STYLE}>goals<span style="color:#C24E1F">.</span></span>\n'
+    "          <br>\n"
+    f'          <span data-fw="" {FW_ITALIC_STYLE}>Stop&nbsp;</span>'
+    f'<span data-fw="" {FW_ITALIC_STYLE}>hiding<span style="color:#C24E1F;font-style:normal">.</span></span>\n'
+    "        </h2>")
+assert html.count(CLOSING_H2_OLD) == 1, "closing headline not found"
+CLOSING_H2_NEW = (
+    f"<h2 {CLOSING_H2_STYLE_OLD.replace('margin:0 0 clamp(24px,4vh,34px)', 'margin:0 0 clamp(14px,2.4vh,20px)')}>\n"
+    f'          <span data-fw="" {FW_STYLE}>Become&nbsp;</span><span data-fw="" {FW_STYLE}>someone&nbsp;</span>'
+    f'<span data-fw="" {FW_STYLE}>who&nbsp;</span>'
+    f'<span data-fw="" {FW_ITALIC_STYLE}>finishes<span style="color:#C24E1F;font-style:normal">.</span></span>\n'
+    "        </h2>\n"
+    '        <p id="fin-sub" style="margin:0 0 clamp(24px,4vh,34px);font:500 italic clamp(19px,2vw,27px)/1.3 '
+    f"{SERIF};letter-spacing:-.01em;color:{BODYC};text-wrap:balance;opacity:0;transform:translateY(20px)\">"
+    "Quitting just got expensive.</p>")
+html = html.replace(CLOSING_H2_OLD, CLOSING_H2_NEW)
+assert "$('fin-sub')" in html, "the design's finBits no longer looks for #fin-sub"
+
+old = ">READY WHEN YOU ARE</div>"
+assert html.count(old) == 1, "closing eyebrow not found"
+html = html.replace(old, ">YOUR MOVE</div>")
+
+# (LC-5) The giant HUNTZ. wordmark at the very bottom of the closing section
+# stands on its own. Founder revisions, 2026-10-09: the line under it, "Put your
+# money where your goals are.", first became "The marketplace for accountability.";
+# the footer's own brand block, a few hundred pixels below (HUNTZ., that same
+# line, the not-a-gambling-platform chip), already said exactly that, so the
+# line under the wordmark is removed and the footer's is the page's one tagline.
+# The inner pages' footers are the route map and nothing else (no wordmark, no
+# tagline), so nothing changes there. The share card's titles are HEAD_META's.
+FOOTER_TAGLINE = ('\n      <div style="margin-top:clamp(6px,1.5vh,14px);font:500 italic clamp(15px,1.5vw,20px) '
+                  "'Playfair Display','Times New Roman',serif;color:#6E6759\">Put your money where your goals are.</div>")
+assert html.count(FOOTER_TAGLINE) == 1, "closing wordmark tagline not found"
+assert html.count('id="fin-mark"') == 1
+assert html.index('id="fin-mark"') < html.index(FOOTER_TAGLINE) < html.index('<footer data-screen-label="Footer"'), \
+    "the tagline is no longer between the wordmark and the footer"
+html = html.replace(FOOTER_TAGLINE, "")
+assert html.count("The marketplace for accountability.") == 1, "the footer brand block should hold the one tagline"
+
 # ---- 3. inline React + ReactDOM + support.js (replaces the src include) ----
 def js_escape(src: str) -> str:
     # keep inline <script> content safe; \/ == / inside JS strings/regexes
@@ -1025,20 +1449,25 @@ import json
 ASSETS = ROOT / "assets"
 ASSETS.mkdir(exist_ok=True)
 
-def write_hashed(stem: str, ext: str, content: str) -> str:
-    """Write assets/<stem>.<hash8>.<ext>, prune stale siblings, return the path."""
-    digest = hashlib.sha256(content.encode()).hexdigest()[:8]
+def write_hashed(stem: str, ext: str, content: "str | bytes") -> str:
+    """Write assets/<stem>.<hash8>.<ext>, prune stale siblings, return the path.
+    Bytes are written exactly as given (the App Store badge is Apple's file)."""
+    data = content.encode() if isinstance(content, str) else content
+    digest = hashlib.sha256(data).hexdigest()[:8]
     name = f"{stem}.{digest}.{ext}"
     for old in ASSETS.glob(f"{stem}.????????.{ext}"):
         if old.name != name:
             old.unlink()
-    (ASSETS / name).write_text(content)
+    (ASSETS / name).write_bytes(data)
     return f"/assets/{name}"
 
 fonts_css_out = ("/* Playfair Display + Figtree, latin subset, embedded. Generated by "
                  "build/assemble.py — do not edit. */\n" + "\n".join(kept) + "\n")
 FONTS_HREF = write_hashed("fonts", "css", fonts_css_out)
 APP_HREF = write_hashed("app", "js", app_js)
+# Apple's badge, byte for byte; its name was fixed earlier (the markup that
+# references it is patched in 2f), so the two must agree.
+assert write_hashed("app-store-badge-black", "svg", APP_STORE_BADGE_BYTES) == APP_STORE_BADGE_HREF
 # Kept for any cached copy of the earlier legal pages that still links it.
 (ASSETS / "fonts.css").write_text(fonts_css_out)
 
@@ -1077,23 +1506,27 @@ def breadcrumb_ld(title: str, slug: str) -> str:
                    {"@type": "ListItem", "position": 1, "name": "Huntz", "item": SITE_URL + "/"},
                    {"@type": "ListItem", "position": 2, "name": title, "item": f"{SITE_URL}/{slug}"}]})
 
-# Search metadata leads with the category (per the approved SEO plan); the
-# social card keeps the brand line, which the visible hero also carries, so
-# metadata and visible copy agree in both places.
+# Search metadata leads with the category (per the approved SEO plan). The
+# social card's titles (og:title, twitter:title) are the closing line of the
+# page, "Huntz: Become someone who finishes." (founder revision, 2026-10-09; they
+# used to carry the retired brand line "Put your money where your goals are."),
+# and both of its descriptions (og and twitter) are the hero sub's own sentence
+# (the launch copy mix, 2h above), so the card agrees with the visible copy.
+SHARE_TITLE = "Huntz: Become someone who finishes."
 HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</title>
 <meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is on the App Store.">
 <link rel="canonical" href="{SITE_URL}/">
 <meta property="og:site_name" content="Huntz">
-<meta property="og:title" content="Huntz · Put your money where your goals are.">
-<meta property="og:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back, plus a share of the stakes forfeited by everyone who quit.">
+<meta property="og:title" content="{SHARE_TITLE}">
+<meta property="og:description" content="{HERO_SUB_NEW}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{SITE_URL}/">
 <meta property="og:image" content="{SITE_URL}/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Huntz · Put your money where your goals are.">
-<meta name="twitter:description" content="Stake $50–$500 on your own goal. Post proof daily. Finish and get 100% back.">
+<meta name="twitter:title" content="{SHARE_TITLE}">
+<meta name="twitter:description" content="{HERO_SUB_NEW}">
 <meta name="twitter:image" content="{SITE_URL}/og-image.jpg">
 <meta name="apple-itunes-app" content="app-id=6802558635">
 {ICON_LINKS}
@@ -1138,6 +1571,11 @@ FOCUS_JS = """<script>
   function focusWaitlist() {
     var w = document.getElementById('waitlist');
     if (!w) return;
+    // The Android form sits inside the closing section's reveal (#fin-form fades
+    // in on a stagger once that section scrolls into view). Arriving by link,
+    // show it at once, so there is something to land on and the caret is visible.
+    var reveal = w.closest('#fin-form');
+    if (reveal) { reveal.style.transition = 'none'; reveal.style.opacity = '1'; reveal.style.transform = 'none'; }
     var r = w.getBoundingClientRect();
     glideTo(r.top + pageYOffset - Math.max(72, (innerHeight - r.height) / 2));
     // preventScroll so the caret landing in the field does not fight the tween.
@@ -1161,6 +1599,10 @@ home = home.replace("</body>", drawer("/", "#waitlist") + "\n" + NAV_JS + "\n" +
 
 art = html.replace("<!--HZ:FONTS-->", font_style)
 art = art.replace("<!--HZ:SCRIPTS-->", "")
+# The artifact has no assets/ beside it: Apple's badge travels as a data URI.
+assert art.count(APP_STORE_BADGE_HREF) == 2, "expected the hero and closing badges in the artifact"
+art = art.replace(APP_STORE_BADGE_HREF,
+                  "data:image/svg+xml;base64," + base64.b64encode(APP_STORE_BADGE_BYTES).decode())
 art = art.replace("</body>", legal + "\n</body>")
 m = re.search(r"<body>\n?(.*)\n?</body>", art, re.S)
 fragment = (inline_scripts + "\n" + m.group(1) + "\n<style>" + NAV_CSS + HOME_NAV_CSS + "</style>\n"

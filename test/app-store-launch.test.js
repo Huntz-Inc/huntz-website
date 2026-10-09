@@ -3,12 +3,17 @@
 // since launch day, 2026-10-09): index.html's Component class gains an
 // APP_STORE_URL config field, next to WAITLIST_ENDPOINT, that flips the home
 // page from "join the waitlist" to "download on the App Store" once set: the
-// nav link, hero button and closing CTA become pill-shaped "Download app"
-// links carrying an inline Apple mark. The same build-time APP_STORE_URL
+// nav link becomes a pill-shaped "Download app" link carrying an inline Apple
+// mark, and the hero and the closing CTA carry Apple's own "Download on the
+// App Store" badge (founder revision, 2026-10-09; its artwork, size and
+// clear-space rules are asserted in test/app-store-badge.test.js). The same
+// build-time APP_STORE_URL
 // constant also drives the shared mobile drawer (build/assemble.py's
 // drawer()), the inner pages' nav pill and closing block, four pages'
-// in-copy sentences and the home page's "What happens next" rows. See
-// README.md, "App Store launch switch".
+// in-copy sentences and the home page's "What's live" card (the "What
+// happens next" card until the launch copy mix, 2026-10-09, which also
+// turned the Upcoming plates into links to the live Hunts; see
+// test/launch-copy.test.js). See README.md, "App Store launch switch".
 //
 //     npm test          (or: node --test "test/*.test.js")
 //
@@ -94,6 +99,15 @@ const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  * viewBox="0 0 100 100".
  */
 const APPLE_MARK_RE = /<svg aria-hidden="true" viewBox="0 0 384 512"[^>]*>[\s\S]*?<\/svg>/;
+
+/**
+ * Apple's badge as the hero and the closing CTA render it (build/assemble.py's
+ * APP_STORE_BADGE_LINK): a plain link to the listing around the unaltered
+ * artwork, which is a content-hashed file under /assets/.
+ */
+const BADGE_LINK_RE = new RegExp(
+  `<a href="${escapeRe(APP_STORE_URL)}" data-appstore-badge="" aria-label="Download on the App Store">`
+  + '<img src="/assets/app-store-badge-black\\.[0-9a-f]{8}\\.svg" alt="Download on the App Store" width="144" height="48"></a>');
 
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 
@@ -282,22 +296,28 @@ test('sanity: visibleMarkup strips embedded <script> source (which legitimately 
 
 // ---------------------------------------------------------------- default state
 
-test('default (APP_STORE_URL empty): renderVals() computes exactly today\'s waitlist copy and live handlers', () => {
+test('default (APP_STORE_URL empty): renderVals() computes exactly today\'s waitlist copy', () => {
   assert.equal(DEFAULT_VALS.appStoreMode, false);
   assert.equal(DEFAULT_VALS.appStoreUrl, '');
   assert.equal(DEFAULT_VALS.heroBtn, 'JOIN THE WAITLIST');
   assert.equal(DEFAULT_VALS.finalBtn, 'JOIN THE WAITLIST');
-  assert.equal(DEFAULT_VALS.plateRole, 'button');
-  assert.equal(DEFAULT_VALS.plateTabIndex, '0');
-  for (let i = 0; i < 5; i++) {
-    assert.equal(typeof DEFAULT_VALS['pick' + i], 'function', `pick${i} should be a live handler`);
-    assert.equal(typeof DEFAULT_VALS['pickkey' + i], 'function', `pickkey${i} should be a live handler`);
+});
+
+// Launch copy mix (2026-10-09): the Upcoming plates list the Hunts open on
+// Discover and link each one to its universal link (test/launch-copy.test.js),
+// so the waitlist "interest" pickers they used to be (pick0..pick4 and
+// pickkey0..pickkey4 with plateRole/plateTabIndex/pickAria0..4, switched off
+// in app-store mode) are retired in both modes rather than merely disabled.
+test('both modes: renderVals() carries no interest-picker value, and the Component has no picker code left', () => {
+  for (const [name, vals] of [['default', DEFAULT_VALS], ['live', LIVE_VALS]]) {
+    for (const key of Object.keys(vals)) {
+      assert.doesNotMatch(key, /^(pick|plate)/, `${name}: ${key} should be gone`);
+    }
   }
-  assert.equal(DEFAULT_VALS.pickAria0, 'Join the waitlist: interested in Apply to jobs');
-  assert.equal(DEFAULT_VALS.pickAria1, 'Join the waitlist: interested in Post content');
-  assert.equal(DEFAULT_VALS.pickAria2, 'Join the waitlist: interested in Read books');
-  assert.equal(DEFAULT_VALS.pickAria3, 'Join the waitlist: interested in Stay fit');
-  assert.equal(DEFAULT_VALS.pickAria4, 'Join the waitlist: interested in Live stream');
+  assert.doesNotMatch(componentSrc, /pickHunt|_picks|_pickKeys|plateRole|pickAria|pickkey/);
+  // The interest chip and its clear button stay as inert plumbing.
+  assert.equal(typeof DEFAULT_VALS.clearInterest, 'function');
+  assert.equal(DEFAULT_VALS.interest, '');
 });
 
 test('default: the nav waitlist link is present, targeting #waitlist', () => {
@@ -325,17 +345,17 @@ test('default: the closing CTA is present as a real submit button inside a form,
   assert.match(ctaSection, /<form onSubmit="fn"[^>]*>[\s\S]*?<button type="submit"[^>]*>JOIN THE WAITLIST<\/button>/);
 });
 
-test('default: all five interest plates are interactive: click/keyboard handlers, button role, and the waitlist aria-label', () => {
-  const plates = [...DEFAULT_HTML.matchAll(/<div data-plate="" onClick="([^"]*)" onKeyDown="([^"]*)" role="([^"]*)" tabIndex="([^"]*)" aria-label="([^"]*)"/g)];
-  assert.equal(plates.length, 5, 'expected 5 interest plates');
-  const names = ['Apply to jobs', 'Post content', 'Read books', 'Stay fit', 'Live stream'];
-  plates.forEach(([, onClick, onKeyDown, role, tabIndex, ariaLabel], i) => {
-    assert.equal(onClick, 'fn', `plate ${i} onClick`);
-    assert.equal(onKeyDown, 'fn', `plate ${i} onKeyDown`);
-    assert.equal(role, 'button', `plate ${i} role`);
-    assert.equal(tabIndex, '0', `plate ${i} tabIndex`);
-    assert.equal(ariaLabel, `Join the waitlist: interested in ${names[i]}`, `plate ${i} aria-label`);
-  });
+test('both modes: the Upcoming plates are static cards, one Hunt link each, with no waitlist handler or button role', () => {
+  for (const [name, rendered] of [['default', DEFAULT_HTML], ['live', LIVE_HTML]]) {
+    const rail = rendered.slice(rendered.indexOf('<div id="ch-rail"'), rendered.indexOf('<section id="why"'));
+    const plates = [...rail.matchAll(/<div data-plate=""([^>]*)>/g)];
+    assert.equal(plates.length, 3, `${name}: expected the three Hunts open on Discover`);
+    for (const [, attrs] of plates) {
+      assert.doesNotMatch(attrs, /onClick|onKeyDown|role=|tabIndex|aria-label/, `${name}: a plate still carries picker attributes`);
+    }
+    assert.equal((rail.match(/<a data-hunt-link="" href="https:\/\/www\.huntz\.ai\/hunt\/[0-9a-f-]{36}"/g) || []).length, 3, `${name}: one Hunt link per plate`);
+    assert.doesNotMatch(rail, /Join the waitlist: interested in|\{\{ pick/);
+  }
 });
 
 test('default: the #waitlist form (Mailchimp endpoint + honeypot) is present exactly once, in the hero', () => {
@@ -352,18 +372,11 @@ test('default: focusWaitlist and the #waitlist hash handling are present, uncond
 
 // ------------------------------------------------------------------- live state
 
-test('live (APP_STORE_URL set): renderVals() reports app-store mode with every plate handler off', () => {
+test('live (APP_STORE_URL set): renderVals() reports app-store mode', () => {
   assert.equal(LIVE_VALS.appStoreMode, true);
   assert.equal(LIVE_VALS.appStoreUrl, APP_STORE_URL);
   assert.equal(LIVE_VALS.appStoreLabel, 'Download app');
   assert.equal(LIVE_VALS.notifyBtn, 'NOTIFY ME');
-  assert.equal(LIVE_VALS.plateRole, undefined);
-  assert.equal(LIVE_VALS.plateTabIndex, undefined);
-  for (let i = 0; i < 5; i++) {
-    assert.equal(LIVE_VALS['pick' + i], undefined, `pick${i} should have no handler`);
-    assert.equal(LIVE_VALS['pickkey' + i], undefined, `pickkey${i} should have no handler`);
-    assert.equal(LIVE_VALS['pickAria' + i], undefined, `pickAria${i} should be absent`);
-  }
 });
 
 test('live: the nav link points at the App Store URL and reads "Download app"', () => {
@@ -380,109 +393,101 @@ test('live: the nav link points at the App Store URL and reads "Download app"', 
   assert.equal((LIVE_VISIBLE.match(/JOIN THE WAITLIST/g) || []).length, 0, 'nothing on the live page should still say this');
 });
 
-test('live: the hero renders a plain App Store link, not a form', () => {
+test('live: the hero renders Apple\'s badge as a plain App Store link, not a form', () => {
   const heroToPhone = LIVE_HTML.slice(LIVE_HTML.indexOf('<h1'), LIVE_HTML.indexOf('id="hz-phone"'));
-  assert.match(heroToPhone, new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"[^>]*>`));
-  assert.match(heroToPhone, /Download app/);
+  assert.match(heroToPhone, BADGE_LINK_RE);
+  assert.doesNotMatch(heroToPhone, /Download app/, 'the pill label is gone from the hero');
   assert.doesNotMatch(heroToPhone, /<form/);
   assert.doesNotMatch(heroToPhone, /NO SPAM/, 'the email-specific "no spam" note should not survive next to a download link');
 });
 
-test('live: the closing CTA renders a plain App Store link, not a form', () => {
-  const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf('WHAT HAPPENS NEXT'));
-  assert.match(ctaSection, new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"[^>]*>`));
-  assert.match(ctaSection, /Download app/);
-  assert.doesNotMatch(ctaSection, /<form/);
+test('live: the closing CTA renders Apple\'s badge as a plain App Store link, and the only form under it is the Android notify form', () => {
+  const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf("WHAT'S LIVE"));
+  assert.match(ctaSection, BADGE_LINK_RE);
+  assert.doesNotMatch(ctaSection, /Download app/, 'the pill label is gone from the closing CTA');
+  // The badge is not itself a form, and the closing form of the pre-launch
+  // page is not rendered: the one form here is the Android one, after the badge.
+  assert.equal((ctaSection.match(/<form/g) || []).length, 1);
+  const afterBadge = ctaSection.slice(ctaSection.search(BADGE_LINK_RE));
+  assert.match(afterBadge, /<form onSubmit="fn"[\s\S]*?>NOTIFY ME<\/button>/);
+  assert.doesNotMatch(ctaSection, /JOIN THE WAITLIST|JOINING/);
 });
 
 test('live: id="fin-form" still exists (the scroll-reveal animation keys off it in both modes)', () => {
   assert.match(LIVE_HTML, /<div id="fin-form"/);
 });
 
-test('live: the four App Store links (nav, hero, closing CTA, drawer) share the same URL and label, and nothing else does', () => {
+test('live: the four App Store links (nav, hero, closing CTA, drawer) share the same URL; the nav and drawer pills read "Download app", the hero and closing carry the badge, and nothing else does', () => {
   const linkRe = new RegExp(`<a href="${escapeRe(APP_STORE_URL)}"`, 'g');
   // Three rendered by the template, plus the Python-baked drawer's own link
   // (technique 3), which this build carries since launch.
   assert.equal((LIVE_REACTIVE.match(linkRe) || []).length, 3, 'expected exactly 3 template-rendered <a> links to the App Store URL (nav, hero, closing CTA)');
   assert.equal((drawerOf(LIVE_VISIBLE).match(linkRe) || []).length, 1, 'expected exactly 1 App Store link in the drawer');
   assert.equal((LIVE_VISIBLE.match(linkRe) || []).length, 4);
-  assert.equal((LIVE_REACTIVE.match(/Download app/g) || []).length, 3);
-  assert.equal((LIVE_VISIBLE.match(/Download app/g) || []).length, 4);
+  // Our small accent pill: the nav link (template) and the drawer link only.
+  assert.equal((LIVE_REACTIVE.match(/Download app/g) || []).length, 1);
+  assert.equal((LIVE_VISIBLE.match(/Download app/g) || []).length, 2);
+  // Apple's badge: the hero and the closing CTA, one each.
+  assert.equal((LIVE_REACTIVE.match(new RegExp(BADGE_LINK_RE.source, 'g')) || []).length, 2);
+  assert.equal((LIVE_VISIBLE.match(/data-appstore-badge/g) || []).length, 2);
   // No other spelling of the listing URL anywhere in the visible page.
   assert.equal((LIVE_VISIBLE.match(/apps\.apple\.com/g) || []).length, 4);
 });
 
-test('live: the Apple mark SVG renders inside the nav link, the hero button and the closing CTA, each before its label', () => {
+test('live: the Apple mark SVG renders inside the nav pill before its label, and not in the hero or the closing CTA, which carry Apple\'s own badge', () => {
   const desktopNav = LIVE_VISIBLE.slice(LIVE_VISIBLE.indexOf('id="hz-nav"'), LIVE_VISIBLE.indexOf('<section id="hz-hero"'));
   const heroToPhone = LIVE_HTML.slice(LIVE_HTML.indexOf('<h1'), LIVE_HTML.indexOf('id="hz-phone"'));
-  const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf('WHAT HAPPENS NEXT'));
+  const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf("WHAT'S LIVE"));
 
-  for (const [name, region] of [['nav link', desktopNav], ['hero button', heroToPhone], ['closing CTA', ctaSection]]) {
-    assert.match(region, APPLE_MARK_RE, `${name}: Apple mark SVG missing`);
-    const markIdx = region.search(APPLE_MARK_RE);
-    const labelIdx = region.indexOf('Download app');
-    assert.notEqual(labelIdx, -1, `${name}: "Download app" label missing`);
-    assert.ok(markIdx < labelIdx, `${name}: the Apple mark should render to the left of the label`);
+  assert.match(desktopNav, APPLE_MARK_RE, 'nav link: Apple mark SVG missing');
+  const markIdx = desktopNav.search(APPLE_MARK_RE);
+  const labelIdx = desktopNav.indexOf('Download app');
+  assert.notEqual(labelIdx, -1, 'nav link: "Download app" label missing');
+  assert.ok(markIdx < labelIdx, 'nav link: the Apple mark should render to the left of the label');
+  for (const [name, region] of [['hero', heroToPhone], ['closing CTA', ctaSection]]) {
+    assert.doesNotMatch(region, APPLE_MARK_RE, `${name}: our own Apple glyph must not sit next to Apple's badge`);
   }
 
-  // Exactly one mark per button: three in the template, plus the drawer's
-  // own (generated separately at Python build time, technique 3), and
-  // nowhere else on the page.
-  assert.equal((LIVE_REACTIVE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 3);
-  assert.equal((LIVE_VISIBLE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 4);
+  // One mark in the template (the nav pill), plus the drawer's own
+  // (generated separately at Python build time, technique 3), and nowhere
+  // else on the page.
+  assert.equal((LIVE_REACTIVE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 1);
+  assert.equal((LIVE_VISIBLE.match(new RegExp(APPLE_MARK_RE.source, 'g')) || []).length, 2);
 });
 
 // 2026-09-25 founder feedback: the original 0.8em mark read as "super tiny"
-// (~10px on the hero's 12px font). Fixed sizes and a wider gap replace it;
-// this pins the exact numbers down so a future edit cannot silently shrink
-// them back.
-test('live: the Apple mark is 15px in the nav link and 18px in the hero button and closing CTA, each with a 10px gap', () => {
+// (~10px on the nav pill's 11px font). A fixed size and a wider gap replace
+// it; this pins the exact numbers down so a future edit cannot silently
+// shrink them back. (The 18px hero and closing marks it also pinned went with
+// those pills: the badge's own size is pinned in test/app-store-badge.test.js.)
+test('live: the Apple mark is 15px in the nav link, with a 10px gap', () => {
   const desktopNav = LIVE_VISIBLE.slice(LIVE_VISIBLE.indexOf('id="hz-nav"'), LIVE_VISIBLE.indexOf('<section id="hz-hero"'));
-  const heroToPhone = LIVE_HTML.slice(LIVE_HTML.indexOf('<h1'), LIVE_HTML.indexOf('id="hz-phone"'));
-  const ctaSection = LIVE_HTML.slice(LIVE_HTML.indexOf('id="fin-form"'), LIVE_HTML.indexOf('WHAT HAPPENS NEXT'));
 
   assert.match(desktopNav, /<svg aria-hidden="true" viewBox="0 0 384 512" width="15px" height="15px"/, 'nav mark should be 15px square');
-  assert.match(heroToPhone, /<svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px"/, 'hero mark should be 18px square');
-  assert.match(ctaSection, /<svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px"/, 'closing CTA mark should be 18px square');
-
-  for (const [name, region] of [['nav', desktopNav], ['hero', heroToPhone], ['closing CTA', ctaSection]]) {
-    assert.match(region, /gap:10px/, `${name}: expected a 10px icon-to-label gap`);
-  }
+  assert.match(desktopNav, /gap:10px/, 'nav: expected a 10px icon-to-label gap');
 });
 
-test('live: all five interest plates are inert: no click/keyboard handler, no button role, no waitlist aria-label, content unchanged', () => {
-  const plates = [...LIVE_HTML.matchAll(/<div data-plate="" onClick="([^"]*)" onKeyDown="([^"]*)" role="([^"]*)" tabIndex="([^"]*)" aria-label="([^"]*)"/g)];
-  assert.equal(plates.length, 5, 'expected 5 interest plate wrapper divs to still exist');
-  plates.forEach(([, onClick, onKeyDown, role, tabIndex, ariaLabel], i) => {
-    assert.equal(onClick, '', `plate ${i} onClick should be gone`);
-    assert.equal(onKeyDown, '', `plate ${i} onKeyDown should be gone`);
-    assert.equal(role, '', `plate ${i} role should be gone`);
-    assert.equal(tabIndex, '', `plate ${i} tabIndex should be gone`);
-    assert.equal(ariaLabel, '', `plate ${i} aria-label should be gone`);
-  });
-  assert.doesNotMatch(LIVE_VISIBLE, /Join the waitlist: interested in/);
-  // The five headings/content are untouched.
-  for (const name of ['Apply to jobs', 'Post content', 'Read books', 'Stay fit', 'Live stream']) {
-    assert.match(LIVE_HTML, new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  }
-  assert.match(LIVE_HTML, /I WANT THIS HUNT/, 'plate copy is kept, only interactivity is removed');
-});
-
-test('live: the waitlist form survives exactly once, relocated to the bottom and retitled for Android, with the same Mailchimp endpoint', () => {
+test('live: the waitlist form survives exactly once, relocated under the closing badge and retitled for Android, with the same Mailchimp endpoint', () => {
   assert.equal((LIVE_VISIBLE.match(/id="waitlist"/g) || []).length, 1, 'exactly one #waitlist in the live DOM');
-  assert.equal((LIVE_VISIBLE.match(/Not on iPhone\? Get notified for Android/g) || []).length, 1);
+  // Two mentions: the form's own heading, and the small link to it under the hero badge
+  // (test/android-notify.test.js).
+  assert.equal((LIVE_VISIBLE.match(/Not on iPhone\? Get notified for Android/g) || []).length, 2);
   assert.equal((LIVE_VISIBLE.match(/NOTIFY ME/g) || []).length, 1);
 
-  const androidSectionStart = LIVE_VISIBLE.indexOf('Not on iPhone');
-  const androidSection = LIVE_VISIBLE.slice(LIVE_VISIBLE.lastIndexOf('<section', androidSectionStart));
-  assert.match(androidSection, /id="waitlist"/, 'the relocated section carries the #waitlist id');
-  assert.match(androidSection, /<input type="email"/);
-  assert.match(androidSection, />NOTIFY ME</);
+  const androidStart = LIVE_VISIBLE.indexOf('id="waitlist"');
+  const androidBlock = LIVE_VISIBLE.slice(androidStart, LIVE_VISIBLE.indexOf("WHAT'S LIVE", androidStart));
+  assert.match(androidBlock, /^id="waitlist" data-screen-label="Android Waitlist"/, 'the relocated block carries the #waitlist id');
+  assert.match(androidBlock, /<input type="email"/);
+  assert.match(androidBlock, />NOTIFY ME</);
 
-  // It is physically the last section before the footer.
-  const footerIdx = LIVE_VISIBLE.indexOf('<footer');
-  assert.ok(androidSectionStart < footerIdx && footerIdx - androidSectionStart < 2000,
-    'the Android waitlist section should sit immediately before the footer');
+  // It sits directly under the closing section's badge, inside the closing section,
+  // so it is ahead of the footer (and of its brand block) and no section of its own
+  // sits between the two any more.
+  const badgeIdx = LIVE_VISIBLE.search(new RegExp(BADGE_LINK_RE.source + '\\s*<div id="waitlist"'));
+  assert.notEqual(badgeIdx, -1, 'the Android block should follow the closing badge directly');
+  assert.ok(badgeIdx < androidStart && androidStart < LIVE_VISIBLE.indexOf('<footer'));
+  assert.doesNotMatch(html, /<section id="waitlist"/);
+  assert.match(html, /<\/section>\n\n<footer data-screen-label="Footer"/, 'the footer follows the closing section directly');
 
   // Same backend as before: no second Mailchimp integration was introduced.
   // (The generic "list-manage.com/subscribe/post?u=..." pattern also matches
@@ -748,29 +753,42 @@ test('live: how-it-works.json\'s in-copy sentence becomes "The first Hunts are l
   assert.match(assemblePy, />the app<\/a>\.<\/p>/);
 });
 
-// --------------------------- "What happens next" rows ((S-2b), launch day)
+// ------------------------------- the "What's live" card ((S-2b), launch day)
 
-// The home page's "What happens next" card is static markup patched at
-// Python build time (build/assemble.py's (S-2b) block), not reactive, so
-// like the drawer it reads the same in both renders and is asserted on the
-// committed page: the pre-launch "iOS & Android app / COMING SOON" row
-// becomes a live iOS row plus an Android row still to come. The switch-off
-// row can only be read from the source.
-const NEXT_ROW_RE = (label, pill) => new RegExp(
-  '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-bottom:1px solid rgba\\(22,19,14,\\.1\\)">'
+// The home page's closing card is static markup patched at Python build time
+// (build/assemble.py's (S-2b) block), not reactive, so like the drawer it
+// reads the same in both renders and is asserted on the committed page. The
+// launch copy mix (2026-10-09) retitled it from "What happens next" to
+// "What's live": the iOS app is ON THE APP STORE, creator-hosted and private
+// Hunts are LIVE, and the Android app is the one row still COMING SOON, last
+// and without the rule the other rows carry. The switch-off card can only be
+// read from the source.
+const NEXT_ROW_RE = (label, pill, last = false) => new RegExp(
+  '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0'
+  + (last ? '' : ';border-bottom:1px solid rgba\\(22,19,14,\\.1\\)') + '">'
   + `<span style="[^"]*">${escapeRe(label)}</span><span style="[^"]*">${escapeRe(pill)}</span></div>`);
 
-test('live: the "What happens next" list marks the iOS app ON THE APP STORE, with Android still COMING SOON', () => {
-  const start = html.indexOf('WHAT HAPPENS NEXT');
-  assert.notEqual(start, -1, 'the "What happens next" card was not found');
+test('live: the "What\'s live" card lists the iOS app, creator-hosted hunts and private hunts as live, then the Android app as COMING SOON', () => {
+  const start = html.indexOf("WHAT'S LIVE");
+  assert.notEqual(start, -1, 'the "What\'s live" card was not found');
+  assert.doesNotMatch(html, /WHAT HAPPENS NEXT/, 'the pre-launch title should be gone');
   const card = html.slice(start, html.indexOf('</section>', start));
-  const ios = card.search(NEXT_ROW_RE('iOS app', 'ON THE APP STORE'));
-  const android = card.search(NEXT_ROW_RE('Android app', 'COMING SOON'));
-  assert.notEqual(ios, -1, 'iOS row missing or changed');
-  assert.notEqual(android, -1, 'Android row missing or changed');
-  assert.ok(ios < android, 'the live iOS row should come first');
+  const rows = [
+    card.search(NEXT_ROW_RE('iOS app', 'ON THE APP STORE')),
+    card.search(NEXT_ROW_RE('Creator-hosted hunts', 'LIVE')),
+    card.search(NEXT_ROW_RE('Private hunts with friends', 'LIVE')),
+    card.search(NEXT_ROW_RE('Android app', 'COMING SOON', true)),
+  ];
+  rows.forEach((at, i) => assert.notEqual(at, -1, `row ${i} missing or changed`));
+  assert.deepEqual([...rows].sort((a, b) => a - b), rows, 'the three live rows come first, Android last');
   assert.equal((card.match(/ON THE APP STORE/g) || []).length, 1);
-  assert.equal((card.match(/COMING SOON/g) || []).length, 3, 'Android, creator-hosted hunts and private hunts stay COMING SOON');
+  assert.equal((card.match(/>LIVE</g) || []).length, 2);
+  assert.equal((card.match(/COMING SOON/g) || []).length, 1, 'only the Android app is still to come');
+  // LIVE wears the same accent pill as the other two labels: one style string for all four.
+  const pills = [...card.matchAll(/<span style="(font:700 8\.5px[^"]*)">(ON THE APP STORE|LIVE|COMING SOON)<\/span>/g)];
+  assert.equal(pills.length, 4);
+  assert.equal(new Set(pills.map((p) => p[1])).size, 1, 'all four pills share one style');
+  assert.match(pills[0][1], /color:#C24E1F/);
   assert.doesNotMatch(html, /iOS &amp; Android app/, 'the pre-launch combined row should be gone');
 });
 
@@ -813,8 +831,8 @@ test('live: the Android notify section names the Android launch, and nothing vis
   // section's own source.
   assert.equal((LIVE_VISIBLE.match(/WHEN ANDROID LAUNCHES/g) || []).length, 1, 'the no-spam line');
   const sectionStart = html.indexOf('data-screen-label="Android Waitlist"');
-  assert.notEqual(sectionStart, -1, 'the Android section was not found');
-  const section = html.slice(sectionStart, html.indexOf('</section>', sectionStart));
+  assert.notEqual(sectionStart, -1, 'the Android block was not found');
+  const section = html.slice(sectionStart, html.indexOf("WHAT'S LIVE", sectionStart));
   assert.equal((section.match(/WHEN ANDROID LAUNCHES/g) || []).length, 2, 'the confirmation stamp and the no-spam line');
   assert.doesNotMatch(section, /WHEN WE LAUNCH/);
   assert.doesNotMatch(LIVE_VISIBLE, /WHEN WE LAUNCH/);

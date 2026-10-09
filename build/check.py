@@ -141,9 +141,70 @@ for phrase in ("48H", "48h", "48 hours", "48-hour", "48 hour"):
         fail(f"/: unsupported 48-hour settlement promise {phrase!r} outside the example card")
 if "IN PRE-LAUNCH" in home:
     fail("/: removed hero pre-launch disclaimer has reappeared")
+# Launch copy mix (2026-10-09, founder-approved; build/assemble.py 2h): the
+# home page's visible copy keeps to the founder's rules (no em or en dash, no
+# exclamation mark, the minimum stake is $20), and its four new pieces are on
+# the page. test/launch-copy.test.js pins the wording; this keeps a Python-only
+# build run honest too.
+home_text = re.sub(r"<[^>]+>", " ", re.sub(r"<(script|style)[^>]*>.*?</\1>", "", home, flags=re.S))
+for ch, what in (("—", "em dash"), ("–", "en dash"), ("!", "exclamation mark")):
+    if ch in home_text:
+        fail(f"/: {what} in the home page's visible copy")
+for stale in ("FROM $50", "Stake $50", "Put your money</span>", "Hunt&nbsp;", "READY WHEN YOU ARE", "WHAT HAPPENS NEXT",
+              ">Put your money where your goals are.</div>"):
+    if stale in home:
+        fail(f"/: pre-launch copy {stale!r} is back on the home page")
+for needle in (">motivation.</span>", ">consequences<span", 'id="familiar"', "Sound familiar?",
+               "nothing-to-lose</span> problem<span", 'data-hunt-link="" href="https://www.huntz.ai/hunt/',
+               "finishes<span", 'id="fin-sub"', "Quitting just got expensive.", "WHAT'S LIVE"):
+    if needle not in home:
+        fail(f"/: launch copy {needle!r} missing from the home page")
+# One tagline on the page, the footer brand block's; the giant wordmark above it
+# stands on its own. The share card's titles are the closing line.
+if home_text.count("The marketplace for accountability.") != 1 or "Put your money where your goals are" in home_text:
+    fail("/: the footer brand block should carry the page's one tagline, and the retired brand line should be gone")
+for tag in ('<meta property="og:title" content="Huntz: Become someone who finishes.">',
+            '<meta name="twitter:title" content="Huntz: Become someone who finishes.">'):
+    if tag not in home:
+        fail(f"/: share card title missing: {tag}")
+# "Sound familiar?" is three cards on the mechanic steps' card system (founder
+# revision, 2026-10-09): one chip and one line each.
+for chip, line in (("THE GYM", "Third gym membership. Zero workouts."),
+                   ("THE MONDAY", "You said Monday. It is now October."),
+                   ("THE CAMERA ROLL", "Your camera roll is full of day-one screenshots. There is no day two.")):
+    if f">{chip}</div>" not in home or f">{line}</p>" not in home:
+        fail(f"/: Sound familiar card {chip!r} is missing or changed")
+n_cards = home.count('data-familiar-card=""')
+if n_cards != 3:
+    fail(f"/: expected 3 Sound familiar cards, found {n_cards}")
 for link in ("/how-it-works", "/accountability-challenges", "/faq", "/about", "/contact", "/terms", "/privacy"):
     if f'href="{link}"' not in home:
         fail(f"/: footer link to {link} missing")
+
+# Apple's "Download on the App Store" badge in the hero and the closing section
+# (founder revision, 2026-10-09; build/assemble.py's badge block). Apple's
+# guidelines want the artwork unaltered and at least 40px high on screen;
+# test/app-store-badge.test.js pins the details, this keeps a Python-only
+# build run honest.
+badge_src = ROOT / "build" / "source" / "app-store-badge-black-en-us.svg"
+badge_served = sorted((ROOT / "assets").glob("app-store-badge-black.????????.svg"))
+if len(badge_served) != 1 or not badge_src.exists() or badge_served[0].read_bytes() != badge_src.read_bytes():
+    fail("assets/: the served App Store badge is missing, duplicated or not exactly the artwork in build/source/")
+else:
+    badge_link = ('<a href="{{ appStoreUrl }}" data-appstore-badge="" aria-label="Download on the App Store">'
+                  f'<img src="/assets/{badge_served[0].name}" alt="Download on the App Store" width="144" height="48"></a>')
+    if home.count(badge_link) != 2:
+        fail(f"/: expected the App Store badge exactly twice (hero, closing section), found {home.count(badge_link)}")
+badge_css = re.search(r"\[data-appstore-badge\] img\{display:block;height:(\d+)px;width:auto\}\n"
+                      r"@media \(max-width:640px\)\{\[data-appstore-badge\] img\{height:(\d+)px\}\}", home)
+if not badge_css or min(int(badge_css.group(1)), int(badge_css.group(2))) < 40:
+    fail("/: the App Store badge is under Apple's 40px minimum height (or its sizing rules are missing)")
+# The Android notify form sits directly under the closing badge (no section of its
+# own above the footer), and a small link under the hero's badge points at it.
+if home.count("data-android-link") != 1 or '<section id="waitlist"' in home:
+    fail("/: the Android notify form's hero link is missing, or the form is back in a section of its own")
+if not re.search(r'data-appstore-badge="" aria-label="Download on the App Store"><img [^>]*></a>\s*<div id="waitlist"', home):
+    fail("/: the Android notify form does not follow the closing section's badge directly")
 
 # Content pages: no em dashes in marketing copy (legal keeps counsel's own).
 # The contact form's success line is the founder's exact wording and is the
