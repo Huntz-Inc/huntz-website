@@ -316,8 +316,12 @@ test('copy rules: the visible home page has no em dash, en dash or exclamation m
   }
 });
 
-test('copy rules: the share card follows the hero sub, in both og:description and twitter:description', () => {
+test('copy rules: the share card follows the page, in og:title and twitter:title ("Huntz: Become someone who finishes.") and in both descriptions (the hero sub)', () => {
   const head = html.slice(0, html.indexOf('</head>'));
+  assert.match(head, /<meta property="og:title" content="Huntz: Become someone who finishes\.">/);
+  assert.match(head, /<meta name="twitter:title" content="Huntz: Become someone who finishes\.">/);
+  assert.doesNotMatch(head, /Put your money where your goals are/, 'the retired brand line');
+  assert.ok(textOf(visible).includes('Become someone who finishes.'), 'the title is the closing line the page carries');
   const sub = 'Pick a goal. Put $20 to $500 on the line. Prove it daily. Finish and get it all back, plus a cut of what the quitters lost.';
   assert.ok(HERO.includes(`>${sub}</p>`), 'the sentence under test is the hero sub');
   assert.match(head, new RegExp(`<meta property="og:description" content="${escapeRe(sub)}">`));

@@ -160,9 +160,13 @@ for needle in (">motivation.</span>", ">consequences<span", 'id="familiar"', "So
     if needle not in home:
         fail(f"/: launch copy {needle!r} missing from the home page")
 # One tagline on the page, the footer brand block's; the giant wordmark above it
-# stands on its own.
+# stands on its own. The share card's titles are the closing line.
 if home_text.count("The marketplace for accountability.") != 1 or "Put your money where your goals are" in home_text:
     fail("/: the footer brand block should carry the page's one tagline, and the retired brand line should be gone")
+for tag in ('<meta property="og:title" content="Huntz: Become someone who finishes.">',
+            '<meta name="twitter:title" content="Huntz: Become someone who finishes.">'):
+    if tag not in home:
+        fail(f"/: share card title missing: {tag}")
 # "Sound familiar?" is three cards on the mechanic steps' card system (founder
 # revision, 2026-10-09): one chip and one line each.
 for chip, line in (("THE GYM", "Third gym membership. Zero workouts."),

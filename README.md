@@ -319,8 +319,9 @@ Changes currently applied on top of the design:
   The giant HUNTZ. wordmark at the very bottom of the closing section stands
   on its own (the line under it, "Put your money where your goals are.", is
   gone), so the footer brand block's "The marketplace for accountability." is
-  the page's one tagline; the inner pages' footers have none. No em or en
-  dashes, no exclamation marks.
+  the page's one tagline; the inner pages' footers have none. The share card's
+  og:title and twitter:title read "Huntz: Become someone who finishes.". No em
+  or en dashes, no exclamation marks.
 - Keyboard support and focus rings on the FAQ and cards; muted grey darkened
   for contrast.
 - Below 641px the bar is logo + menu button, and a modal sheet carries every

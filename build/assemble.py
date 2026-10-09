@@ -1506,16 +1506,18 @@ def breadcrumb_ld(title: str, slug: str) -> str:
                    {"@type": "ListItem", "position": 1, "name": "Huntz", "item": SITE_URL + "/"},
                    {"@type": "ListItem", "position": 2, "name": title, "item": f"{SITE_URL}/{slug}"}]})
 
-# Search metadata leads with the category (per the approved SEO plan); the
-# social card keeps its brand line, "Put your money where your goals are."
-# (og:title, twitter:title), which the visible page no longer carries (LC-5);
-# both of its descriptions (og and twitter) are the hero sub's own sentence
-# (the launch copy mix, 2h above), so those agree with the visible copy.
+# Search metadata leads with the category (per the approved SEO plan). The
+# social card's titles (og:title, twitter:title) are the closing line of the
+# page, "Huntz: Become someone who finishes." (founder revision, 2026-10-09; they
+# used to carry the retired brand line "Put your money where your goals are."),
+# and both of its descriptions (og and twitter) are the hero sub's own sentence
+# (the launch copy mix, 2h above), so the card agrees with the visible copy.
+SHARE_TITLE = "Huntz: Become someone who finishes."
 HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</title>
 <meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is on the App Store.">
 <link rel="canonical" href="{SITE_URL}/">
 <meta property="og:site_name" content="Huntz">
-<meta property="og:title" content="Huntz · Put your money where your goals are.">
+<meta property="og:title" content="{SHARE_TITLE}">
 <meta property="og:description" content="{HERO_SUB_NEW}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{SITE_URL}/">
@@ -1523,7 +1525,7 @@ HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Huntz · Put your money where your goals are.">
+<meta name="twitter:title" content="{SHARE_TITLE}">
 <meta name="twitter:description" content="{HERO_SUB_NEW}">
 <meta name="twitter:image" content="{SITE_URL}/og-image.jpg">
 <meta name="apple-itunes-app" content="app-id=6802558635">
