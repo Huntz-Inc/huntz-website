@@ -67,7 +67,7 @@ const HARD_FALLBACK_HTML = `<!DOCTYPE html>
 <meta property="og:description" content="This Hunt invitation opens in the Huntz app. Get Huntz on the App Store, then open your invitation again on your iPhone to see the Hunt and join.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${SITE_URL}/">
-<meta property="og:image" content="${SITE_URL}/og-image.jpg">
+<meta property="og:image" content="${SITE_URL}/og-image.jpg?v=2">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
