@@ -1495,14 +1495,12 @@ def breadcrumb_ld(title: str, slug: str) -> str:
                    {"@type": "ListItem", "position": 1, "name": "Huntz", "item": SITE_URL + "/"},
                    {"@type": "ListItem", "position": 2, "name": title, "item": f"{SITE_URL}/{slug}"}]})
 
-# Search metadata leads with the category (per the approved SEO plan). The
-# social card's titles (og:title, twitter:title) are the closing line of the
-# page, "Huntz: Become someone who finishes." (founder revision, 2026-10-09; they
-# used to carry the retired brand line "Put your money where your goals are."),
-# and both of its descriptions (og and twitter) are the hero sub's own sentence
-# (the launch copy mix, 2h above), so the card agrees with the visible copy.
+# Browser sharing may use the document title instead of og:title, so all
+# three titles use the approved card copy. This also changes the search title.
+# Chrome on iOS supplies its own page snapshot; these tags cannot replace it.
+# The social descriptions repeat the hero sub so the card agrees with the page.
 SHARE_TITLE = "Huntz: Become someone who finishes."
-HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</title>
+HEAD_META = f"""<title>{SHARE_TITLE}</title>
 <meta name="description" content="Join structured accountability challenges, follow clear rules, submit progress, and build consistency with friends and communities. Huntz is on the App Store.">
 <link rel="canonical" href="{SITE_URL}/">
 <meta property="og:site_name" content="Huntz">

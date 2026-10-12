@@ -163,7 +163,8 @@ for needle in (">Make</span>", ">something<span", 'id="familiar"', "Sound famili
 # stands on its own. The share card's titles are the closing line.
 if home_text.count("The marketplace for accountability.") != 1 or "Put your money where your goals are" in home_text:
     fail("/: the footer brand block should carry the page's one tagline, and the retired brand line should be gone")
-for tag in ('<meta property="og:title" content="Huntz: Become someone who finishes.">',
+for tag in ('<title>Huntz: Become someone who finishes.</title>',
+            '<meta property="og:title" content="Huntz: Become someone who finishes.">',
             '<meta name="twitter:title" content="Huntz: Become someone who finishes.">'):
     if tag not in home:
         fail(f"/: share card title missing: {tag}")

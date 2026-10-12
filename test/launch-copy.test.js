@@ -301,8 +301,10 @@ test('copy rules: the visible home page has no em dash, en dash or exclamation m
   }
 });
 
-test('copy rules: the share card follows the page, in og:title and twitter:title ("Huntz: Become someone who finishes.") and in both descriptions (the hero sub)', () => {
+test('copy rules: document and social titles use the card copy, with the hero sub in both social descriptions', () => {
   const head = html.slice(0, html.indexOf('</head>'));
+  assert.deepEqual([...head.matchAll(/<title>([^<]+)<\/title>/g)].map((match) => match[1]),
+    ['Huntz: Become someone who finishes.']);
   assert.match(head, /<meta property="og:title" content="Huntz: Become someone who finishes\.">/);
   assert.match(head, /<meta name="twitter:title" content="Huntz: Become someone who finishes\.">/);
   assert.doesNotMatch(head, /Put your money where your goals are/, 'the retired brand line');

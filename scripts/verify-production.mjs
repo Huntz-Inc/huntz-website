@@ -155,6 +155,17 @@ async function main() {
     } catch { fail(`${url} has invalid or missing JSON-LD`); }
   }
   const landing = await (await siteFetch(WWW + '/')).text();
+  const shareTitle = 'Huntz: Become someone who finishes.';
+  for (const tag of [`<title>${shareTitle}</title>`,
+    `<meta property="og:title" content="${shareTitle}">`,
+    `<meta name="twitter:title" content="${shareTitle}">`,
+    `<meta property="og:image" content="${WWW}/og-image.jpg?v=2">`]) {
+    if (!landing.includes(tag)) fail(`homepage share metadata missing: ${tag}`);
+  }
+  const shareImage = await siteFetch(WWW + '/og-image.jpg?v=2');
+  if (shareImage.status !== 200 || !shareImage.headers.get('content-type')?.startsWith('image/jpeg')) {
+    fail('homepage share image must return 200 image/jpeg');
+  } else pass('homepage share image is reachable');
   const rail = landing.split('<!-- HUNT_RAIL_START -->')[1]?.split('<!-- HUNT_RAIL_END -->')[0];
   if (rail === undefined) fail('homepage does not contain the live rail');
   else {
