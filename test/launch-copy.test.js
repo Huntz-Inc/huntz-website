@@ -199,7 +199,7 @@ test('upcoming: the rail carries exactly the Hunts open on Discover, in order, e
     const rows = [...plate.matchAll(/<span style="opacity:\.85">([A-Z]+)<\/span><span style="font-weight:700">([^<]+)<\/span>/g)].map((m) => [m[1], m[2]]);
     assert.deepEqual(rows, [['CADENCE', '1 CHECK-IN A DAY'], ['LENGTH', h.length], ['STAKE', 'FROM $20'], ['STARTS', 'OCT 12']], `${h.title}: rows`);
     assert.match(plate, new RegExp(
-      `<a data-hunt-link="" href="https://www\\.huntz\\.ai/hunt/${h.id}" aria-label="I want this hunt: ${escapeRe(h.title)}" `
+      `<a data-hunt-link="" href="https://huntz\\.ai/hunt/${h.id}" aria-label="I want this hunt: ${escapeRe(h.title)}" `
       + 'style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;'
       + "font:700 9\\.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:\\.15em;color:currentColor;text-decoration:none\">"
       + '<span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></a>'), `${h.title}: the I want this hunt link`);
@@ -224,7 +224,7 @@ test('upcoming: the whole card is one tap, and the placeholder Hunts are gone ev
   assert.match(html, /&INTEREST=/);
 });
 
-test('upcoming: build/assemble.py hard-codes the list, dated, naming the API it was fetched from', () => {
+test('upcoming: build/assemble.py retains dated outage cards with apex Universal Links', () => {
   const at = assemblePy.indexOf('LIVE_HUNTS = [');
   assert.notEqual(at, -1);
   const block = assemblePy.slice(at, assemblePy.indexOf('\n]', at));
@@ -235,8 +235,8 @@ test('upcoming: build/assemble.py hard-codes the list, dated, naming the API it 
   const comment = assemblePy.slice(assemblePy.indexOf('# (LC-3)'), at);
   assert.match(comment, /https:\/\/api\.huntz\.ai\/v1\/hunts\?limit=50/);
   assert.match(comment, /2026-10-09/);
-  assert.match(comment, /live feed is a later change/);
-  assert.match(assemblePy, /HUNT_LINK = SITE_URL \+ "\/hunt\/\{id\}"/, 'links go through the universal link');
+  assert.match(comment, /outage fallback cards/);
+  assert.match(assemblePy, /HUNT_LINK = "https:\/\/huntz\.ai\/hunt\/\{id\}"/, 'links go through the universal link');
 });
 
 // ------------------------------------------------------- the closing section

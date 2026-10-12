@@ -155,7 +155,7 @@ for stale in ("FROM $50", "Stake $50", "Put your money</span>", "Hunt&nbsp;", "R
     if stale in home:
         fail(f"/: pre-launch copy {stale!r} is back on the home page")
 for needle in (">Make</span>", ">something<span", 'id="familiar"', "Sound familiar?",
-               'data-hunt-link="" href="https://www.huntz.ai/hunt/',
+               'data-hunt-link="" href="https://huntz.ai/hunt/',
                "finishes<span", "WHAT'S LIVE"):
     if needle not in home:
         fail(f"/: launch copy {needle!r} missing from the home page")
@@ -551,7 +551,7 @@ for f in [ROOT / v for v in PAGES.values()] + sorted(ROOT.glob("assets/*")):
         fail(f"{f.name}: SMTP details leaked into a client artifact")
 if API.exists():
     js = sorted(API.rglob("*.js"))
-    EXPECTED_API_JS = {"contact.js", "hunt.js", "validate.js"}
+    EXPECTED_API_JS = {"contact.js", "hunt.js", "home.js", "sitemap.js", "public-hunts.js", "validate.js"}
     got_names = {f.name for f in js}
     if got_names != EXPECTED_API_JS:
         fail(f"api/: expected exactly {sorted(EXPECTED_API_JS)}, found {sorted(got_names)}")

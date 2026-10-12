@@ -14,17 +14,22 @@
 //
 // Exit code is non-zero on any failure, so it can gate a rollback.
 
+import publicHunts from '../api/_lib/public-hunts.js';
+
 const APEX = 'https://huntz.ai';
 const WWW = 'https://www.huntz.ai';
 const APP_ID = 'JVTW9DH25L.ai.huntz.app';
-const PRE_ONLY = process.argv.includes('--pre');
+const PREVIEW = process.env.HUNTZ_VERIFY_ORIGIN;
+const PRE_ONLY = process.argv.includes('--pre') || Boolean(PREVIEW);
+const siteFetch = (url, options) => fetch(PREVIEW && (url.startsWith(WWW) || url.startsWith(APEX))
+  ? PREVIEW.replace(/\/$/, '') + new URL(url).pathname + new URL(url).search : url, options);
 
 const failures = [];
 const fail = (m) => { failures.push(m); console.log(`  FAIL  ${m}`); };
 const pass = (m) => console.log(`  ok    ${m}`);
 
 async function head(url, opts = {}) {
-  const res = await fetch(url, { redirect: 'manual', headers: opts.headers || {} });
+  const res = await siteFetch(url, { redirect: 'manual', headers: opts.headers || {} });
   return { status: res.status, location: res.headers.get('location'),
            type: res.headers.get('content-type'), res };
 }
@@ -99,14 +104,14 @@ async function main() {
     if (r.status !== 200) fail(`${WWW}${p} returned ${r.status}, expected 200`);
     else if (r.location) fail(`${WWW}${p} redirects to ${r.location}`);
   }
-  const wwwTok = await (await fetch(`${WWW}/hunt/test-hunt?ref=REDACTED_TEST_TOKEN`)).text();
+  const wwwTok = await (await siteFetch(`${WWW}/hunt/test-hunt?ref=REDACTED_TEST_TOKEN`)).text();
   if (wwwTok.includes('REDACTED_TEST_TOKEN')) fail('the referral token appears in the rendered HTML');
-  const wwwCb = await (await fetch(`${WWW}/auth/callback?code=VERIFY_ONLY_CODE`)).text();
+  const wwwCb = await (await siteFetch(`${WWW}/auth/callback?code=VERIFY_ONLY_CODE`)).text();
   if (wwwCb.includes('VERIFY_ONLY_CODE')) fail('the auth code appears in the rendered HTML');
   if (!failures.length) pass('/hunt/<id> and /auth/callback render, with no secret in the bytes');
 
-  console.log('\n== canonicals and sitemap unchanged ==');
-  const sm = await (await fetch(`${WWW}/sitemap.xml`)).text();
+  console.log('\n== marketing canonicals and live Hunt sitemap ==');
+  const sm = await (await siteFetch(`${WWW}/sitemap.xml`)).text();
   const locs = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
   // Assert the properties, not a count. This script decides whether to roll back
   // a production change, so it must not cry wolf the next time a blog post ships.
@@ -115,12 +120,42 @@ async function main() {
       fail(`sitemap no longer lists ${required}`);
     }
   }
+  const listed = await publicHunts.fetchPublicHunts();
+  if (listed === null) fail('public Discover lookup failed; cannot verify live Hunt indexing');
+  const eligible = new Set((listed || []).map((h) => APEX + '/hunt/' + encodeURIComponent(h.id)));
   for (const l of locs) {
-    if (!l.startsWith(WWW + '/')) fail(`sitemap lists a non-canonical url: ${l}`);
-    if (/\/(hunt|auth|mailbox)(\/|$)/.test(l)) fail(`sitemap leaks an unindexed route: ${l}`);
+    if (l.startsWith(APEX + '/hunt/')) {
+      if (!eligible.has(l)) fail(`sitemap lists a Hunt absent from open public Discover: ${l}`);
+    } else {
+      if (!l.startsWith(WWW + '/')) fail(`sitemap lists a non-canonical url: ${l}`);
+      if (/\/(hunt|auth|mailbox)(\/|$)/.test(l)) fail(`sitemap leaks an unindexed route: ${l}`);
+    }
   }
-  if (!failures.length) pass(`sitemap lists ${locs.length} canonical www urls, none unindexed`);
-  const home = await (await fetch(`${WWW}/about`)).text();
+  for (const url of eligible) {
+    if (!locs.includes(url)) fail(`sitemap is missing open public Hunt: ${url}`);
+    const page = await head(url);
+    const html = await page.res.text();
+    if (page.status !== 200 || page.location) fail(`${url} did not serve directly`);
+    if (!html.includes(`<link rel="canonical" href="${url}">`)) fail(`${url} missing apex canonical`);
+    if (!html.includes('name="robots" content="index, follow"')) fail(`${url} is not indexable`);
+    if (!html.includes('data-hunt-detail') || !html.includes('data-hunt-open hidden')) fail(`${url} missing detail or iPhone button`);
+    const json = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+    try {
+      const schema = JSON.parse(json);
+      if (schema['@type'] !== 'Event' || !schema.name || !schema.organizer?.name ||
+          !schema.startDate || !schema.image || !(Number(schema.offers?.price) >= 20)) fail(`${url} incomplete Hunt schema`);
+    } catch { fail(`${url} has invalid or missing JSON-LD`); }
+  }
+  const landing = await (await siteFetch(WWW + '/')).text();
+  const rail = landing.split('<!-- HUNT_RAIL_START -->')[1]?.split('<!-- HUNT_RAIL_END -->')[0];
+  if (rail === undefined) fail('homepage does not contain the live rail');
+  else {
+    const links = [...rail.matchAll(/data-hunt-link="" href="([^"]+)"/g)].map((m) => m[1]);
+    if (links.length !== Math.min(5, eligible.size)) fail('homepage rail does not match Discover');
+    for (const link of links) if (!eligible.has(link)) fail(`homepage card is not an open apex Hunt link: ${link}`);
+  }
+  if (!failures.length) pass(`sitemap and homepage verified against ${eligible.size} open public Hunts`);
+  const home = await (await siteFetch(`${WWW}/about`)).text();
   if (!home.includes(`<link rel="canonical" href="${WWW}/about">`)) {
     fail('/about canonical is not the www url');
   } else pass('canonicals still point at the www host');
@@ -128,7 +163,7 @@ async function main() {
   console.log('\n== association file ==');
   await checkAasa(WWW, '/.well-known/apple-app-site-association');
   if (PRE_ONLY) {
-    console.log('\n-- skipping apex checks (--pre: dashboard redirect still active) --');
+    console.log('\n-- skipping production-only apex redirect checks --');
   } else {
     await checkAasa(APEX, '/.well-known/apple-app-site-association');
     await checkAasa(APEX, '/apple-app-site-association');
@@ -160,10 +195,10 @@ async function main() {
     if (!failures.length) pass('apex serves the stylesheet and icons directly, no cross-origin hop');
 
     // The referral token must not survive into the page the browser renders.
-    const withToken = await (await fetch(`${APEX}/hunt/test-hunt?ref=REDACTED_TEST_TOKEN`)).text();
+    const withToken = await (await siteFetch(`${APEX}/hunt/test-hunt?ref=REDACTED_TEST_TOKEN`)).text();
     if (withToken.includes('REDACTED_TEST_TOKEN')) fail('the referral token appears in the rendered HTML');
     else pass('referral token absent from the rendered HTML');
-    const cb = await (await fetch(`${APEX}/auth/callback?code=VERIFY_ONLY_CODE`)).text();
+    const cb = await (await siteFetch(`${APEX}/auth/callback?code=VERIFY_ONLY_CODE`)).text();
     if (cb.includes('VERIFY_ONLY_CODE')) fail('the auth code appears in the rendered HTML');
     else pass('auth code absent from the rendered HTML');
   }
@@ -212,7 +247,7 @@ async function main() {
     console.log(`  note  could not reach Apple's CDN: ${e.message}`);
   }
 
-  console.log(failures.length ? `\nFAILED (${failures.length}) - roll back the domain setting\n`
+  console.log(failures.length ? `\nFAILED (${failures.length}) - check deployment and routing\n`
                               : '\nAll production checks passed.\n');
   process.exit(failures.length ? 1 : 0);
 }

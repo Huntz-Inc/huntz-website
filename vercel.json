@@ -68,12 +68,21 @@
     }
   ],
   "rewrites": [
+    { "source": "/", "destination": "/api/home" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/hunt", "destination": "/api/hunt" },
     { "source": "/hunt/:path+", "destination": "/api/hunt" }
   ],
   "functions": {
+    "api/home.js": {
+      "includeFiles": "api/_lib/{home-fallback.html,hunt-card.html}"
+    },
+    "api/sitemap.js": {
+      "includeFiles": "api/_lib/sitemap-base.xml"
+    },
     "api/hunt.js": {
       "includeFiles": "api/_lib/hunt-fallback.html"
     }
-  }
+  },
+  "crons": [{ "path": "/sitemap.xml", "schedule": "0 12 * * *" }]
 }
