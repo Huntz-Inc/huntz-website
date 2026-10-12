@@ -133,7 +133,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
       </div>
       <div style="margin-top: 20px; font: 500 11px 'Figtree',Arial,Helvetica,sans-serif; letter-spacing: .1em; color: #6E6759; animation: hzRise .7s ease .84s both; font-family:'Figtree',Arial,Helvetica,sans-serif">NO SPAM. ONE EMAIL WHEN WE LAUNCH.</div></sc-if>
       <sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}"><div style="animation:hzRise .7s ease .74s both">
-        <a href="{{ appStoreUrl }}" data-appstore-badge="" aria-label="Download on the App Store"><img src="/assets/app-store-badge-black.a26fc5b3.svg" alt="Download on the App Store" width="144" height="48"></a><div style="margin-top:16px;font:500 14px/1.5 Figtree,Arial,Helvetica,sans-serif;color:#6E6759"><button type="button" data-share-url="https://www.huntz.ai/" style="font:inherit;color:inherit;border:0;background:transparent;padding:10px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px">Share</button><span data-share-status="" role="status" style="margin-left:12px"></span></div>
+        <a href="{{ appStoreUrl }}" data-appstore-badge="" aria-label="Download on the App Store"><img src="/assets/app-store-badge-black.a26fc5b3.svg" alt="Download on the App Store" width="144" height="48"></a>
       </div>
       <div style="margin-top:22px;animation:hzRise .7s ease .84s both">
         <a href="#waitlist" data-android-link="" style="font:500 clamp(15px,1.4vw,18px)/1.5 'Figtree',Arial,Helvetica,sans-serif;color:#6E6759;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px" style-hover="color:#C24E1F">Not on iPhone? Get notified for Android <span aria-hidden="true">&#8594;</span></a>
@@ -521,7 +521,7 @@ a:focus-visible,button:focus-visible,[role="button"]:focus-visible{outline:2px s
           </sc-if>
           <div style="margin-top:16px;font:500 10.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#6E6759">NO SPAM · ONE EMAIL WHEN WE LAUNCH</div>
         </sc-if><sc-if value="{{ appStoreMode }}" hint-placeholder-val="{{ false }}">
-          <a href="{{ appStoreUrl }}" data-appstore-badge="" aria-label="Download on the App Store"><img src="/assets/app-store-badge-black.a26fc5b3.svg" alt="Download on the App Store" width="144" height="48"></a><div style="margin-top:16px;font:500 14px/1.5 Figtree,Arial,Helvetica,sans-serif;color:#6E6759"><button type="button" data-share-url="https://www.huntz.ai/" style="font:inherit;color:inherit;border:0;background:transparent;padding:10px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px">Share</button><span data-share-status="" role="status" style="margin-left:12px"></span></div>
+          <a href="{{ appStoreUrl }}" data-appstore-badge="" aria-label="Download on the App Store"><img src="/assets/app-store-badge-black.a26fc5b3.svg" alt="Download on the App Store" width="144" height="48"></a>
           <div id="waitlist" data-screen-label="Android Waitlist" style="margin-top:clamp(32px,5vh,48px);max-width:640px;scroll-margin-top:110px">
             <h3 style="margin:0 0 18px;font:600 clamp(22px,2.6vw,32px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;text-wrap:balance">Not on iPhone? Get notified for Android<span style="color:#C24E1F">.</span></h3>
             <sc-if value="{{ heroIdle }}" hint-placeholder-val="{{ true }}">
@@ -1065,6 +1065,5 @@ class Component extends DCLogic {
   }
 })();
 </script>
-<script src="/assets/share-link.264c3a7c.js" defer></script>
 </body>
 </html>

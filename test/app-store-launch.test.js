@@ -480,11 +480,11 @@ test('live: the waitlist form survives exactly once, relocated under the closing
   assert.match(androidBlock, /<input type="email"/);
   assert.match(androidBlock, />NOTIFY ME</);
 
-  // It sits under the closing badge and Share control, inside the closing section,
+  // It sits directly under the closing section's badge, inside the closing section,
   // so it is ahead of the footer (and of its brand block) and no section of its own
   // sits between the two any more.
-  const badgeIdx = LIVE_VISIBLE.search(new RegExp(BADGE_LINK_RE.source + '<div [^>]*><button [^>]*data-share-url="https://www[.]huntz[.]ai/"[^>]*>Share</button><span [^>]*></span></div>\\s*<div id="waitlist"'));
-  assert.notEqual(badgeIdx, -1, 'the Android block should follow the closing badge and Share control');
+  const badgeIdx = LIVE_VISIBLE.search(new RegExp(BADGE_LINK_RE.source + '\\s*<div id="waitlist"'));
+  assert.notEqual(badgeIdx, -1, 'the Android block should follow the closing badge directly');
   assert.ok(badgeIdx < androidStart && androidStart < LIVE_VISIBLE.indexOf('<footer'));
   assert.doesNotMatch(html, /<section id="waitlist"/);
   assert.match(html, /<\/section>\n\n<footer data-screen-label="Footer"/, 'the footer follows the closing section directly');

@@ -876,17 +876,9 @@ assert html.count(old) == 1, "hero waitlist block not found"
 # FOCUS_JS's delegated handler takes any a[href="#waitlist"]). It rises in a
 # beat after the badge, where the old "no spam" note did, and sits 22px below
 # it: Apple wants a quarter of the badge height (12px) kept clear.
-# Share only the canonical URL so the receiving app can read the social tags.
-SHARE_CONTROL = (
-    '<div style="margin-top:16px;font:500 14px/1.5 Figtree,Arial,Helvetica,sans-serif;color:#6E6759">'
-    f'<button type="button" data-share-url="{SITE_URL}/" '
-    'style="font:inherit;color:inherit;border:0;background:transparent;padding:10px 0;cursor:pointer;'
-    'text-decoration:underline;text-underline-offset:3px">Share</button>'
-    '<span data-share-status="" role="status" style="margin-left:12px"></span></div>'
-)
 hero_appstore = (
     '<div style="animation:hzRise .7s ease .74s both">\n'
-    '        ' + APP_STORE_BADGE_LINK + SHARE_CONTROL + '\n'
+    '        ' + APP_STORE_BADGE_LINK + '\n'
     '      </div>\n'
     '      <div style="margin-top:22px;animation:hzRise .7s ease .84s both">\n'
     '        <a href="#waitlist" data-android-link="" '
@@ -948,7 +940,7 @@ ANDROID_FORM = '''<div id="waitlist" data-screen-label="Android Waitlist" style=
           </div>'''
 old = APP_STORE_BADGE_LINK + '\n        </sc-if></div>'
 assert html.count(old) == 1, "closing badge not found at the end of #fin-form"
-html = html.replace(old, APP_STORE_BADGE_LINK + SHARE_CONTROL + '\n          ' + ANDROID_FORM + '\n        </sc-if></div>')
+html = html.replace(old, APP_STORE_BADGE_LINK + '\n          ' + ANDROID_FORM + '\n        </sc-if></div>')
 # The one #waitlist in the live DOM is this form (the hero's own is the switched-off
 # branch), and no section of its own sits between the closing section and the footer.
 assert html.count('id="waitlist"') == 2, "expected the hero's default form and this one"
@@ -1462,10 +1454,6 @@ fonts_css_out = ("/* Playfair Display + Figtree, latin subset, embedded. Generat
                  "build/assemble.py — do not edit. */\n" + "\n".join(kept) + "\n")
 FONTS_HREF = write_hashed("fonts", "css", fonts_css_out)
 APP_HREF = write_hashed("app", "js", app_js)
-SHARE_JS = (BUILD / "share-link.js").read_text()
-SHARE_HREF = write_hashed("share-link", "js", SHARE_JS)
-(ROOT / "api" / "_lib" / "share-link-asset.json").write_text(json.dumps({"href": SHARE_HREF}) + "\n")
-
 # Apple's badge, byte for byte; its name was fixed earlier (the markup that
 # references it is patched in 2f), so the two must agree.
 assert write_hashed("app-store-badge-black", "svg", APP_STORE_BADGE_BYTES) == APP_STORE_BADGE_HREF
@@ -1595,7 +1583,7 @@ FOCUS_JS = """<script>
   }
 })();
 </script>"""
-home = home.replace("</body>", drawer("/", "#waitlist") + "\n" + NAV_JS + "\n" + FOCUS_JS + f'\n<script src="{SHARE_HREF}" defer></script>\n</body>')
+home = home.replace("</body>", drawer("/", "#waitlist") + "\n" + NAV_JS + "\n" + FOCUS_JS + "\n</body>")
 home = re.sub(r"(?m)^[ \t]+$", "", home)
 (ROOT / "index.html").write_text(home)
 
@@ -1608,7 +1596,7 @@ art = art.replace(APP_STORE_BADGE_HREF,
 art = art.replace("</body>", legal + "\n</body>")
 m = re.search(r"<body>\n?(.*)\n?</body>", art, re.S)
 fragment = (inline_scripts + "\n" + m.group(1) + "\n<style>" + NAV_CSS + HOME_NAV_CSS + "</style>\n"
-            + drawer("/", "#waitlist") + "\n" + NAV_JS + "\n<script>" + SHARE_JS + "</script>")
+            + drawer("/", "#waitlist") + "\n" + NAV_JS)
 # The artifact is one file with no /terms to navigate to, so its footer keeps
 # the in-page hash routes that the embedded overlay still serves.
 for a, b in (('href="/terms"', 'href="#/terms"'), ('href="/privacy"', 'href="#/privacy"'),
