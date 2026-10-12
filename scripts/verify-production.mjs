@@ -147,6 +147,7 @@ async function main() {
     if (!html.includes(`<link rel="canonical" href="${url}">`)) fail(`${url} missing apex canonical`);
     if (!html.includes('name="robots" content="index, follow"')) fail(`${url} is not indexable`);
     if (!html.includes('data-hunt-detail') || !html.includes('data-hunt-open hidden')) fail(`${url} missing detail or iPhone button`);
+    if (!html.includes(`data-share-url="${url}"`)) fail(`${url} missing canonical Share control`);
     const json = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
     try {
       const schema = JSON.parse(json);
@@ -155,6 +156,22 @@ async function main() {
     } catch { fail(`${url} has invalid or missing JSON-LD`); }
   }
   const landing = await (await siteFetch(WWW + '/')).text();
+  if ((landing.match(/data-share-url="https:\/\/www\.huntz\.ai\/"/g) || []).length !== 2) {
+    fail('homepage must have two canonical Share controls');
+  }
+  const shareScript = landing.match(/<script src="(\/assets\/share-link\.[a-f0-9]{8}\.js)" defer><\/script>/)?.[1];
+  if (!shareScript) fail('homepage is missing the Share script');
+  else {
+    for (const origin of PRE_ONLY ? [WWW] : [WWW, APEX]) {
+      const response = await head(origin + shareScript);
+      if (response.status !== 200 || response.location) fail(`${origin} cannot serve the Share script directly`);
+      const script = await response.res.text();
+      if (!script.includes('navigator.share({ url: url })') || !script.includes('navigator.clipboard.writeText(url)')) {
+        fail(`${origin} Share script is missing URL-only sharing or clipboard fallback`);
+      }
+    }
+  }
+
   const rail = landing.split('<!-- HUNT_RAIL_START -->')[1]?.split('<!-- HUNT_RAIL_END -->')[0];
   if (rail === undefined) fail('homepage does not contain the live rail');
   else {

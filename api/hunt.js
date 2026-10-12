@@ -26,6 +26,7 @@ const fs = require('fs');
 const path = require('path');
 const { HUNT_ORIGIN, CACHE_CONTROL, copy, minimumStake, stakeLabel, isOpenPublic, fetchPublicHunts } = require('./_lib/public-hunts');
 
+const SHARE_ASSET = require('./_lib/share-link-asset.json');
 const SITE_URL = 'https://www.huntz.ai';
 const API_ORIGIN = process.env.HUNTZ_API_URL || 'https://api.huntz.ai';
 const TIMEOUT_MS = 1500;
@@ -389,6 +390,11 @@ function renderHuntBody(huntId, detail, apiOrigin, code) {
   ${copy(detail.description) ? `<p style="font-size:17px;line-height:1.6;white-space:pre-line">${escapeHtml(copy(detail.description))}</p>` : ''}
   <dl style="display:grid;grid-template-columns:auto 1fr;gap:12px 24px;margin:24px 0;line-height:1.5">${facts.map(([label, value]) => `<dt style="color:#6E6759">${escapeHtml(label)}</dt><dd style="margin:0">${escapeHtml(copy(value))}</dd>`).join('')}</dl>
   <a data-hunt-open hidden href="${escapeHtml(link)}" style="border-radius:999px;font-weight:700;color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none">Open in the Huntz app</a>
+  <div style="margin-top:16px;font:500 14px/1.5 Figtree,Arial,Helvetica,sans-serif;color:#6E6759">
+    <button type="button" data-share-url="${escapeHtml(HUNT_ORIGIN + '/hunt/' + encodeURIComponent(huntId))}" style="font:inherit;color:inherit;border:0;background:transparent;padding:10px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px">Share</button>
+    <span data-share-status role="status" style="margin-left:12px"></span>
+  </div>
+  <script src="${SHARE_ASSET.href}" defer></script>
   <script>(function(){if(/iPhone/i.test(navigator.userAgent)){var button=document.querySelector('[data-hunt-open]');if(button){button.hidden=false;button.style.display='inline-flex';}}})();</script>
   </section>`;
 }

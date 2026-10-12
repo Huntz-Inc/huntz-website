@@ -104,7 +104,7 @@ test('form: under the closing badge, inside #fin-form, ahead of the closing bran
   const badgeAt = finForm.search(BADGE_RE);
   const formAt = finForm.indexOf('<div id="waitlist"');
   assert.ok(badgeAt !== -1 && formAt > badgeAt, 'the form comes after the badge');
-  assert.match(finForm.slice(badgeAt), /^<a [^>]*><img [^>]*><\/a>\s*<div id="waitlist"/, 'directly after it, nothing in between');
+  assert.match(finForm.slice(badgeAt), /^<a [^>]*><img [^>]*><\/a><div [^>]*><button [^>]*data-share-url="https:\/\/www\.huntz\.ai\/"[^>]*>Share<\/button><span [^>]*><\/span><\/div>\s*<div id="waitlist"/, 'after the badge and Share control');
   assert.ok(html.indexOf('<div id="waitlist" data-screen-label="Android Waitlist"') < html.indexOf('id="fin-mark"'),
     'ahead of the closing section\'s giant HUNTZ mark');
   assert.ok(html.indexOf('id="fin-mark"') < html.indexOf('<footer'), 'and so ahead of the footer\'s brand block');
