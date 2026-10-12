@@ -74,6 +74,14 @@ const MARKETING = ['/', '/how-it-works', '/accountability-challenges', '/faq', '
                    '/about', '/contact', '/terms', '/privacy', '/sitemap.xml', '/robots.txt'];
 
 async function main() {
+  if (PREVIEW) {
+    const access = await head(WWW + '/');
+    const target = access.location ? new URL(access.location, PREVIEW) : null;
+    if (access.status === 401 || access.status === 403 ||
+        (target?.hostname === 'vercel.com' && target.pathname.startsWith('/sso-api'))) {
+      throw new Error('Preview requires Vercel authentication. Deployment verification was not run.');
+    }
+  }
   console.log('\n== Gmail pairing fallback ==');
   for (const origin of PRE_ONLY ? [WWW] : [APEX, WWW]) {
     const r = await head(origin + '/mailbox/gmail-action/pair');
