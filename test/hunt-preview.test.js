@@ -321,7 +321,7 @@ test('no coverArtUrl leaves the generic og:image untouched', async () => {
   const server = await startServer({ fetchImpl: async () => jsonResponse(200, { ...VALID_DETAIL, coverArtUrl: null }) });
   try {
     const r = await server.get('/hunt/read-12-books');
-    assert.match(r.text, /<meta property="og:image" content="https:\/\/www\.huntz\.ai\/og-image\.jpg">/);
+    assert.match(r.text, /<meta property="og:image" content="https:\/\/www\.huntz\.ai\/og-image\.jpg\?v=2">/);
   } finally {
     await server.close();
   }
@@ -334,7 +334,7 @@ test('a protocol-relative coverArtUrl cannot smuggle in a foreign og:image host'
   try {
     const r = await server.get('/hunt/read-12-books');
     assert.doesNotMatch(r.text, /evil\.example/);
-    assert.match(r.text, /<meta property="og:image" content="https:\/\/www\.huntz\.ai\/og-image\.jpg">/);
+    assert.match(r.text, /<meta property="og:image" content="https:\/\/www\.huntz\.ai\/og-image\.jpg\?v=2">/);
   } finally {
     await server.close();
   }

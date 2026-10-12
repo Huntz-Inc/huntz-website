@@ -1512,13 +1512,13 @@ HEAD_META = f"""<title>Huntz | Accountability Challenges for Goals That Matter</
 <meta property="og:description" content="{HERO_SUB_NEW}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{SITE_URL}/">
-<meta property="og:image" content="{SITE_URL}/og-image.jpg">
+<meta property="og:image" content="{SITE_URL}/og-image.jpg?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{SHARE_TITLE}">
 <meta name="twitter:description" content="{HERO_SUB_NEW}">
-<meta name="twitter:image" content="{SITE_URL}/og-image.jpg">
+<meta name="twitter:image" content="{SITE_URL}/og-image.jpg?v=2">
 <meta name="apple-itunes-app" content="app-id=6802558635">
 {ICON_LINKS}
 <link rel="preload" href="{FONTS_HREF}" as="style">
@@ -2187,7 +2187,7 @@ for spec_path in sorted(BLOG_DIR.glob("*.json")):
         "author": {"@type": "Organization", "name": a["author"], "url": SITE_URL + "/"},
         "publisher": {"@type": "Organization", "name": "Huntz",
                       "logo": {"@type": "ImageObject", "url": SITE_URL + "/icon-512.png"}},
-        "image": SITE_URL + "/og-image.jpg",
+        "image": SITE_URL + "/og-image.jpg?v=2",
         "mainEntityOfPage": {"@type": "WebPage", "@id": SITE_URL + route},
         "url": SITE_URL + route,
         "inLanguage": "en",
