@@ -89,7 +89,7 @@ test('hero: the eyebrow keeps the colon main settled on, not a dash and not a mi
 
 const FAMILIAR_CARDS = [
   ['THE GYM', 'Third gym membership. Zero workouts.'],
-  ['THE MONDAY', 'You said Monday. It is now October.'],
+  ['THE MONDAY', 'You said Monday. That was six Mondays ago.'],
   ['THE CAMERA ROLL', 'Your camera roll is full of day-one screenshots. There is no day two.'],
 ];
 const FAMILIAR = between('<section id="familiar"', '<section id="mechanic"');
@@ -243,18 +243,16 @@ test('upcoming: build/assemble.py hard-codes the list, dated, naming the API it 
 
 const CLOSING = between('<section id="cta"', '<footer');
 
-test('closing: YOUR MOVE, "Become someone who finishes." with the accent full stop, "Quitting just got expensive." under it, Apple\'s badge after', () => {
+test('closing: YOUR MOVE, "Become someone who finishes." on its own with the accent full stop, Apple\'s badge after', () => {
   assert.match(CLOSING, /<div id="fin-eyebrow"[^>]*>YOUR MOVE<\/div>/);
   const h2 = between('<h2', '</h2>', CLOSING);
   assert.equal(textOf(h2), 'Become someone who finishes.');
   assert.equal((h2.match(/data-fw=""/g) || []).length, 4, 'one reveal span per word, as the design animates them');
   assert.match(h2, /font-style:italic">finishes<span style="color:#C24E1F;font-style:normal">\.<\/span><\/span>/);
-  const sub = CLOSING.match(/<\/h2>\n\s*<p id="fin-sub" style="([^"]*)">([^<]*)<\/p>\n\s*<div id="fin-form"/);
-  assert.ok(sub, 'the line should sit between the headline and the button block');
-  assert.equal(sub[2], 'Quitting just got expensive.');
-  assert.match(sub[1], /'Playfair Display'/);
-  assert.match(sub[1], /opacity:0;transform:translateY\(20px\)$/, 'rises in with the eyebrow and the button');
-  assert.match(html, /\$\('fin-sub'\)/, 'the design\'s finBits list picks #fin-sub up');
+  // Founder revision 2026-10-11: the headline stands alone, straight into the button block.
+  assert.match(CLOSING, /<\/h2>\n\s*<div id="fin-form"/);
+  assert.doesNotMatch(CLOSING, /id="fin-sub"|Quitting just got expensive/);
+  assert.match(CLOSING, /<h2 style="margin:0 0 clamp\(24px,4vh,34px\);/, 'the headline keeps the design\'s own bottom margin');
   for (const gone of ['Hunt&nbsp;', 'Stop&nbsp;', 'hiding<', 'READY WHEN YOU ARE']) {
     assert.ok(!CLOSING.includes(gone), `${gone} should be gone`);
   }
@@ -293,7 +291,7 @@ test('copy rules: the visible home page has no em dash, en dash or exclamation m
   assert.doesNotMatch(text, /\bfree\b/i);
   assert.doesNotMatch(text, /FROM \$50|\$50[–-]\$|\$50 to \$|Stake \$50/);
   // The new headlines are the approved strings exactly, so sentence case by construction.
-  for (const line of ['Make quitting cost something.', 'Sound familiar?', ...FAMILIAR_CARDS.flat(), 'Become someone who finishes', 'Quitting just got expensive.']) {
+  for (const line of ['Make quitting cost something.', 'Sound familiar?', ...FAMILIAR_CARDS.flat(), 'Become someone who finishes']) {
     assert.ok(text.includes(line), `missing: ${line}`);
   }
   // Nothing else on the page moved: the marquee, the mechanic's four steps, the example card, the FAQ, the Android form, the footer.

@@ -168,7 +168,7 @@ test('badge clear space: whatever sits above or below a badge is at least a quar
   assert.equal(heroBlock.split('<a ').length - 1, 1, 'the hero badge block holds the badge and nothing else');
   assert.match(HERO, /<p style="margin: 0 0 34px;/, 'the sub above it ends 34px away');
   assert.ok(34 >= quarter);
-  // Closing: the line above is #fin-sub, which keeps clamp(24px,4vh,34px) of its own.
-  assert.match(CLOSING, /<p id="fin-sub" style="margin:0 0 clamp\(24px,4vh,34px\);/);
+  // Closing: the line above is the headline, which keeps clamp(24px,4vh,34px) of its own.
+  assert.match(CLOSING, /<h2 style="margin:0 0 clamp\(24px,4vh,34px\);/);
   assert.ok(24 >= quarter, 'the smallest value of that clamp still clears');
 });

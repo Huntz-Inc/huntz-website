@@ -151,12 +151,12 @@ for ch, what in (("—", "em dash"), ("–", "en dash"), ("!", "exclamation mark
     if ch in home_text:
         fail(f"/: {what} in the home page's visible copy")
 for stale in ("FROM $50", "Stake $50", "Put your money</span>", "Hunt&nbsp;", "READY WHEN YOU ARE", "WHAT HAPPENS NEXT",
-              ">Put your money where your goals are.</div>", ">motivation.</span>", "nothing-to-lose"):
+              ">Put your money where your goals are.</div>", ">motivation.</span>", "nothing-to-lose", "Quitting just got expensive."):
     if stale in home:
         fail(f"/: pre-launch copy {stale!r} is back on the home page")
 for needle in (">Make</span>", ">something<span", 'id="familiar"', "Sound familiar?",
                'data-hunt-link="" href="https://www.huntz.ai/hunt/',
-               "finishes<span", 'id="fin-sub"', "Quitting just got expensive.", "WHAT'S LIVE"):
+               "finishes<span", "WHAT'S LIVE"):
     if needle not in home:
         fail(f"/: launch copy {needle!r} missing from the home page")
 # One tagline on the page, the footer brand block's; the giant wordmark above it
@@ -170,7 +170,7 @@ for tag in ('<meta property="og:title" content="Huntz: Become someone who finish
 # "Sound familiar?" is three cards on the mechanic steps' card system (founder
 # revision, 2026-10-09): one chip and one line each.
 for chip, line in (("THE GYM", "Third gym membership. Zero workouts."),
-                   ("THE MONDAY", "You said Monday. It is now October."),
+                   ("THE MONDAY", "You said Monday. That was six Mondays ago."),
                    ("THE CAMERA ROLL", "Your camera roll is full of day-one screenshots. There is no day two.")):
     if f">{chip}</div>" not in home or f">{line}</p>" not in home:
         fail(f"/: Sound familiar card {chip!r} is missing or changed")

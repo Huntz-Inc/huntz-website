@@ -1139,7 +1139,7 @@ html = html.replace(HERO_SUB_OLD, HERO_SUB_NEW)
 # to "The mechanic" that answers it.
 FAMILIAR_CARDS = [
     ("THE GYM", "Third gym membership. Zero workouts."),
-    ("THE MONDAY", "You said Monday. It is now October."),
+    ("THE MONDAY", "You said Monday. That was six Mondays ago."),
     ("THE CAMERA ROLL", "Your camera roll is full of day-one screenshots. There is no day two."),
 ]
 _step = re.search(
@@ -1345,9 +1345,10 @@ for token in ("pickHunt", "_picks", "_pickKeys", "plateRole", "plateTabIndex", "
 
 # (LC-4) Closing section. The headline keeps the design's per-word reveal
 # (data-fw spans, animated by playFinale) and the accent treatment on the
-# last word; "Quitting just got expensive." sits under it as #fin-sub, an id
-# the design's own finBits list already looks for, so it rises in with the
-# eyebrow and the button. The eyebrow becomes YOUR MOVE. The store badge
+# last word. Founder revision, 2026-10-11: the headline stands alone (the
+# "Quitting just got expensive." line under it repeated the hero's "Make
+# quitting cost something."), so the headline keeps the design's own bottom
+# margin and the badge's clear space comes from it. The eyebrow becomes YOUR MOVE. The store badge
 # below it, and the Android form under that, are (AS-3) and (AS-4).
 FW_STYLE = 'style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg)"'
 FW_ITALIC_STYLE = 'style="display:inline-block;opacity:0;transform:translateY(38px) rotate(2deg);font-style:italic"'
@@ -1363,16 +1364,12 @@ CLOSING_H2_OLD = (
     "        </h2>")
 assert html.count(CLOSING_H2_OLD) == 1, "closing headline not found"
 CLOSING_H2_NEW = (
-    f"<h2 {CLOSING_H2_STYLE_OLD.replace('margin:0 0 clamp(24px,4vh,34px)', 'margin:0 0 clamp(14px,2.4vh,20px)')}>\n"
+    f"<h2 {CLOSING_H2_STYLE_OLD}>\n"
     f'          <span data-fw="" {FW_STYLE}>Become&nbsp;</span><span data-fw="" {FW_STYLE}>someone&nbsp;</span>'
     f'<span data-fw="" {FW_STYLE}>who&nbsp;</span>'
     f'<span data-fw="" {FW_ITALIC_STYLE}>finishes<span style="color:#C24E1F;font-style:normal">.</span></span>\n'
-    "        </h2>\n"
-    '        <p id="fin-sub" style="margin:0 0 clamp(24px,4vh,34px);font:500 italic clamp(19px,2vw,27px)/1.3 '
-    f"{SERIF};letter-spacing:-.01em;color:{BODYC};text-wrap:balance;opacity:0;transform:translateY(20px)\">"
-    "Quitting just got expensive.</p>")
+    "        </h2>")
 html = html.replace(CLOSING_H2_OLD, CLOSING_H2_NEW)
-assert "$('fin-sub')" in html, "the design's finBits no longer looks for #fin-sub"
 
 old = ">READY WHEN YOU ARE</div>"
 assert html.count(old) == 1, "closing eyebrow not found"
