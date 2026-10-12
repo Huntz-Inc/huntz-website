@@ -202,7 +202,7 @@ test('when api/_lib/hunt-fallback.html cannot be read, an embedded safe fallback
 
 // ---------------------------------------------------------------- success
 
-test('a resolved Hunt gets per-Hunt meta; everything past <body> is untouched', async () => {
+test('a resolved Hunt gets escaped details above the existing steps', async () => {
   const calls = [];
   const server = await startServer({
     now: NOW_BEFORE_START,
@@ -214,13 +214,13 @@ test('a resolved Hunt gets per-Hunt meta; everything past <body> is untouched', 
   try {
     const r = await server.get('/hunt/read-12-books?ref=' + 'a'.repeat(20) + '&via=' + 'b'.repeat(32) + '&code=7ZQK9M3H');
     assert.equal(r.status, 200);
-    assert.equal(r.headers.get('cache-control'), 'public, s-maxage=300, stale-while-revalidate=600');
+    assert.equal(r.headers.get('cache-control'), 'no-store');
 
     assert.match(r.text, /<title>Read 12 Books \| Huntz<\/title>/);
     assert.match(r.text, /<meta name="description" content="Hosted by Jordan\. Starts October 5, 2026\. 14 days\.">/);
     assert.match(r.text, /<meta property="og:title" content="Read 12 Books \| Huntz">/);
     assert.match(r.text, /<meta property="og:description" content="Hosted by Jordan\. Starts October 5, 2026\. 14 days\.">/);
-    assert.match(r.text, /<meta property="og:url" content="https:\/\/www\.huntz\.ai\/hunt\/read-12-books">/);
+    assert.match(r.text, /<meta property="og:url" content="https:\/\/huntz\.ai\/hunt\/read-12-books">/);
     assert.match(r.text, /<meta property="og:image" content="https:\/\/api\.huntz\.ai\/v1\/hunts\/read-12-books\/cover-art\?v=asset-1">/);
 
     // Untouched: robots, site_name, og:type, twitter:card, and everything from <body> on.
@@ -230,7 +230,13 @@ test('a resolved Hunt gets per-Hunt meta; everything past <body> is untouched', 
     assert.match(r.text, /<meta name="twitter:card" content="summary_large_image">/);
     const fallbackBody = FALLBACK_HTML.slice(FALLBACK_HTML.indexOf('<body>'));
     const gotBody = r.text.slice(r.text.indexOf('<body>'));
-    assert.equal(gotBody, fallbackBody);
+    assert.notEqual(gotBody, fallbackBody);
+    assert.match(gotBody, /<h1 id="hunt-title"[^>]*>Read 12 Books<\/h1>/);
+    assert.match(gotBody, /14 days/);
+    assert.match(gotBody, /huntz:\/\/\/hunt\/read-12-books\?code=7ZQK9M3H/);
+    assert.ok(gotBody.indexOf('data-hunt-detail') < gotBody.indexOf('What to do next'));
+    assert.doesNotMatch(gotBody, /data-hz-idline|Invitation:|Shows the Hunt id/);
+    assert.equal(gotBody.slice(gotBody.indexOf('What to do next'), gotBody.indexOf('</ol>')), fallbackBody.slice(fallbackBody.indexOf('What to do next'), fallbackBody.indexOf('</ol>')));
 
     // code is forwarded; ref/via are never sent to the API.
     assert.equal(calls.length, 1);
@@ -276,7 +282,7 @@ test('a decoded id round-trips through encodeURIComponent into the upstream URL 
   try {
     const r = await server.get('/hunt/' + encodeURIComponent('hunt.id~2026'));
     assert.equal(calls[0], 'https://api.huntz.ai/v1/hunts/hunt.id~2026');
-    assert.match(r.text, /<meta property="og:url" content="https:\/\/www\.huntz\.ai\/hunt\/hunt\.id~2026">/);
+    assert.match(r.text, /<meta property="og:url" content="https:\/\/huntz\.ai\/hunt\/hunt\.id~2026">/);
   } finally {
     await server.close();
   }

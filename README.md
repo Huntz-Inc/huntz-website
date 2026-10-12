@@ -70,9 +70,10 @@ Behaviour worth knowing:
 - Invalid addresses are rejected client-side, then Mailchimp's own message
   (e.g. "This email address looks fake or invalid") is shown inline.
 - Someone already on the list is treated as success, not an error.
-- The cards under **Upcoming** are the Hunts open on Discover (hard-coded,
-  dated, in `build/assemble.py`'s `LIVE_HUNTS`; a live feed is a later change)
-  and each links to its `/hunt/<id>` universal link. They used to attach an
+- The cards under **Upcoming** come from the live public Discover list,
+  cached for five minutes. The dated `LIVE_HUNTS` cards in `build/assemble.py`
+  remain the outage fallback. Each links to `https://huntz.ai/hunt/<id>`,
+  allowing an iPhone tap from www to open the app. They used to attach an
   interest to the waitlist signup; the `INTEREST` merge field is still sent,
   empty, so the Mailchimp audience needs no change either way.
 - The audience is single opt-in, so Mailchimp sends nothing on signup. The page
@@ -302,8 +303,8 @@ Changes currently applied on top of the design:
 - Terms of Service and Privacy Policy are added as hash-routed full pages
   (`#/terms`, `#/privacy`) — **drafts, pending legal review**.
 - Social/OG metadata, a favicon, and the share card.
-- Upcoming cards list the Hunts open on Discover (`LIVE_HUNTS`, dated) and
-  each "I want this hunt" is a link to that Hunt's universal link.
+- Upcoming cards list open public Hunts from Discover and each
+  "I want this hunt" links to the apex Universal Link.
 - Launch copy mix (2026-10-09, founder-approved): the hero reads "You don't
   need motivation. You need consequences." over "Pick a goal. Put $20 to $500
   on the line. Prove it daily. ..." (the share card's og and twitter
@@ -338,3 +339,51 @@ Changes currently applied on top of the design:
 
 Designed in Claude Design; assembled into a single deployable file with
 [Claude Code](https://claude.com/claude-code).
+
+
+## Public Hunt pages and live Discover
+
+`api/home.js` serves `/` using the generated homepage and the generated
+`api/_lib/hunt-card.html` template. It reads only the unauthenticated public
+`GET /v1/hunts`, following cursor pages, and shows the first five open Hunts
+in start-date order. A failed or incomplete traversal returns the original
+static cards. A successful empty list shows an empty state.
+
+`index.html` and `sitemap.xml` remain local build/check artifacts. Their exact
+copies are generated at `api/_lib/home-fallback.html` and
+`api/_lib/sitemap-base.xml` and included in the function bundles. The root
+copies are excluded from deployment by `.vercelignore`, because filesystem
+routes would otherwise take precedence over the live rewrites.
+
+`api/hunt.js` serves `/hunt/<id>`. A resolved detail renders the cover, title,
+description, length, cadence, start date in the Hunt's time zone, minimum stake
+(at least $20), and Host. An iPhone-only button uses `huntz:///hunt/<id>` as
+accepted by the mobile app. A valid Hunt code may accompany that button.
+Referral and share tokens are never read, forwarded, logged or rendered.
+Unresolved invitations retain `api/_lib/hunt-fallback.html` byte for byte.
+
+Only details with PUBLIC visibility, OPEN enrollment and a matching entry in
+the current public Discover traversal receive an indexable response, an apex
+canonical URL and Event JSON-LD. All other responses remain noindex, omit
+canonical and structured data, and use `no-store`. The public API owns the
+published and visibility filter; explicit contradictory lifecycle or visibility
+fields are also rejected locally. No authenticated endpoint is used.
+
+`api/sitemap.js` serves `/sitemap.xml`, adding every eligible Discover URL to
+the generated marketing sitemap. It regenerates on cache misses and is called
+daily by Vercel Cron at 12:00 UTC. Public HTML and XML responses use a five-minute
+Vercel cache with no stale-while-revalidate window. A close, cancellation or
+visibility change disappears after that cache expires. Failed Discover reads
+serve the marketing-only sitemap uncached, so stale Hunt URLs are not retained.
+The cron performs only public reads and does not require a secret or a deploy hook.
+
+The build stays deterministic and offline after its initial asset download:
+
+```sh
+python3.12 build/assemble.py && python3.12 build/check.py && npm test
+```
+
+After production deployment, run `node scripts/verify-production.mjs`.
+For a Vercel preview, set `HUNTZ_VERIFY_ORIGIN` to the preview origin; the script
+checks the preview's pages while retaining production canonical expectations,
+and skips apex redirect checks that only make sense on production domains.

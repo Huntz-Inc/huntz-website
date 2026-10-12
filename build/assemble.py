@@ -1191,20 +1191,10 @@ old = "#ch-rail{overscroll-behavior-x:contain}\n"
 assert html.count(old) == 1, "rail style rule not found (familiar CSS anchor)"
 html = html.replace(old, old + FAMILIAR_CSS)
 
-# (LC-3) Upcoming: the five placeholder plates become the Hunts actually open
-# on Discover. Fetched once from the public API,
-# https://api.huntz.ai/v1/hunts?limit=50, on 2026-10-09: it listed three
-# Hunts, all enrolling, all starting 2026-10-12, so all three qualify (start
-# on or after the build date, ordered by start date, at most five). The list
-# is hard-coded on purpose, with that date; a live feed is a later change, and
-# this constant is what it replaces. Each plate keeps the design's card (the
-# same style, header, title and row treatment are reused verbatim, asserted
-# below); the rows read the Hunt's cadence, length, minimum stake and start
-# date, and the "I want this hunt" row is a real link to the Hunt's universal
-# link, which opens the app when it is installed and the /hunt page otherwise.
-# The link also covers the whole card (a positioned ::after, in the style
-# block), so the card is one tap on a phone while the focus ring and the
-# accessible name stay on the row itself.
+# (LC-3) Upcoming: these are the outage fallback cards, fetched from
+# https://api.huntz.ai/v1/hunts?limit=50 on 2026-10-09. api/home.js replaces
+# the marked rail at request time using the public Discover list. Both paths
+# use this same card template and apex Universal Links.
 LIVE_HUNTS = [
     {"id": "07bfc657-8dba-4a48-9842-63ea34d0f5e3", "title": "45-Minute Exercise Streak",
      "windows": 14, "unit": "day", "start_at": "2026-10-12T07:00:00.000Z", "tz": "America/Los_Angeles"},
@@ -1214,7 +1204,7 @@ LIVE_HUNTS = [
      "windows": 30, "unit": "day", "start_at": "2026-10-12T07:00:00.000Z", "tz": "America/Los_Angeles"},
 ]
 assert 1 <= len(LIVE_HUNTS) <= 5
-HUNT_LINK = SITE_URL + "/hunt/{id}"
+HUNT_LINK = "https://huntz.ai/hunt/{id}"
 # The API carries stakeRange.minMinor as a minor-unit string ("2000"); every
 # listed Hunt opens at the platform minimum, so the plates say so directly.
 HUNT_STAKE = "FROM $20"
@@ -1274,26 +1264,34 @@ def _esc(s: str) -> str:
     import html as _h
     return _h.escape(s, quote=True)
 
-def hunt_plate(i: int, h: dict) -> str:
-    nn = f"{i + 1:02d}"
-    title = _esc(h["title"])
-    link = (f'<a data-hunt-link="" href="{HUNT_LINK.format(id=h["id"])}" aria-label="I want this hunt: {title}" '
+def render_plate(nn, title, url, cadence, length, stake, starts) -> str:
+    link = (f'<a data-hunt-link="" href="{url}" aria-label="I want this hunt: {title}" '
             f'style="{CTA_STYLE};text-decoration:none"><span>I WANT THIS HUNT</span><span aria-hidden="true">&#8594;</span></a>')
     return (f'        <div data-plate="" style="position:relative;{PLATE_STYLE}" style-hover="{PLATE_HOVER}">\n'
             f'          <div>\n'
             f'            {PLATE_HEAD.format(nn=nn, title=title)}\n'
             f'          </div>\n'
             f'          <div style="display:flex;flex-direction:column;gap:9px">\n'
-            f'            {ROW_RULED.format(k="CADENCE", v=HUNT_CADENCE[h["unit"]])}\n'
-            f'            {ROW_RULED.format(k="LENGTH", v=hunt_length(h))}\n'
-            f'            {ROW_RULED.format(k="STAKE", v=HUNT_STAKE)}\n'
-            f'            {ROW_PLAIN.format(k="STARTS", v=hunt_starts(h))}\n'
+            f'            {ROW_RULED.format(k="CADENCE", v=cadence)}\n'
+            f'            {ROW_RULED.format(k="LENGTH", v=length)}\n'
+            f'            {ROW_RULED.format(k="STAKE", v=stake)}\n'
+            f'            {ROW_PLAIN.format(k="STARTS", v=starts)}\n'
             f'            {link}\n'
             f'          </div>\n'
             f'        </div>')
 
+def hunt_plate(i: int, h: dict) -> str:
+    return render_plate(f"{i + 1:02d}", _esc(h["title"]), HUNT_LINK.format(id=h["id"]),
+                        HUNT_CADENCE[h["unit"]], hunt_length(h), HUNT_STAKE, hunt_starts(h))
+
+# Generated from the exact same design as the static fallback.
+card_template = render_plate("%%NUMBER%%", "%%TITLE%%", "%%URL%%", "%%CADENCE%%",
+                             "%%LENGTH%%", "%%STAKE%%", "%%STARTS%%")
+(ROOT / "api" / "_lib").mkdir(parents=True, exist_ok=True)
+(ROOT / "api" / "_lib" / "hunt-card.html").write_text(card_template + "\n")
+
 plates_new = "\n".join(hunt_plate(i, h) for i, h in enumerate(LIVE_HUNTS))
-html = html[:rail_start] + rail_open + "\n" + plates_new + RAIL_CLOSE + html[rail_end:]
+html = html[:rail_start] + rail_open + "\n<!-- HUNT_RAIL_START -->\n" + plates_new + "\n<!-- HUNT_RAIL_END -->" + RAIL_CLOSE + html[rail_end:]
 assert html.count('<div data-plate=""') == 5 + len(LIVE_HUNTS), "plate count off (4 mechanic steps + the closing card + the Hunts)"
 assert "FROM $50" not in html
 
@@ -1586,6 +1584,7 @@ FOCUS_JS = """<script>
 })();
 </script>"""
 home = home.replace("</body>", drawer("/", "#waitlist") + "\n" + NAV_JS + "\n" + FOCUS_JS + "\n</body>")
+home = re.sub(r"(?m)^[ \t]+$", "", home)
 (ROOT / "index.html").write_text(home)
 
 art = html.replace("<!--HZ:FONTS-->", font_style)
@@ -2408,6 +2407,11 @@ HUNT_FALLBACK_PATH = ROOT / "api" / "_lib" / "hunt-fallback.html"
 HUNT_FALLBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
 HUNT_FALLBACK_PATH.write_text(hunt_page)
 
+# Retain root build outputs for local preview/checks, but deploy the copies
+# under _lib only (.vercelignore). Static root files would shadow rewrites.
+(ROOT / "api/_lib/home-fallback.html").write_bytes((ROOT / "index.html").read_bytes())
+(ROOT / "api/_lib/sitemap-base.xml").write_bytes((ROOT / "sitemap.xml").read_bytes())
+
 
 # The /auth/callback browser fallback. Written as auth/callback.html and served
 # at /auth/callback by cleanUrls, the same way the blog articles are - no rewrite
@@ -2464,7 +2468,7 @@ print(f"fonts css   {FONTS_HREF}")
 print(f"pages       {', '.join(['terms', 'privacy'] + CONTENT_PAGES)}")
 print(f"blog        /blog + {len(ARTICLES)} articles")
 print(f"aasa        {APPLE_TEAM_ID}.{IOS_BUNDLE_ID} at {len(AASA_PATHS)} paths")
-print(f"hunt        /hunt, /hunt/* -> api/hunt.js (noindex, unlisted; "
+print(f"hunt        /hunt, /hunt/* -> api/hunt.js (public detail or noindex fallback; "
       f"falls back to api/_lib/hunt-fallback.html)")
 print(f"auth        /auth/callback (noindex, unlisted)")
 print(f"sitemap     {len(SITEMAP_PATHS)} urls")

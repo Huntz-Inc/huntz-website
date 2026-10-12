@@ -353,7 +353,7 @@ test('both modes: the Upcoming plates are static cards, one Hunt link each, with
     for (const [, attrs] of plates) {
       assert.doesNotMatch(attrs, /onClick|onKeyDown|role=|tabIndex|aria-label/, `${name}: a plate still carries picker attributes`);
     }
-    assert.equal((rail.match(/<a data-hunt-link="" href="https:\/\/www\.huntz\.ai\/hunt\/[0-9a-f-]{36}"/g) || []).length, 3, `${name}: one Hunt link per plate`);
+    assert.equal((rail.match(/<a data-hunt-link="" href="https:\/\/huntz\.ai\/hunt\/[0-9a-f-]{36}"/g) || []).length, 3, `${name}: one Hunt link per plate`);
     assert.doesNotMatch(rail, /Join the waitlist: interested in|\{\{ pick/);
   }
 });

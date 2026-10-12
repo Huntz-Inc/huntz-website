@@ -9,3 +9,8 @@ scripts/
 README.md
 CUTOVER.md
 Page Review_ Kinetic Hero Design/
+
+# Functions own these routes. Deploy their generated copies inside api/_lib
+# so filesystem routing cannot shadow the live homepage or sitemap rewrites.
+/index.html
+/sitemap.xml

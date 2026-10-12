@@ -12,16 +12,10 @@
 // is this endpoint's to see. They are bearer-credit-shaped values meant only
 // for the app itself.
 //
-// FALLBACK IS THE DEFAULT. Whenever the Hunt cannot be resolved (no id in
-// the URL, an id shape the app could never have issued, a non-200 from the
-// API (a running Hunt currently 404s until a server fix ships; a canceled
-// Hunt 404s forever; a code-gated Hunt 404s without its code), the API being
-// unreachable, or a lookup slower than ~1.5s), this serves the exact same
-// bytes the old static hunt.html served for every invitation. Only a
-// confirmed 200 with a usable body changes anything, and even then only the
-// <title>/description/og:* meta: the body, nav, store button and the
-// id-display script are byte-identical to the fallback in every case (see
-// build/assemble.py's HUNT_FALLBACK_PATH comment and build/check.py).
+// Unresolved links retain the exact generated fallback. Resolved links render
+// Hunt details and an iPhone app button. Only open PUBLIC Hunts confirmed in
+// Discover are indexable. Codes are forwarded only to the public detail API;
+// referral and share tokens never enter upstream requests or rendered bytes.
 //
 // Every value that reaches the page is escaped (escapeHtml) and every tag
 // swap uses a replacer FUNCTION, not a template string, so a Hunt title that
@@ -30,6 +24,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { HUNT_ORIGIN, CACHE_CONTROL, copy, minimumStake, stakeLabel, isOpenPublic, fetchPublicHunts } = require('./_lib/public-hunts');
 
 const SITE_URL = 'https://www.huntz.ai';
 const API_ORIGIN = process.env.HUNTZ_API_URL || 'https://api.huntz.ai';
@@ -158,12 +153,13 @@ async function fetchHuntDetail(huntId, code, deps) {
   try {
     const res = await fetchImpl(url.toString(), {
       signal: controller.signal,
+      redirect: 'error',
       headers: { accept: 'application/json' },
     });
     if (!res || res.status !== 200) return null;
     const body = await res.json();
     if (!body || typeof body !== 'object') return null;
-    if (typeof body.title !== 'string' || body.title.length === 0) return null;
+    if (!copy(body.title) || (body.id != null && body.id !== huntId)) return null;
     return body;
   } catch {
     // Network error, abort (timeout), or a body that was not valid JSON.
@@ -209,7 +205,7 @@ function formatDuration(duration, lengthLabel) {
   if (typeof lengthLabel === 'string' && lengthLabel.trim().length > 0) return lengthLabel.trim();
   if (
     duration &&
-    typeof duration.windowCount === 'number' &&
+    Number.isFinite(duration.windowCount) &&
     duration.windowCount > 0 &&
     typeof duration.windowUnitLabel === 'string' &&
     duration.windowUnitLabel.trim().length > 0
@@ -371,10 +367,38 @@ function replaceTag(html, pattern, value) {
   return html.replace(pattern, (_match, open, close) => open + value + close);
 }
 
-function renderHuntHtml(fallbackHtml, huntId, detail, apiOrigin, now) {
-  const title = escapeHtml(detail.title) + ' | Huntz';
-  const description = escapeHtml(buildDescription(detail, now));
-  const ogUrl = escapeHtml(SITE_URL + '/hunt/' + encodeURIComponent(huntId));
+function formatCadence(detail) {
+  return copy(detail.ruleSummary?.proofCadence) || copy(detail.summaryLabel) ||
+    ({ day: '1 check-in a day', week: '1 check-in a week' }[cadenceUnit(detail)]) || 'Follow the Hunt schedule in the app';
+}
+
+function renderHuntBody(huntId, detail, apiOrigin, code) {
+  const cover = buildCoverArtUrl(detail.coverArtUrl, apiOrigin) ||
+    new URL('/v1/hunts/' + encodeURIComponent(huntId) + '/cover-art', apiOrigin).toString();
+  const facts = [
+    ['Length', formatDuration(detail.duration, detail.lengthLabel)],
+    ['Cadence', formatCadence(detail)],
+    ['Start date', formatStartDate(detail.startAt, detail.timeZone)],
+    ['Stake', stakeLabel(detail)],
+    ['Host', detail.creatorDisplayName],
+  ].filter(([, value]) => value);
+  const link = 'huntz:///hunt/' + encodeURIComponent(huntId) + (code ? '?code=' + code : '');
+  return `<section data-hunt-detail aria-labelledby="hunt-title">
+  <img src="${escapeHtml(cover)}" alt="${escapeHtml(copy(detail.title))}" width="1200" height="800" style="display:block;width:100%;height:auto;max-height:360px;object-fit:cover;border-radius:18px;margin-bottom:24px">
+  <h1 id="hunt-title" style="margin:0 0 16px;font:600 clamp(30px,4.4vw,46px)/1.08 'Playfair Display',serif;text-wrap:balance">${escapeHtml(copy(detail.title))}</h1>
+  ${copy(detail.description) ? `<p style="font-size:17px;line-height:1.6;white-space:pre-line">${escapeHtml(copy(detail.description))}</p>` : ''}
+  <dl style="display:grid;grid-template-columns:auto 1fr;gap:12px 24px;margin:24px 0;line-height:1.5">${facts.map(([label, value]) => `<dt style="color:#6E6759">${escapeHtml(label)}</dt><dd style="margin:0">${escapeHtml(copy(value))}</dd>`).join('')}</dl>
+  <a data-hunt-open hidden href="${escapeHtml(link)}" style="border-radius:999px;font-weight:700;color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none">Open in the Huntz app</a>
+  <script>(function(){if(/iPhone/i.test(navigator.userAgent)){var button=document.querySelector('[data-hunt-open]');if(button){button.hidden=false;button.style.display='inline-flex';}}})();</script>
+  </section>`;
+}
+
+function renderHuntHtml(fallbackHtml, huntId, detail, apiOrigin, now, options = {}) {
+  const title = escapeHtml(copy(detail.title)) + ' | Huntz';
+  const descriptionText = copy(detail.description) || copy(buildDescription(detail, now));
+  const description = escapeHtml(descriptionText);
+  const canonical = HUNT_ORIGIN + '/hunt/' + encodeURIComponent(huntId);
+  const ogUrl = escapeHtml(canonical);
   const coverArt = buildCoverArtUrl(detail.coverArtUrl, apiOrigin);
 
   let html = fallbackHtml;
@@ -385,6 +409,31 @@ function renderHuntHtml(fallbackHtml, huntId, detail, apiOrigin, now) {
   html = replaceTag(html, /(<meta property="og:url" content=")[^"]*(")/, ogUrl);
   if (coverArt) {
     html = replaceTag(html, /(<meta property="og:image" content=")[^"]*(")/, escapeHtml(coverArt));
+  }
+  // Replace only the resolved invitation introduction. Failure responses still
+  // send the original fallback file byte for byte, including its id script.
+  html = html.replace(/<h1\b[\s\S]*?<p data-hz-idline\b[\s\S]*?<\/p>/,
+    () => renderHuntBody(huntId, detail, apiOrigin, options.code));
+  html = html.replace(/<script>\s*\/\* Shows the Hunt id[\s\S]*?<\/script>/, () => '');
+  if (options.indexable) {
+    html = html.replace(/<meta name="robots" content="noindex">/, () =>
+      `<meta name="robots" content="index, follow">\n<link rel="canonical" href="${ogUrl}">`);
+    const stake = minimumStake(detail);
+    const schema = {
+      '@context': 'https://schema.org', '@type': 'Event', name: copy(detail.title),
+      description: descriptionText, url: canonical, startDate: detail.startAt,
+      image: coverArt || new URL('/v1/hunts/' + encodeURIComponent(huntId) + '/cover-art', apiOrigin).toString(),
+      eventStatus: 'https://schema.org/EventScheduled',
+      eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+      location: { '@type': 'VirtualLocation', url: canonical },
+      organizer: { '@type': 'Person', name: copy(detail.creatorDisplayName) },
+      ...(stake === null ? {} : { offers: { '@type': 'Offer', price: stake.toFixed(2), priceCurrency: 'USD',
+        availability: 'https://schema.org/InStock', url: canonical } }),
+    };
+    // JSON string escaping plus HTML raw-text escaping, never HTML entities
+    // inside JSON-LD. This prevents a Host's </script> from ending the block.
+    const json = JSON.stringify(schema).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    html = html.replace('</head>', () => `<script type="application/ld+json">${json}</script>\n</head>`);
   }
   return html;
 }
@@ -400,6 +449,7 @@ function sendHtml(res, html, cacheControl) {
 // a transient timeout, a 429) must not keep serving the generic page after
 // the API is fixed or the failure clears.
 function sendFallback(res, deps) {
+  res.setHeader('X-Robots-Tag', 'noindex');
   sendHtml(res, (deps && deps.fallbackHtml) || loadFallbackHtml(), 'no-store');
 }
 
@@ -417,8 +467,15 @@ async function handle(req, res, deps = {}) {
     }
     const apiOrigin = deps.apiOrigin || API_ORIGIN;
     const now = deps.now instanceof Date ? deps.now : new Date();
-    const html = renderHuntHtml((deps && deps.fallbackHtml) || loadFallbackHtml(), huntId, detail, apiOrigin, now);
-    sendHtml(res, html, 'public, s-maxage=300, stale-while-revalidate=600');
+    let indexable = false;
+    if (!code && detail.visibility === 'PUBLIC' && isOpenPublic(detail, now)) {
+      const listed = await fetchPublicHunts(deps);
+      indexable = listed !== null && listed.some((hunt) => hunt.id === huntId);
+    }
+    const html = renderHuntHtml((deps && deps.fallbackHtml) || loadFallbackHtml(), huntId, detail, apiOrigin, now, { code, indexable });
+    res.setHeader('X-Robots-Tag', indexable ? 'index, follow' : 'noindex');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    sendHtml(res, html, indexable ? CACHE_CONTROL : 'no-store');
   } catch (e) {
     console.error('hunt: unexpected error, serving the fallback', { message: e && e.message });
     try {
@@ -444,3 +501,6 @@ module.exports.dayCount = dayCount;
 module.exports.cadenceUnit = cadenceUnit;
 module.exports.API_ORIGIN = API_ORIGIN;
 module.exports.SITE_URL = SITE_URL;
+module.exports.formatDuration = formatDuration;
+module.exports.formatStartDate = formatStartDate;
+module.exports.formatCadence = formatCadence;
