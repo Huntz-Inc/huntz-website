@@ -151,11 +151,11 @@ for ch, what in (("—", "em dash"), ("–", "en dash"), ("!", "exclamation mark
     if ch in home_text:
         fail(f"/: {what} in the home page's visible copy")
 for stale in ("FROM $50", "Stake $50", "Put your money</span>", "Hunt&nbsp;", "READY WHEN YOU ARE", "WHAT HAPPENS NEXT",
-              ">Put your money where your goals are.</div>"):
+              ">Put your money where your goals are.</div>", ">motivation.</span>", "nothing-to-lose"):
     if stale in home:
         fail(f"/: pre-launch copy {stale!r} is back on the home page")
-for needle in (">motivation.</span>", ">consequences<span", 'id="familiar"', "Sound familiar?",
-               "nothing-to-lose</span> problem<span", 'data-hunt-link="" href="https://www.huntz.ai/hunt/',
+for needle in (">Make</span>", ">something<span", 'id="familiar"', "Sound familiar?",
+               'data-hunt-link="" href="https://www.huntz.ai/hunt/',
                "finishes<span", 'id="fin-sub"', "Quitting just got expensive.", "WHAT'S LIVE"):
     if needle not in home:
         fail(f"/: launch copy {needle!r} missing from the home page")

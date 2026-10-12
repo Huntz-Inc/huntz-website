@@ -1082,8 +1082,10 @@ def apply_content_app_store_switch(tpl: str) -> str:
 
 # (LC-1) Hero. The headline keeps the design's word-by-word rise (one span per
 # word, the same 80 ms stagger) and its accent treatment on the last word
-# (italic, with the full stop in clay); the second sentence starts on its own
-# line. The sub keeps its paragraph styling and changes only its sentence;
+# (italic, with the full stop in clay). Founder revision, 2026-10-11: the
+# headline is "Make quitting cost something." on one sentence, no forced line
+# break (the earlier "You don't need motivation. You need consequences." read
+# as shouting). The sub keeps its paragraph styling and changes only its sentence;
 # founder revisions, later the same day: the sentence is the one below (the
 # second revision of it), and HEAD_META's og:description and
 # twitter:description both repeat it.
@@ -1102,9 +1104,9 @@ HERO_H1_OLD = (f"<h1 {HERO_H1_STYLE}>\n        "
                + "\n        ".join(_hero_word(i, w, last=i == 6) for i, w in enumerate(_old_words))
                + "\n      </h1>")
 assert html.count(HERO_H1_OLD) == 1, "hero headline not found"
-HERO_WORDS = ["You", "don't", "need", "motivation.", "You", "need", "consequences."]
+HERO_WORDS = ["Make", "quitting", "cost", "something."]
 HERO_H1_NEW = (f"<h1 {HERO_H1_STYLE}>\n        "
-               + "\n        ".join(_hero_word(i, w, last=i == 6) + ("\n        <br>" if i == 3 else "")
+               + "\n        ".join(_hero_word(i, w, last=i == len(HERO_WORDS) - 1)
                                    for i, w in enumerate(HERO_WORDS))
                + "\n      </h1>")
 html = html.replace(HERO_H1_OLD, HERO_H1_NEW)
@@ -1123,9 +1125,9 @@ html = html.replace(HERO_SUB_OLD, HERO_SUB_NEW)
 #   - The section pattern (container width, side padding) and the eyebrow are
 #     the mechanic's: "SOUND FAMILIAR?" wears THE MECHANIC's label style, set
 #     uppercase by CSS so the source stays in sentence case.
-#   - The headline is "You don't have a discipline problem. You have a
-#     nothing-to-lose problem." in the style and size of the mechanic's "Lock
-#     in or you lose.", with the accent full stop on its last word.
+#   - No headline (founder revision, 2026-10-11): the "Sound familiar?" label
+#     already sets the block up, and the two-sentence headline under it repeated
+#     the point. The label leads straight into the cards.
 #   - Under it, three cards in a row, stacked at 960px and below (so on every
 #     phone). Each takes its surface, radius, shadow, hover, label chip and big
 #     index number from the mechanic's first step card, read out of that card's
@@ -1135,10 +1137,6 @@ html = html.replace(HERO_SUB_OLD, HERO_SUB_NEW)
 #     Hunts' (counted in (LC-3)).
 # The bottom padding is shorter than the top so the block reads as the lead-in
 # to "The mechanic" that answers it.
-# "nothing-to-lose" is kept whole (no break after "nothing-") so that on a phone
-# the last line reads "nothing-to-lose problem." rather than splitting the compound.
-FAMILIAR_HEADLINE = ("You don't have a discipline problem. You have a "
-                     '<span style="white-space:nowrap">nothing-to-lose</span> problem')
 FAMILIAR_CARDS = [
     ("THE GYM", "Third gym membership. Zero workouts."),
     ("THE MONDAY", "You said Monday. It is now October."),
@@ -1159,9 +1157,6 @@ assert CARD_NUMBER.startswith("position:absolute;top:clamp(14px,1.8vw,20px);righ
 assert CARD_CHIP.startswith("display:inline-block;padding:5px 11px;border-radius:20px;border:1px solid currentColor;"), \
     "mechanic label chip drifted"
 assert CARD_TITLE.startswith("padding-right:46px;font:600 clamp(20px,2vw,26px)/1.2 "), "mechanic card title drifted"
-_headline = re.search(r'<h2 style="margin:0;(font:600 clamp\(34px,4\.4vw,60px\)/1\.06 [^"]*)">'
-                      r'Lock in or you lose<span style="color:#C24E1F">\.</span></h2>', html)
-assert _headline, "the mechanic's headline was not found"
 _eyebrow = re.search(r'<div style="([^"]*)">THE MECHANIC</div>', html)
 assert _eyebrow, "THE MECHANIC eyebrow was not found"
 
@@ -1176,8 +1171,7 @@ familiar_cards = "\n      ".join(
 FAMILIAR_SECTION = f"""<section id="familiar" data-screen-label="Sound familiar" style="position:relative;padding:clamp(64px,9vh,104px) clamp(20px,5vw,64px) clamp(8px,2vh,24px)">
   <div style="max-width:1220px;margin:0 auto">
     <div style="{_eyebrow.group(1)};text-transform:uppercase">Sound familiar?</div>
-    <h2 style="margin:0 0 clamp(26px,4vh,42px);{_headline.group(1)}">{FAMILIAR_HEADLINE}<span style="color:#C24E1F">.</span></h2>
-    <div data-familiar-cards="">
+    <div data-familiar-cards="" style="margin-top:clamp(18px,3vh,30px)">
       {familiar_cards}
     </div>
   </div>

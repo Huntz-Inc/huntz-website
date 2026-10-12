@@ -2,9 +2,9 @@
 // Tests for the launch copy mix (2026-10-09, founder-approved): build/assemble.py's
 // 2h block, plus the "What's live" card it folded into (S-2b) (asserted in
 // test/app-store-launch.test.js, next to that card's other tests). The hero
-// reads "You don't need motivation. You need consequences.", a "Sound
-// familiar?" block follows the hero's marquee strip (rebuilt, the same day, on
-// the mechanic steps' own card system: a headline and three cards), the
+// reads "Make quitting cost something." (founder revision 2026-10-11), a "Sound
+// familiar?" block follows the hero's marquee strip (rebuilt on the mechanic
+// steps' own card system: the label and three cards, no headline), the
 // Upcoming plates list the Hunts open on Discover and link to them, and the
 // closing section reads "Become someone who finishes." over "Quitting just got
 // expensive.". Everything else on the home page stays as it was.
@@ -61,15 +61,16 @@ function between(startMarker, endMarker, src = visible) {
 
 const HERO = between('<section id="hz-hero"', 'id="hz-phone"');
 
-test('hero: the headline reads "You don\'t need motivation. You need consequences.", word by word, the second sentence on its own line', () => {
+test('hero: the headline reads "Make quitting cost something.", word by word, on one sentence', () => {
   const h1 = between('<h1', '</h1>', HERO);
-  assert.equal(textOf(h1), "You don't need motivation. You need consequences.");
+  assert.equal(textOf(h1), 'Make quitting cost something.');
   const delays = [...h1.matchAll(/<span style="display:inline-block;animation:hzWord \.9s cubic-bezier\(\.18,1\.25,\.4,1\) (0\.\d\d)s both[^"]*">/g)]
     .map((m) => m[1]);
-  assert.deepEqual(delays, ['0.08', '0.16', '0.24', '0.32', '0.40', '0.48', '0.56'],
+  assert.deepEqual(delays, ['0.08', '0.16', '0.24', '0.32'],
     'one rising span per word, the design\'s own 80 ms stagger');
-  assert.match(h1, /motivation\.<\/span>\n\s*<br>\n\s*<span/, 'the second sentence starts on its own line');
-  assert.match(h1, /font-style:italic">consequences<span style="color:#C24E1F;font-style:normal">\.<\/span><\/span>/,
+  assert.doesNotMatch(h1, /<br>/, 'one sentence, no forced line break');
+  assert.doesNotMatch(HERO, /need motivation|consequences/);
+  assert.match(h1, /font-style:italic">something<span style="color:#C24E1F;font-style:normal">\.<\/span><\/span>/,
     'the last word keeps the design\'s accent treatment: italic, clay full stop');
   assert.doesNotMatch(HERO, /Put your money|goals are/);
 });
@@ -86,7 +87,6 @@ test('hero: the eyebrow keeps the colon main settled on, not a dash and not a mi
 
 // -------------------------------------------------------- "Sound familiar?"
 
-const FAMILIAR_HEADLINE = "You don't have a discipline problem. You have a nothing-to-lose problem.";
 const FAMILIAR_CARDS = [
   ['THE GYM', 'Third gym membership. Zero workouts.'],
   ['THE MONDAY', 'You said Monday. It is now October.'],
@@ -127,25 +127,12 @@ test('sound familiar: the eyebrow stays "SOUND FAMILIAR?", in THE MECHANIC\'s ey
   for (const token of ["font:600 11px 'Figtree',Arial,Helvetica,sans-serif", 'letter-spacing:.2em', 'color:#6E6759', 'margin-bottom:14px']) {
     assert.ok(eyebrow[1].includes(token), `eyebrow lacks ${token}`);
   }
-  assert.equal((FAMILIAR.match(/<h2/g) || []).length, 1, 'the headline is the section\'s one heading');
-  assert.ok(FAMILIAR.indexOf('Sound familiar?') < FAMILIAR.indexOf('<h2'), 'the eyebrow comes first');
+  assert.equal((FAMILIAR.match(/<h2/g) || []).length, 0, 'no headline: the label leads straight into the cards');
+  assert.ok(FAMILIAR.indexOf('Sound familiar?') < FAMILIAR.indexOf('data-familiar-cards'), 'the eyebrow comes first');
 });
 
-test('sound familiar: the headline is "You don\'t have a discipline problem. You have a nothing-to-lose problem." in the style and size of "Lock in or you lose.", the accent full stop on the last word', () => {
-  const h2 = FAMILIAR.match(/<h2 style="([^"]*)">([\s\S]*?)<\/h2>/);
-  assert.ok(h2, 'headline not found');
-  assert.equal(textOf(h2[2]), FAMILIAR_HEADLINE);
-  // Only the final full stop is clay; the one mid-sentence is ink like the rest.
-  assert.match(h2[2], /problem<span style="color:#C24E1F">\.<\/span>$/);
-  assert.equal((h2[2].match(/color:#C24E1F/g) || []).length, 1);
-  assert.match(h2[2], /discipline problem\. You have a /);
-  // The compound stays whole on a phone: no break after "nothing-".
-  assert.match(h2[2], /<span style="white-space:nowrap">nothing-to-lose<\/span> problem/);
-  // Same font shorthand, letter-spacing and wrapping as the mechanic's headline; only the margin differs.
-  const mechanicH2 = MECHANIC.match(/<h2 style="([^"]*)">Lock in or you lose<span style="color:#C24E1F">\.<\/span><\/h2>/);
-  assert.ok(mechanicH2, 'the mechanic headline was not found');
-  assert.match(mechanicH2[1], /^margin:0;font:600 clamp\(34px,4\.4vw,60px\)\/1\.06 'Playfair Display','Times New Roman',serif;letter-spacing:-\.012em;text-wrap:balance$/);
-  assert.equal(h2[1], mechanicH2[1].replace('margin:0;', 'margin:0 0 clamp(26px,4vh,42px);'));
+test('sound familiar: the old headline is gone (founder revision 2026-10-11)', () => {
+  assert.doesNotMatch(FAMILIAR, /discipline problem|nothing-to-lose/);
 });
 
 test('sound familiar: three cards, each one label chip and one line, on the mechanic step card\'s exact surface, radius, shadow, chip and index number', () => {
@@ -177,7 +164,7 @@ test('sound familiar: three cards, each one label chip and one line, on the mech
 
 test('sound familiar: three across on desktop, stacked on phones, and the old plain text block is gone', () => {
   // The container is a three-column grid, one column at 960px and below (every phone, and portrait tablets).
-  assert.match(FAMILIAR, /<div data-familiar-cards="">/);
+  assert.match(FAMILIAR, /<div data-familiar-cards="" style="margin-top:clamp\(18px,3vh,30px\)">/);
   assert.match(html, /\n\[data-familiar-cards\]\{display:grid;grid-template-columns:repeat\(3,1fr\);gap:clamp\(12px,1\.6vw,20px\)\}\n@media \(max-width:960px\)\{\[data-familiar-cards\]\{grid-template-columns:1fr\}\}\n/);
   const stackedBelow = 960;
   assert.ok(640 <= stackedBelow && 375 <= stackedBelow, 'phones stack');
@@ -306,7 +293,7 @@ test('copy rules: the visible home page has no em dash, en dash or exclamation m
   assert.doesNotMatch(text, /\bfree\b/i);
   assert.doesNotMatch(text, /FROM \$50|\$50[–-]\$|\$50 to \$|Stake \$50/);
   // The new headlines are the approved strings exactly, so sentence case by construction.
-  for (const line of ['You need', 'consequences', 'Sound familiar?', FAMILIAR_HEADLINE, ...FAMILIAR_CARDS.flat(), 'Become someone who finishes', 'Quitting just got expensive.']) {
+  for (const line of ['Make quitting cost something.', 'Sound familiar?', ...FAMILIAR_CARDS.flat(), 'Become someone who finishes', 'Quitting just got expensive.']) {
     assert.ok(text.includes(line), `missing: ${line}`);
   }
   // Nothing else on the page moved: the marquee, the mechanic's four steps, the example card, the FAQ, the Android form, the footer.
