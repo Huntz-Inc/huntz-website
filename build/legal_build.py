@@ -3,8 +3,8 @@
 
     python3 build/legal_build.py
 
-Reads build/source/legal/{terms,privacy}.txt — plain text extracted from the
-PDFs counsel provided, kept verbatim — and writes build/legal-terms.html and
+Reads build/source/legal/{terms,privacy}.txt, containing the supplied legal
+text and approved policy revisions, and writes build/legal-terms.html and
 build/legal-privacy.html, which assemble.py injects into the legal pages.
 
 The wording is never edited here. The script only recognises structure
@@ -31,7 +31,7 @@ SUBHEADS = {
     # Privacy
     "Information You Provide", "Information Collected Automatically",
     "Information From Third Parties", "Apple Health", "Information We Do Not Collect",
-    "Analytics", "AI-Assisted Verification", "AI Training", "California Residents",
+    "Analytics", "Proof Review", "AI-Assisted Verification", "AI Training", "California Residents",
     "Other U.S. State Privacy Laws", "International Users",
     "Payment Providers", "Cloud Infrastructure Providers",
     "Analytics Providers", "Email and Communications Providers",
@@ -42,7 +42,7 @@ SUBHEADS = {
 SUBSUBHEADS = {
     "Account Information", "Identity and Eligibility Information",
     "Payment Information", "Hunt Activity", "Communications",
-    "Host Applications", "Connected Social Accounts", "Service Providers",
+    "Host Applications", "Connected Social Accounts", "Social Media Usernames", "Service Providers",
 }
 
 DISPLAY_TITLES = {"HUNTZ TERMS OF SERVICE": "Huntz Terms of Service"}
@@ -97,11 +97,12 @@ def esc(s: str) -> str:
 
 
 def linkify(s: str) -> str:
-    """Emails and huntz.ai become real links; everything else is left alone."""
+    """Link the contact addresses and policy references without changing copy."""
     s = re.sub(r"([\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[A-Za-z]{2,})",
                rf'<a href="mailto:\1" style="color:{CLAY};text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">\1</a>', s)
     s = re.sub(r"(?<![\w/@.])(huntz\.ai)(?![\w@])",
                r'<a href="/" style="color:%s;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">\1</a>' % CLAY, s)
+    s = s.replace("stripe.com/privacy", f'<a href="https://stripe.com/privacy" style="color:{CLAY};text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">stripe.com/privacy</a>')
     return s
 
 
