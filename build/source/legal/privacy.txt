@@ -239,11 +239,6 @@ birth, avatar content, and Apple Health step readings. Masked content is covered
 sent to PostHog. Device console logs and network request or response data are not collected as part of
 session recordings.
 
-These protections apply to specific content, rather than excluding entire payment, account security, or
-proof screens. Other screen content, such as buttons, payment amounts, Hunt status, your displayed name
-and email address, and support messages after they are sent, may remain visible in recordings. Text
-entered in a masked input field may also be visible if it is later displayed outside a masked area.
-
 4. Legal Bases for Processing
 
 Where applicable, we process personal information based on one or more of the following legal grounds:
@@ -258,14 +253,12 @@ Where applicable, we process personal information based on one or more of the fo
 Your proof submissions, including photos, videos, written reflections, and other verification
 materials, are private by default.
 
-Proof submissions are visible only to:
+Proof submissions can be accessed by:
     ●    You
     ●    Authorized Huntz personnel responsible for verification, moderation, fraud prevention, or
          customer support
     ●    Cloud hosting and storage providers that store data on our behalf and may not use it for their own
          purposes
-    ●    PostHog, to the extent that proof-related text is displayed outside a masked area in a session
-         recording, as described in the Analytics section above
     ●    A friend you have linked with in a Hunt, only if you turn on evidence sharing for that Hunt.
          Evidence sharing is off by default, covers only submissions made after you turn it on, and can be
          turned off at any time.
