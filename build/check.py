@@ -1139,6 +1139,33 @@ else:
                 fail(f"a rewrite rule would move {aasa_path}")
 
 
+# ---- in-app browser notice (2026-10-19) ----
+# TikTok's and Instagram's in-app browsers will not hand a link to the App
+# Store, so build/in-app-notice.js adds a "how to open this in your browser"
+# card inside those two browsers only. Every generated page with an App Store
+# button carries that script exactly once; no other page does; and the card is
+# built by the script, so none of its markup or wording may be in served HTML.
+# (test/in-app-notice.test.js runs the shipped script against a stand-in DOM.)
+NOTICE_MARKERS = ("data-hz-inapp", "Having trouble downloading Huntz", "can block the App Store",
+                  "Open in external browser", "Open in browser", "Copy link", "Link copied")
+notice_files = ([ROOT / v for v in PAGES.values()]
+                + [ROOT / "api/_lib/home-fallback.html", ROOT / "api/_lib/hunt-fallback.html",
+                   ROOT / "auth/callback.html"])
+for f in notice_files:
+    t = f.read_text()
+    rel = f.relative_to(ROOT)
+    scripts = [m for m in re.findall(r"<script>(.*?)</script>", t, re.S) if "data-hz-inapp-notice" in m]
+    has_button = APP_STORE_URL in t
+    if has_button and len(scripts) != 1:
+        fail(f"{rel}: has an App Store button but carries the in-app notice script {len(scripts)} times (expected 1)")
+    if not has_button and scripts:
+        fail(f"{rel}: has no App Store button, so it must not carry the in-app notice script")
+    markup = re.sub(r"<!--.*?-->", "", re.sub(r"<(script|style)\b.*?</\1>", "", t, flags=re.S | re.I), flags=re.S)
+    for marker in NOTICE_MARKERS:
+        if marker in markup:
+            fail(f"{rel}: in-app notice markup/wording {marker!r} is in the served HTML; only the script may build it")
+
+
 if failures:
     print(f"FAIL ({len(failures)}):")
     for m in failures:

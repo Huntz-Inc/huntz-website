@@ -174,6 +174,47 @@ content="app-id=6802558635">`) is unconditional and already ships on every
 public page: Safari only shows it once the app is actually live on the App
 Store, so shipping the tag ahead of approval is safe.
 
+### In-app browsers (TikTok, Instagram)
+
+*(2026-10-19)* Visitors who arrive from a creator's TikTok or Instagram post
+open the page in that app's own browser, which will not hand a link to the App
+Store, so the "Download on the App Store" button looks dead. Inside those two
+browsers only, `build/in-app-notice.js` adds a small card: "Having trouble
+downloading Huntz?", the steps to open the page in the real browser (TikTok:
+"Open in browser"; Instagram: "Open in external browser"), a "Copy link"
+button that copies `https://huntz.ai`, and a dismiss control.
+
+- **Where.** `build/assemble.py` inlines the file, as the last script of the
+  page, on every generated page with an App Store button: the home page (and
+  `api/_lib/home-fallback.html`, which `api/home.js` serves), the content pages,
+  the blog and its articles, and `api/_lib/hunt-fallback.html`, which
+  `api/hunt.js` serves for every Hunt page, resolved or not. Not on
+  `/auth/callback` (its copy never claims the App Store), the legal pages or the
+  payout and mailbox pages, which have no button. `build/check.py` and
+  `test/in-app-notice.test.js` fail if a page with an App Store link lacks the
+  script or a page without one has it.
+- **Detection.** Client side, from `navigator.userAgent`. TikTok: `musical_ly`,
+  `BytedanceWebview`, `TikTok`, and `trill` as a whole word (Android's
+  `trill_<build>`). Instagram: `Instagram`. These are the markers the in-app
+  browsers add today; neither app documents them, so they can change with an app
+  release. To add or fix one, edit `TIKTOK` or `INSTAGRAM` at the top of
+  `build/in-app-notice.js`, add a sample user agent to
+  `test/in-app-notice.test.js`, and rebuild.
+- **Nothing changes elsewhere.** The card is built by the script, so it is in no
+  served HTML: Safari, Chrome, crawlers and every other browser get the page
+  exactly as before. The script is plain ES5, never redirects, cancels a click
+  or rewrites a link (the App Store buttons are ordinary anchors to
+  `https://apps.apple.com/app/id6802558635`), reads nothing from the URL, and
+  stores nothing; dismissal lasts for the page view.
+- **Placement.** In the flow, under the page's bar, so it never covers a button
+  or the bar. Tapping any App Store link still goes to the link; if the webview
+  swallows it, the card is scrolled back into view and briefly outlined.
+- **Trying it.** There is no TikTok in a desktop browser, so override the user
+  agent first: in the console, run
+  `Object.defineProperty(navigator, 'userAgent', {get: () => 'musical_ly_36.1.0 BytedanceWebview/d8a21c6'})`
+  and then run the page's own notice script again:
+  `(0, eval)([...document.scripts].find(s => s.textContent.includes('data-hz-inapp-notice')).textContent)`.
+
 ## The contact form
 
 `/contact` posts to `api/contact.js`, a zero-config Vercel Function that mails

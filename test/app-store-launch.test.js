@@ -670,11 +670,13 @@ test('live: accountability-challenges.html\'s meta description says the app is a
 // change at all to it, however small (a rebuild with the switch flipped
 // back, a drifted shell template), fails here rather than only in the
 // broader checks above. Update the pin deliberately when the page changes
-// on purpose.
+// on purpose. (2026-10-19: re-pinned when the in-app browser notice script,
+// build/in-app-notice.js, was added to every page with an App Store button;
+// test/in-app-notice.test.js covers it.)
 test('live: about.html is byte-for-byte the committed launched page (sha256 pin)', () => {
   const bytes = fs.readFileSync(path.join(ROOT, 'about.html'));
   const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  assert.equal(hash, '7f9e7f1a1690bf5747b07677ba1185c0a7f34dde99d63ffb31af2e8a59cba1e4',
+  assert.equal(hash, 'eb521f3fdfcae5c022922e0822397bcaed86050984e3027323be52e2d4c176bf',
     'about.html changed: the launched (APP_STORE_URL set) state must stay byte-for-byte identical to the committed page');
 });
 

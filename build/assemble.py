@@ -689,6 +689,24 @@ NAV_JS = """<script>
 </script>"""
 
 
+# In-app browser notice (2026-10-19). TikTok's and Instagram's in-app browsers
+# will not hand a link to the App Store, so the "Download on the App Store"
+# button looks dead to a visitor who came from a creator's post. This script,
+# build/in-app-notice.js, adds a small card (how to open the page in the real
+# browser, a "Copy link" fallback, a dismiss control) ONLY when the user agent
+# is one of those two browsers; the card is built by the script and is not in
+# any generated HTML. It goes on every page that has an App Store button: the
+# home page, the content pages, the blog and its articles, and the /hunt
+# page (api/hunt.js serves that file's bytes, so resolved Hunts carry it too).
+# It stays off /auth/callback, whose copy never claims the App Store, and off
+# the legal pages, which have no button. The file's header comment is for
+# readers of the source; it is not shipped. See test/in-app-notice.test.js.
+_IN_APP_SRC = (BUILD / "in-app-notice.js").read_text()
+_IN_APP_BODY = re.sub(r"\A/\*.*?\*/\n", "", _IN_APP_SRC, count=1, flags=re.S)
+assert _IN_APP_BODY != _IN_APP_SRC and "</script" not in _IN_APP_BODY.lower(), "in-app-notice.js header/shape"
+IN_APP_JS = "<script>\n" + _IN_APP_BODY.rstrip("\n") + "\n</script>"
+
+
 # (N-1) The home bar gets the menu button. It is plain markup with no runtime
 # binding, so the delegated controller in NAV_JS keeps working across a React
 # re-render, and the button is the only header control left below 641px.
@@ -1581,7 +1599,7 @@ FOCUS_JS = """<script>
   }
 })();
 </script>"""
-home = home.replace("</body>", drawer("/", "#waitlist") + "\n" + NAV_JS + "\n" + FOCUS_JS + "\n</body>")
+home = home.replace("</body>", drawer("/", "#waitlist") + "\n" + NAV_JS + "\n" + IN_APP_JS + "\n" + FOCUS_JS + "\n</body>")
 home = re.sub(r"(?m)^[ \t]+$", "", home)
 (ROOT / "index.html").write_text(home)
 
@@ -2039,7 +2057,7 @@ for spec_path in sorted(PAGES_DIR.glob("*.json")):
             .replace("{{MENU_BUTTON}}", MENU_BUTTON)
             .replace("{{DRAWER}}", drawer(f"/{slug}", "/#waitlist"))
             .replace("{{FOOTER_NAV}}", footer_nav(f"/{slug}"))
-            .replace("{{NAV_JS}}", NAV_JS)
+            .replace("{{NAV_JS}}", NAV_JS + "\n" + IN_APP_JS)
             .replace("{{PAGE_CSS}}", FORM_CSS + "\n" if slug == "contact" else "")
             .replace("{{PAGE_JS}}", CONTACT_JS + "\n" if slug == "contact" else "")
             .replace("{{BODY}}", body))
@@ -2205,7 +2223,7 @@ for spec_path in sorted(BLOG_DIR.glob("*.json")):
             .replace("{{MENU_BUTTON}}", MENU_BUTTON)
             .replace("{{DRAWER}}", drawer("/blog", "/#waitlist"))
             .replace("{{FOOTER_NAV}}", footer_nav("/blog"))
-            .replace("{{NAV_JS}}", NAV_JS)
+            .replace("{{NAV_JS}}", NAV_JS + "\n" + IN_APP_JS)
             .replace("{{BREADCRUMBS}}", crumbs(trail))
             .replace("{{EYEBROW}}", a.get("eyebrow", "BLOG"))
             .replace("{{TITLE}}", H_ESCAPE(a["title"]))
@@ -2266,7 +2284,7 @@ index_page = (index_tpl
               .replace("{{MENU_BUTTON}}", MENU_BUTTON)
               .replace("{{DRAWER}}", drawer("/blog", "/#waitlist"))
               .replace("{{FOOTER_NAV}}", footer_nav("/blog"))
-              .replace("{{NAV_JS}}", NAV_JS)
+              .replace("{{NAV_JS}}", NAV_JS + "\n" + IN_APP_JS)
               .replace("{{BREADCRUMBS}}", crumbs(blog_trail))
               .replace("{{H1}}", H_ESCAPE(BLOG_H1))
               .replace("{{INTRO}}", H_ESCAPE(BLOG_INTRO))
@@ -2390,7 +2408,7 @@ hunt_page = (hunt_tpl
              .replace("{{MENU_BUTTON}}", MENU_BUTTON)
              .replace("{{DRAWER}}", drawer("/hunt", "/#waitlist"))
              .replace("{{FOOTER_NAV}}", footer_nav("/hunt"))
-             .replace("{{NAV_JS}}", NAV_JS))
+             .replace("{{NAV_JS}}", NAV_JS + "\n" + IN_APP_JS))
 assert "{{" not in hunt_page, "unfilled placeholder in hunt-fallback.html"
 # Written under api/_lib, NOT the repo root. api/hunt.js now owns /hunt and
 # /hunt/:path+ (vercel.json rewrites both there ahead of the filesystem), and
