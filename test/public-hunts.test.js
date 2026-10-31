@@ -87,11 +87,11 @@ test('failed pagination, malformed pages, looping cursors and network errors fai
   assert.equal(aborted, true);
 });
 
-test('live homepage uses the same card design, at most five cards and apex links', async () => {
+test('live homepage uses the same card design, shows every listed Hunt and uses apex links', async () => {
   const result = await render(home.handle, async () => page(Array.from({ length: 7 }, (_, i) => ({ ...item, id: 'hunt-' + i }))));
   const content = rail(result.body);
-  assert.equal((content.match(/data-plate=""/g) || []).length, 5);
-  assert.equal((content.match(/href="https:\/\/huntz.ai\/hunt\/hunt-/g) || []).length, 5);
+  assert.equal((content.match(/data-plate=""/g) || []).length, 7);
+  assert.equal((content.match(/href="https:\/\/huntz.ai\/hunt\/hunt-/g) || []).length, 7);
   for (const value of ['REFLECTION EACH DAY', '21 DAYS', 'FROM $20', 'OCT 20']) assert.ok(content.includes(value));
   assert.equal(result.headers['Cache-Control'], CACHE_CONTROL);
   assert.doesNotMatch(content, /978654321|876543219|participantCount|poolTotalMinor/);
@@ -100,6 +100,17 @@ test('live homepage uses the same card design, at most five cards and apex links
   const staticLinks = [...rail(homeHtml).matchAll(/data-hunt-link="" href="([^"]+)"/g)].map((m) => m[1]);
   assert.equal(staticLinks.length, 3);
   assert.ok(staticLinks.every((url) => url.startsWith('https://huntz.ai/hunt/')));
+});
+
+test('live homepage has no card cap: twelve listed Hunts render twelve cards in start order', async () => {
+  const items = Array.from({ length: 12 }, (_, i) => ({ ...item, id: 'hunt-' + String(i).padStart(2, '0'),
+    startAt: new Date(Date.parse('2026-10-20T07:00:00Z') + (11 - i) * 86400000).toISOString() }));
+  const result = await render(home.handle, async () => page(items));
+  const content = rail(result.body);
+  assert.equal((content.match(/data-plate=""/g) || []).length, 12);
+  const ids = [...content.matchAll(/href="https:\/\/huntz.ai\/hunt\/(hunt-\d+)"/g)].map((m) => m[1]);
+  assert.deepEqual(ids, items.map((h) => h.id).reverse());
+  assert.ok(content.includes('HUNT 12'));
 });
 
 test('homepage outage preserves static cards byte for byte; successful empty list removes them', async () => {
