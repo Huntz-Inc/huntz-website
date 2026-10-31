@@ -36,7 +36,7 @@ async function handle(req, res, deps = {}) {
   let html = fallback;
   if (hunts !== null) {
     const template = deps.cardTemplate ?? fs.readFileSync(path.join(process.cwd(), 'api/_lib/hunt-card.html'), 'utf8');
-    const cards = hunts.slice(0, 5).map((hunt, i) => renderCard(template, hunt, i)).join('\n');
+    const cards = hunts.map((hunt, i) => renderCard(template, hunt, i)).join('\n');
     // An empty successful response is not an outage: do not advertise closed Hunts.
     html = fallback.replace(/<!-- HUNT_RAIL_START -->[\s\S]*?<!-- HUNT_RAIL_END -->/, () =>
       '<!-- HUNT_RAIL_START -->\n' + (cards || '<p>No Hunts are open right now. Check back soon.</p>') + '\n<!-- HUNT_RAIL_END -->');

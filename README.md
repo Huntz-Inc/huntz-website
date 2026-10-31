@@ -386,9 +386,10 @@ Designed in Claude Design; assembled into a single deployable file with
 
 `api/home.js` serves `/` using the generated homepage and the generated
 `api/_lib/hunt-card.html` template. It reads only the unauthenticated public
-`GET /v1/hunts`, following cursor pages, and shows the first five open Hunts
-in start-date order. A failed or incomplete traversal returns the original
-static cards. A successful empty list shows an empty state.
+`GET /v1/hunts`, following cursor pages, and shows every open Hunt in
+start-date order, however many there are. A failed or incomplete traversal
+returns the original static cards. A successful empty list shows an empty
+state.
 
 `index.html` and `sitemap.xml` remain local build/check artifacts. Their exact
 copies are generated at `api/_lib/home-fallback.html` and
