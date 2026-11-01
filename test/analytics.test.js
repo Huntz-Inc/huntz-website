@@ -295,13 +295,14 @@ test('init options: persistent anonymous id, person profiles, nothing automatic 
   assert.equal(r.initArgs().token, analytics.POSTHOG_PROJECT_TOKEN);
   assert.deepEqual(Object.keys(config).sort(), [
     'advanced_disable_flags', 'api_host', 'autocapture', 'before_send', 'capture_pageleave', 'capture_pageview',
-    'custom_personal_data_properties', 'defaults', 'disable_session_recording', 'mask_personal_data_properties',
+    'cross_subdomain_cookie', 'custom_personal_data_properties', 'defaults', 'disable_session_recording', 'mask_personal_data_properties',
     'persistence', 'person_profiles', 'respect_dnt']);
   assert.equal(config.api_host, 'https://us.i.posthog.com');
   assert.equal(config.capture_pageview, true);
   assert.equal(config.capture_pageleave, true);
   assert.equal(config.autocapture, false);
   assert.equal(config.persistence, 'localStorage+cookie');
+  assert.equal(config.cross_subdomain_cookie, false, 'the cookie stays on the page host, never .huntz.ai');
   assert.equal(config.person_profiles, 'always');
   assert.equal(config.respect_dnt, true);
   assert.equal(config.disable_session_recording, true);

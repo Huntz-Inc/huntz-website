@@ -1182,7 +1182,8 @@ for f in [ROOT / v for v in PAGES.values()] + [ROOT / "api/_lib/home-fallback.ht
         continue
     analytics_tokens.update(re.findall(r"posthog\.init\('([^']+)'", t))
     for need in ("var HOSTS = ['huntz.ai', 'www.huntz.ai'];", "respect_dnt: true", "autocapture: false",
-                 "person_profiles: 'always'", "persistence: 'localStorage+cookie'", "disable_session_recording: true"):
+                 "person_profiles: 'always'", "persistence: 'localStorage+cookie'", "cross_subdomain_cookie: false",
+                 "disable_session_recording: true"):
         if need not in t:
             fail(f"{rel}: analytics script lacks {need!r}")
     for banned in ("cookieless_mode", "persistence: 'memory'", "autocapture: true", ".identify(", ".alias("):

@@ -678,7 +678,7 @@ test('live: accountability-challenges.html\'s meta description says the app is a
 test('live: about.html is byte-for-byte the committed launched page (sha256 pin)', () => {
   const bytes = fs.readFileSync(path.join(ROOT, 'about.html'));
   const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  assert.equal(hash, '0c6823e1131160f19d02e9cbce281f333a11ccc04275a4b56980c879b050ab22',
+  assert.equal(hash, 'bcb8826cf12980934c5844310ec99cbb5d4eb3108dbf9eb56910bf5aa036e7c7',
     'about.html changed: the launched (APP_STORE_URL set) state must stay byte-for-byte identical to the committed page');
 });
 

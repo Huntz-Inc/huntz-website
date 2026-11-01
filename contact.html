@@ -128,6 +128,7 @@ a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:
       capture_pageleave: true,
       autocapture: false,                // explicit events only
       persistence: 'localStorage+cookie',// one anonymous id per browser, so new and returning visitors can be told apart
+      cross_subdomain_cookie: false,     // cookie on the page host only (www.huntz.ai), never on .huntz.ai, so it is not sent to api. or ops.
       person_profiles: 'always',         // every visitor gets a person, so people who clicked Download can be browsed
       respect_dnt: true,
       // The landing URL is stored in the visitor's cookie and storage. These three

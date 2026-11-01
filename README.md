@@ -241,11 +241,14 @@ page with the validated Hunt id stamped on the tag.
 
 **Identity.** Visitors get a persistent anonymous id (`persistence:
 "localStorage+cookie"`: localStorage plus a first-party `ph_<token>_posthog`
-cookie on `.huntz.ai`, shared by the apex and www) and a PostHog person profile
+cookie) and a PostHog person profile
 (`person_profiles: "always"`), so new and returning visitors can be told apart and
 the people who clicked Download can be browsed. Nothing identifies a person: the
 script never calls `identify`, and no email address, name or form text is ever
-sent. Autocapture and session recording are off; only `$pageview`, `$pageleave`
+sent. `cross_subdomain_cookie: false` keeps the cookie on the page host only
+(`www.huntz.ai`), so it is never sent to `api.huntz.ai` or `ops.huntz.ai`. The
+apex serves `/hunt/*` directly for universal links, so a visitor there has a
+separate id from the same person on www. Autocapture and session recording are off; only `$pageview`, `$pageleave`
 and the events below are sent. `advanced_disable_flags: true` stops the `/flags`
 and remote-config requests, so nothing can be switched on from the PostHog
 dashboard behind the code. UTM parameters are captured by PostHog itself.
