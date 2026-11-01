@@ -215,6 +215,76 @@ button that copies `https://huntz.ai`, and a dismiss control.
   and then run the page's own notice script again:
   `(0, eval)([...document.scripts].find(s => s.textContent.includes('data-hz-inapp-notice')).textContent)`.
 
+## Analytics
+
+*(2026-11-01)* PostHog (US cloud) counts visits to the site and which buttons get
+used. It is the one thing on the site that makes an external request: everything
+else is inlined. `build/analytics.js` is the whole client. `build/assemble.py`
+inlines it at the end of `<head>` on every public page (`with_analytics()`,
+called at each page's write site), and writes the same text to the generated
+`api/_lib/analytics.js`, which `api/hunt.js` adds to a resolved `/hunt/<id>`
+page with the validated Hunt id stamped on the tag.
+
+- **Hostname guard.** It does nothing unless `location.hostname` is `huntz.ai` or
+  `www.huntz.ai`: no request, no storage, no listeners on Vercel previews,
+  localhost or any other host.
+- **Do Not Track.** A visitor who sends Do Not Track or Global Privacy Control
+  never loads PostHog at all. `respect_dnt: true` is also set.
+- **Blocked is fine.** PostHog's loader is the official async snippet. With the
+  script blocked or offline the page renders and behaves exactly the same.
+- **Where it is not.** The unresolved `/hunt` fallback, `/auth/callback`, the
+  Gmail pairing page and the payout return pages carry no analytics: they handle
+  invitation tokens, auth codes, pairing signatures and payout returns. The only
+  Content-Security-Policy headers in `vercel.json` are on those routes, so no
+  PostHog host is allowed there. The Claude artifact carries none either.
+  `test/analytics.test.js` pins both lists and fails on any unclassified page.
+
+**Identity.** Visitors get a persistent anonymous id (`persistence:
+"localStorage+cookie"`: localStorage plus a first-party `ph_<token>_posthog`
+cookie on `.huntz.ai`, shared by the apex and www) and a PostHog person profile
+(`person_profiles: "always"`), so new and returning visitors can be told apart and
+the people who clicked Download can be browsed. Nothing identifies a person: the
+script never calls `identify`, and no email address, name or form text is ever
+sent. Autocapture and session recording are off; only `$pageview`, `$pageleave`
+and the events below are sent. `advanced_disable_flags: true` stops the `/flags`
+and remote-config requests, so nothing can be switched on from the PostHog
+dashboard behind the code. UTM parameters are captured by PostHog itself.
+
+**URLs.** `before_send` removes the query and fragment from any URL it reports
+that points at `/hunt`, `/auth`, `/mailbox` or `/payouts` (the current URL, the
+referrer and the person properties), and PostHog's `mask_personal_data_properties`
+masks `ref`, `via` and `code` in the landing URL it stores in the cookie. Referral
+and share tokens therefore never leave the browser, matching `api/hunt.js`.
+
+| Event | Properties | When |
+|---|---|---|
+| `website_cta_clicked` | `cta`: `download_app`, `join_waitlist`, `android_notify`, `hunt_card`, `nav`; `location`: `hero`, `nav`, `final`, `plate`, `drawer`, `hunts`, `footer`, or `content` for a link inside page copy; `href` (path or origin and path, never a query) | App Store links, `#waitlist` links, Hunt cards, route links |
+| `website_hunt_viewed` | `huntId`, `path` | a resolved `/hunt/<id>` page loads |
+| `website_waitlist_submitted` | `form`: `android_notify` (`waitlist` before launch) | the email form is submitted; the address is never sent |
+| `website_contact_submitted` | `form`: `contact` | the contact form's success panel appears |
+
+`location` values: `plate` is the card at the bottom of every content page,
+`hunts` the Upcoming Hunt cards, `final` the closing section of the home page.
+While `APP_STORE_URL` is set every `#waitlist` link is `android_notify`; with it
+empty they are `join_waitlist` (the build fills this in).
+
+**Person properties.** The same click also sets these on the visitor's person,
+through `$set` and `$set_once` on the one capture call (the pattern repeats per
+`cta`): for `download_app`, `clicked_download_app: true` and
+`last_download_app_click_location` (`$set`), `first_download_app_click_at`, an ISO
+timestamp (`$set_once`); for `android_notify` and `join_waitlist`,
+`clicked_android_notify` / `clicked_join_waitlist`,
+`last_android_notify_click_location` / `last_join_waitlist_click_location` and
+`first_android_notify_click_at` / `first_join_waitlist_click_at`. Hunt card and
+route clicks set none. PostHog counts the events themselves.
+
+**The token.** `POSTHOG_PROJECT_TOKEN` in `build/assemble.py` is PostHog's public,
+write-only project key, which is meant to appear in page source. It is the only
+definition; `api/_lib/analytics.js` is generated from it, and
+`test/analytics.test.js` fails if the constant, that file and the pages differ.
+Changing `build/analytics.js` changes every page, so re-pin `about.html`'s hash in
+`test/app-store-launch.test.js` after a deliberate edit.
+
 ## The contact form
 
 `/contact` posts to `api/contact.js`, a zero-config Vercel Function that mails

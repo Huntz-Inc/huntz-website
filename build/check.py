@@ -552,7 +552,7 @@ for f in [ROOT / v for v in PAGES.values()] + sorted(ROOT.glob("assets/*")):
         fail(f"{f.name}: SMTP details leaked into a client artifact")
 if API.exists():
     js = sorted(API.rglob("*.js"))
-    EXPECTED_API_JS = {"contact.js", "hunt.js", "home.js", "sitemap.js", "public-hunts.js", "validate.js"}
+    EXPECTED_API_JS = {"analytics.js", "contact.js", "hunt.js", "home.js", "sitemap.js", "public-hunts.js", "validate.js"}
     got_names = {f.name for f in js}
     if got_names != EXPECTED_API_JS:
         fail(f"api/: expected exactly {sorted(EXPECTED_API_JS)}, found {sorted(got_names)}")
@@ -1166,6 +1166,42 @@ for f in notice_files:
             fail(f"{rel}: in-app notice markup/wording {marker!r} is in the served HTML; only the script may build it")
 
 
+# ---- PostHog website analytics (2026-11-01) ----
+# build/analytics.js, inlined at the end of <head> on every public page and on
+# the Hunt pages api/hunt.js resolves. It must never reach the pages that handle
+# invitation tokens, auth codes, pairing signatures or payout returns, so those
+# are checked here by absence. (test/analytics.test.js runs the shipped script.)
+ANALYTICS_OPT_OUT = ["api/_lib/hunt-fallback.html", "auth/callback.html", "mailbox/gmail-action/pair.html",
+                     "payouts/return.html", "payouts/refresh.html"]
+analytics_tokens = set()
+for f in [ROOT / v for v in PAGES.values()] + [ROOT / "api/_lib/home-fallback.html"]:
+    t = f.read_text()
+    rel = f.relative_to(ROOT)
+    if t.count("posthog.init(") != 1:
+        fail(f"{rel}: expected the analytics script exactly once, found {t.count('posthog.init(')}")
+        continue
+    analytics_tokens.update(re.findall(r"posthog\.init\('([^']+)'", t))
+    for need in ("var HOSTS = ['huntz.ai', 'www.huntz.ai'];", "respect_dnt: true", "autocapture: false",
+                 "person_profiles: 'always'", "persistence: 'localStorage+cookie'", "disable_session_recording: true"):
+        if need not in t:
+            fail(f"{rel}: analytics script lacks {need!r}")
+    for banned in ("cookieless_mode", "persistence: 'memory'", "autocapture: true", ".identify(", ".alias("):
+        if banned in t:
+            fail(f"{rel}: analytics script must not contain {banned!r}")
+for rel in ANALYTICS_OPT_OUT:
+    if "posthog" in (ROOT / rel).read_text().lower():
+        fail(f"{rel}: must not carry analytics (it handles tokens, codes or signatures)")
+api_analytics = (ROOT / "api/_lib/analytics.js").read_text()
+api_tokens = set(re.findall(r'POSTHOG_PROJECT_TOKEN: "([^"]+)"', api_analytics))
+if len(analytics_tokens) != 1 or api_tokens != analytics_tokens:
+    fail("analytics: the pages and api/_lib/analytics.js do not share exactly one project token")
+# The only Content-Security-Policy headers belong to the pages that run no analytics.
+for rule in vercel.get("headers", []):
+    if any(h["key"] == "Content-Security-Policy" for h in rule["headers"]) and \
+            rule["source"] not in ("/mailbox/gmail-action/pair", "/payouts/(return|refresh)", "/auth/callback"):
+        fail(f"vercel.json: {rule['source']} sets a CSP; the analytics script needs the PostHog hosts allowed there")
+
+
 if failures:
     print(f"FAIL ({len(failures)}):")
     for m in failures:
@@ -1174,3 +1210,4 @@ if failures:
 print(f"OK: {len(PAGES)} pages, {len(titles)} unique titles, sitemap + robots + icons verified")
 print(f"OK: AASA at {len(AASA_FILES)} paths for {EXPECTED_APP_ID}, {SIGNED_ASSOCIATED_DOMAIN}, /hunt fallback token-safe")
 print(f"OK: /auth/callback fallback code-safe, apex routing matrix {len(MATRIX)}x2 verified")
+print(f"OK: analytics script once on {len(PAGES) + 1} public pages, absent from {len(ANALYTICS_OPT_OUT)} token-handling pages, one project token")

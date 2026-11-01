@@ -432,7 +432,7 @@ test('no credential is hard-coded anywhere in the endpoint', () => {
   // is the one place that keeps asserting no future function under api/ ships
   // a hard-coded secret either. Named rather than counted, so an unexpected
   // addition fails with a useful diff instead of a bare number.
-  const expected = ['contact.js', 'home.js', 'hunt.js', 'public-hunts.js', 'sitemap.js', 'validate.js'];
+  const expected = ['analytics.js', 'contact.js', 'home.js', 'hunt.js', 'public-hunts.js', 'sitemap.js', 'validate.js'];
   assert.deepEqual(files.map((f) => path.basename(f)).sort(), expected,
     'unexpected file set under api/ - update this list deliberately');
   for (const f of files) {
