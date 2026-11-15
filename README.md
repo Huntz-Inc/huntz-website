@@ -475,10 +475,13 @@ description, length, cadence, start date in the Hunt's time zone, minimum stake
 (at least $20), and Host. An iPhone-only button uses `huntz:///hunt/<id>` as
 accepted by the mobile app. A valid Hunt code may accompany that button.
 Inside Instagram's, TikTok's or Facebook's in-app browser, which refuse custom-scheme
-links, that button stays hidden and an "Open in your browser" button is shown instead; its
-server-rendered `x-safari-https://huntz.ai/hunt/<id>` link carries the same `?code=`, and a
-line names the app, points to that button, and gives the manual route (the app's menu item for opening in the browser, as in the in-app notice) before tapping Open in the Huntz app.
-Both anchors are `hidden` in the served HTML and the script reads only `navigator.userAgent`.
+links and swallow the `x-safari-https` hand-off, that button stays hidden and a hidden
+"Open this page in Safari to continue" block is shown instead: a line naming the app and
+its menu item (the same labels as the in-app notice), a "Copy link" button that copies the
+server-rendered `https://huntz.ai/hunt/<id>` link with the same `?code=` (label "Link copied"
+for three seconds; if copying fails the link text is shown to long-press), and "Or paste the
+link into Safari yourself."
+The scheme button and the block are `hidden` in the served HTML and the script reads only `navigator.userAgent` and the link constant, never the URL.
 Referral and share tokens are never read, forwarded, logged or rendered.
 Unresolved invitations retain `api/_lib/hunt-fallback.html` byte for byte.
 
