@@ -379,18 +379,20 @@ const OPEN_BUTTON_STYLE = 'border-radius:999px;font-weight:700;color:#F3EFE7;bac
 // Plain ES5 and ASCII; reads only navigator.userAgent and the server-rendered
 // data-hunt-link constant (never the URL, query, referrer or storage). iPhone
 // only. In Instagram, TikTok or Facebook's in-app browser, which refuse
-// custom-scheme links and swallow the x-safari-https hand-off, the scheme button
-// stays hidden and an instruction block is shown instead, with a Copy link
+// custom-scheme links, the scheme button stays visible but never navigates: a tap
+// scrolls to and briefly highlights the instruction card under it, which has a Copy link
 // button. Detection patterns match build/in-app-notice.js (plus Facebook/Messenger).
 const OPEN_SCRIPT = [
   "(function(){var ua=navigator.userAgent;if(!/iPhone/i.test(ua))return;",
   "var app=/musical_ly|BytedanceWebview|TikTok|(?:^|[^a-z])trill(?![a-z])/i.test(ua)?'TikTok':/Instagram/i.test(ua)?'Instagram':/FBAN|FBAV|FB_IAB|Messenger/.test(ua)?'Facebook':'';",
-  "if(!app){var button=document.querySelector('[data-hunt-open]');if(button){button.hidden=false;button.style.display='inline-flex';}return;}",
+  "var button=document.querySelector('[data-hunt-open]');if(button){button.hidden=false;button.style.display='inline-flex';}",
+  "if(!app)return;",
   "var box=document.querySelector('[data-hunt-inapp]');if(!box)return;",
   "var menu=app==='TikTok'?'Open in browser':'Open in external browser';",
   "var line=box.querySelector('[data-hunt-inapp-line]');",
   "line.textContent=app+' opens links in its own browser, which cannot open apps. Tap the \\u2022\\u2022\\u2022 menu at the top right and choose '+menu+', then tap Open in the Huntz app.';",
   "box.hidden=false;",
+  "if(button){button.removeAttribute('href');button.setAttribute('role','button');button.style.cursor='pointer';var flash=0;button.addEventListener('click',function(e){e.preventDefault();if(box.scrollIntoView){box.scrollIntoView({behavior:'smooth',block:'center'});}box.className='hunt-flash';if(flash)clearTimeout(flash);flash=setTimeout(function(){box.className='';},2000);});}",
   "var copy=box.querySelector('[data-hunt-copy]');var text=box.querySelector('[data-hunt-link-text]');var link=box.getAttribute('data-hunt-link');var timer=0;copy.textContent='Copy link';",
   "function done(){copy.textContent='Link copied';if(timer)clearTimeout(timer);timer=setTimeout(function(){copy.textContent='Copy link';},3000);}",
   "function legacy(){var ok=false;try{var t=document.createElement('textarea');t.value=link;t.setAttribute('readonly','');t.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');document.body.removeChild(t);}catch(e){ok=false;}",
@@ -418,6 +420,7 @@ function renderHuntBody(huntId, detail, apiOrigin, code) {
   <h1 id="hunt-title" style="margin:0 0 16px;font:600 clamp(30px,4.4vw,46px)/1.08 'Playfair Display',serif;text-wrap:balance">${escapeHtml(copy(detail.title))}</h1>
   ${copy(detail.description) ? `<p style="font-size:17px;line-height:1.6;white-space:pre-line">${escapeHtml(copy(detail.description))}</p>` : ''}
   <dl style="display:grid;grid-template-columns:auto 1fr;gap:12px 24px;margin:24px 0;line-height:1.5">${facts.map(([label, value]) => `<dt style="color:#6E6759">${escapeHtml(label)}</dt><dd style="margin:0">${escapeHtml(copy(value))}</dd>`).join('')}</dl>
+  <style>[data-hunt-inapp]{transition:outline-color .3s,background-color .3s;outline:3px solid transparent}[data-hunt-inapp].hunt-flash{outline-color:#C24E1F;background:#FBE9DF!important}</style>
   <a data-hunt-open hidden href="${escapeHtml(link)}" style="${OPEN_BUTTON_STYLE}">Open in the Huntz app</a>
   <div data-hunt-inapp hidden data-hunt-link="${escapeHtml(copyLink)}" style="margin-top:8px;padding:clamp(22px,3vw,30px);border:1px solid rgba(22,19,14,.14);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34))">
     <div style="font:600 clamp(19px,2.3vw,25px)/1.28 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;margin-bottom:12px">Open this page in Safari to continue</div>
