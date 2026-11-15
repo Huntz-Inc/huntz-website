@@ -218,19 +218,20 @@ test('iPhone only app button executes without reading query strings or navigatin
 test('served HTML carries both hidden anchors with the same id and code', async () => {
   const plain = await render(hunt.handle, upstream(), '/hunt/public-hunt');
   assert.match(plain.body, /<a data-hunt-open hidden href="huntz:\/\/\/hunt\/public-hunt"/);
-  assert.match(plain.body, /<a data-hunt-safari hidden href="x-safari-https:\/\/huntz\.ai\/hunt\/public-hunt"[^>]*>Open in Safari<\/a>/);
+  assert.match(plain.body, /<a data-hunt-safari hidden href="x-safari-https:\/\/huntz\.ai\/hunt\/public-hunt"[^>]*>Open in your browser<\/a>/);
   const coded = await render(hunt.handle, upstream(), '/hunt/public-hunt?code=7ZQK9M3H&ref=zzrefzz&via=zzviazz');
   assert.match(coded.body, /<a data-hunt-open hidden href="huntz:\/\/\/hunt\/public-hunt\?code=7ZQK9M3H"/);
   assert.match(coded.body, /<a data-hunt-safari hidden href="x-safari-https:\/\/huntz\.ai\/hunt\/public-hunt\?code=7ZQK9M3H"/);
   assert.doesNotMatch(coded.body, /zzrefzz|zzviazz/);
 });
 
-test('in-app browsers get only the Safari button and a guidance line naming the app', async () => {
+test('in-app browsers get only the browser button and a guidance line naming the app', async () => {
   const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt');
-  const line = (app) => app + ' opens links in its own browser, which cannot open apps. Open this page in Safari, then tap Open in the Huntz app.';
-  for (const [ua, app] of [[UA_INSTAGRAM_IOS, 'Instagram'], [UA_TIKTOK_IOS, 'TikTok'], [UA_FACEBOOK_IOS, 'Facebook']]) {
+  const line = (app, menu) => app + ' opens links in its own browser, which cannot open apps. Tap Open in your browser, or use the \u2022\u2022\u2022 menu and choose ' + menu + ', then tap Open in the Huntz app.';
+  for (const [ua, app, menu] of [[UA_INSTAGRAM_IOS, 'Instagram', 'Open in external browser'], [UA_TIKTOK_IOS, 'TikTok', 'Open in browser'],
+    [UA_FACEBOOK_IOS, 'Facebook', 'Open in external browser']]) {
     const out = runOpenScript(body, ua);
-    assert.deepEqual([out.scheme, out.safari, out.notes, out.note], [false, true, 1, line(app)], app);
+    assert.deepEqual([out.scheme, out.safari, out.notes, out.note], [false, true, 1, line(app, menu)], app);
   }
 });
 

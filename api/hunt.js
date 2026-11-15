@@ -378,13 +378,13 @@ const OPEN_BUTTON_STYLE = 'border-radius:999px;font-weight:700;color:#F3EFE7;bac
 
 // Plain ES5 and ASCII; reads only navigator.userAgent (no URL, query, referrer or
 // storage). iPhone only. In Instagram, TikTok or Facebook's in-app browser the
-// custom-scheme button is left hidden and the Safari button is shown with one
+// custom-scheme button is left hidden and the browser button is shown with one
 // line of guidance; the detection patterns match build/in-app-notice.js (plus
 // Facebook/Messenger).
-const OPEN_SCRIPT = "(function(){var ua=navigator.userAgent;if(/iPhone/i.test(ua)){var app=/musical_ly|BytedanceWebview|TikTok|(?:^|[^a-z])trill(?![a-z])/i.test(ua)?'TikTok':/Instagram/i.test(ua)?'Instagram':/FBAN|FBAV|FB_IAB|Messenger/.test(ua)?'Facebook':'';" +
+const OPEN_SCRIPT = "(function(){var ua=navigator.userAgent;if(/iPhone/i.test(ua)){var app=/musical_ly|BytedanceWebview|TikTok|(?:^|[^a-z])trill(?![a-z])/i.test(ua)?'TikTok':/Instagram/i.test(ua)?'Instagram':/FBAN|FBAV|FB_IAB|Messenger/.test(ua)?'Facebook':'';var menu=app==='TikTok'?'Open in browser':'Open in external browser';" +
   "var button=document.querySelector(app?'[data-hunt-safari]':'[data-hunt-open]');if(button){button.hidden=false;button.style.display='inline-flex';" +
   "if(app){var note=document.createElement('p');note.setAttribute('data-hunt-safari-note','');note.style.cssText='margin:12px 0 0;font-size:15px;line-height:1.5;color:#6E6759';" +
-  "note.textContent=app+' opens links in its own browser, which cannot open apps. Open this page in Safari, then tap Open in the Huntz app.';" +
+  "note.textContent=app+' opens links in its own browser, which cannot open apps. Tap Open in your browser, or use the \\u2022\\u2022\\u2022 menu and choose '+menu+', then tap Open in the Huntz app.';" +
   "button.parentNode.insertBefore(note,button.nextSibling);}}}})();";
 
 function renderHuntBody(huntId, detail, apiOrigin, code) {
@@ -408,7 +408,7 @@ function renderHuntBody(huntId, detail, apiOrigin, code) {
   ${copy(detail.description) ? `<p style="font-size:17px;line-height:1.6;white-space:pre-line">${escapeHtml(copy(detail.description))}</p>` : ''}
   <dl style="display:grid;grid-template-columns:auto 1fr;gap:12px 24px;margin:24px 0;line-height:1.5">${facts.map(([label, value]) => `<dt style="color:#6E6759">${escapeHtml(label)}</dt><dd style="margin:0">${escapeHtml(copy(value))}</dd>`).join('')}</dl>
   <a data-hunt-open hidden href="${escapeHtml(link)}" style="${OPEN_BUTTON_STYLE}">Open in the Huntz app</a>
-  <a data-hunt-safari hidden href="${escapeHtml(safariLink)}" style="${OPEN_BUTTON_STYLE}">Open in Safari</a>
+  <a data-hunt-safari hidden href="${escapeHtml(safariLink)}" style="${OPEN_BUTTON_STYLE}">Open in your browser</a>
   <script>${OPEN_SCRIPT}</script>
   </section>`;
 }
