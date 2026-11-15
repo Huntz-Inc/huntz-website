@@ -474,6 +474,11 @@ routes would otherwise take precedence over the live rewrites.
 description, length, cadence, start date in the Hunt's time zone, minimum stake
 (at least $20), and Host. An iPhone-only button uses `huntz:///hunt/<id>` as
 accepted by the mobile app. A valid Hunt code may accompany that button.
+Inside Instagram's, TikTok's or Facebook's in-app browser, which refuse custom-scheme
+links, that button stays hidden and an "Open in your browser" button is shown instead; its
+server-rendered `x-safari-https://huntz.ai/hunt/<id>` link carries the same `?code=`, and a
+line names the app, points to that button, and gives the manual route (the app's menu item for opening in the browser, as in the in-app notice) before tapping Open in the Huntz app.
+Both anchors are `hidden` in the served HTML and the script reads only `navigator.userAgent`.
 Referral and share tokens are never read, forwarded, logged or rendered.
 Unresolved invitations retain `api/_lib/hunt-fallback.html` byte for byte.
 

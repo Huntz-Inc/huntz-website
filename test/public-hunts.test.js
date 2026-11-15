@@ -180,15 +180,67 @@ test('unlisted, code-bearing, closed, draft and absent-list detail pages never b
   assert.match(coded.body, /huntz:\/\/\/hunt\/public-hunt\?code=7ZQK9M3H/);
 });
 
+const UA_IPHONE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+const UA_INSTAGRAM_IOS = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/21F90 Instagram 340.0.0.28.116 (iPhone14,5; iOS 17_5_1; en_US; en-US; scale=3.00; 1170x2532; 618927349) NW/3';
+const UA_TIKTOK_IOS = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 musical_ly_36.1.0 JsSdk/2.0 NetType/WIFI BytedanceWebview/d8a21c6';
+const UA_FACEBOOK_IOS = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/21F90 [FBAN/FBIOS;FBAV/465.0.0.38.109;FBBV/600000000;FBDV/iPhone14,5;FBMD/iPhone;FBSN/iOS;FBSV/17.5;FBSS/3;FBID/phone;FBLC/en_US;FBOP/5]';
+const UA_DESKTOP = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
+
+/** Runs the page's inline button script against a minimal DOM holding the two hidden anchors. */
+function runOpenScript(body, ua) {
+  const script = body.match(/<script>(\(function\(\)\{var ua=navigator\.userAgent;[\s\S]*?)<\/script>/)[1];
+  const anchors = {
+    '[data-hunt-open]': { hidden: true, style: {}, parentNode: null },
+    '[data-hunt-safari]': { hidden: true, style: {}, parentNode: null },
+  };
+  const inserted = [];
+  const parent = { insertBefore: (node) => inserted.push(node) };
+  Object.values(anchors).forEach((a) => { a.parentNode = parent; });
+  const document = {
+    querySelector: (sel) => anchors[sel] || null,
+    createElement: () => ({ style: {}, attrs: {}, setAttribute(k, v) { this.attrs[k] = v; } }),
+  };
+  vm.runInNewContext(script, { navigator: { userAgent: ua }, document });
+  return { scheme: !anchors['[data-hunt-open]'].hidden, safari: !anchors['[data-hunt-safari]'].hidden,
+    note: inserted.length ? inserted[0].textContent : null, notes: inserted.length };
+}
+
 test('iPhone only app button executes without reading query strings or navigating', async () => {
   const result = await render(hunt.handle, upstream(), '/hunt/public-hunt');
   assert.match(result.body, /data-hunt-open hidden href="huntz:\/\/\/hunt\/public-hunt"/);
-  const script = result.body.match(/<script>(\(function\(\)\{if\(\/iPhone[\s\S]*?)<\/script>/)[1];
+  const script = result.body.match(/<script>(\(function\(\)\{var ua=navigator\.userAgent;[\s\S]*?)<\/script>/)[1];
+  assert.doesNotMatch(script, /location|referrer|document\.cookie|Storage|URLSearchParams|[^\x00-\x7f]/);
   for (const ua of ['iPhone', 'iPad', 'Macintosh', 'Android']) {
-    const button = { hidden: true, style: {} };
-    vm.runInNewContext(script, { navigator: { userAgent: ua }, document: { querySelector: () => button } });
-    assert.equal(button.hidden, ua !== 'iPhone');
+    assert.equal(runOpenScript(result.body, ua).scheme, ua === 'iPhone', ua);
   }
+});
+
+test('served HTML carries both hidden anchors with the same id and code', async () => {
+  const plain = await render(hunt.handle, upstream(), '/hunt/public-hunt');
+  assert.match(plain.body, /<a data-hunt-open hidden href="huntz:\/\/\/hunt\/public-hunt"/);
+  assert.match(plain.body, /<a data-hunt-safari hidden href="x-safari-https:\/\/huntz\.ai\/hunt\/public-hunt"[^>]*>Open in your browser<\/a>/);
+  const coded = await render(hunt.handle, upstream(), '/hunt/public-hunt?code=7ZQK9M3H&ref=zzrefzz&via=zzviazz');
+  assert.match(coded.body, /<a data-hunt-open hidden href="huntz:\/\/\/hunt\/public-hunt\?code=7ZQK9M3H"/);
+  assert.match(coded.body, /<a data-hunt-safari hidden href="x-safari-https:\/\/huntz\.ai\/hunt\/public-hunt\?code=7ZQK9M3H"/);
+  assert.doesNotMatch(coded.body, /zzrefzz|zzviazz/);
+});
+
+test('in-app browsers get only the browser button and a guidance line naming the app', async () => {
+  const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt');
+  const line = (app, menu) => app + ' opens links in its own browser, which cannot open apps. Tap Open in your browser, or use the \u2022\u2022\u2022 menu and choose ' + menu + ', then tap Open in the Huntz app.';
+  for (const [ua, app, menu] of [[UA_INSTAGRAM_IOS, 'Instagram', 'Open in external browser'], [UA_TIKTOK_IOS, 'TikTok', 'Open in browser'],
+    [UA_FACEBOOK_IOS, 'Facebook', 'Open in external browser']]) {
+    const out = runOpenScript(body, ua);
+    assert.deepEqual([out.scheme, out.safari, out.notes, out.note], [false, true, 1, line(app, menu)], app);
+  }
+});
+
+test('iPhone Safari shows only the scheme button; desktop shows neither', async () => {
+  const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt');
+  const safari = runOpenScript(body, UA_IPHONE_SAFARI);
+  assert.deepEqual([safari.scheme, safari.safari, safari.notes], [true, false, 0]);
+  const desktop = runOpenScript(body, UA_DESKTOP);
+  assert.deepEqual([desktop.scheme, desktop.safari, desktop.notes], [false, false, 0]);
 });
 
 test('HTML, attribute and JSON-LD escaping protect every Host-authored value', async () => {

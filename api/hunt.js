@@ -374,6 +374,19 @@ function formatCadence(detail) {
     ({ day: '1 check-in a day', week: '1 check-in a week' }[cadenceUnit(detail)]) || 'Follow the Hunt schedule in the app';
 }
 
+const OPEN_BUTTON_STYLE = 'border-radius:999px;font-weight:700;color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none';
+
+// Plain ES5 and ASCII; reads only navigator.userAgent (no URL, query, referrer or
+// storage). iPhone only. In Instagram, TikTok or Facebook's in-app browser the
+// custom-scheme button is left hidden and the browser button is shown with one
+// line of guidance; the detection patterns match build/in-app-notice.js (plus
+// Facebook/Messenger).
+const OPEN_SCRIPT = "(function(){var ua=navigator.userAgent;if(/iPhone/i.test(ua)){var app=/musical_ly|BytedanceWebview|TikTok|(?:^|[^a-z])trill(?![a-z])/i.test(ua)?'TikTok':/Instagram/i.test(ua)?'Instagram':/FBAN|FBAV|FB_IAB|Messenger/.test(ua)?'Facebook':'';var menu=app==='TikTok'?'Open in browser':'Open in external browser';" +
+  "var button=document.querySelector(app?'[data-hunt-safari]':'[data-hunt-open]');if(button){button.hidden=false;button.style.display='inline-flex';" +
+  "if(app){var note=document.createElement('p');note.setAttribute('data-hunt-safari-note','');note.style.cssText='margin:12px 0 0;font-size:15px;line-height:1.5;color:#6E6759';" +
+  "note.textContent=app+' opens links in its own browser, which cannot open apps. Tap Open in your browser, or use the \\u2022\\u2022\\u2022 menu and choose '+menu+', then tap Open in the Huntz app.';" +
+  "button.parentNode.insertBefore(note,button.nextSibling);}}}})();";
+
 function renderHuntBody(huntId, detail, apiOrigin, code) {
   const cover = buildCoverArtUrl(detail.coverArtUrl, apiOrigin) ||
     new URL('/v1/hunts/' + encodeURIComponent(huntId) + '/cover-art', apiOrigin).toString();
@@ -385,13 +398,18 @@ function renderHuntBody(huntId, detail, apiOrigin, code) {
     ['Host', detail.creatorDisplayName],
   ].filter(([, value]) => value);
   const link = 'huntz:///hunt/' + encodeURIComponent(huntId) + (code ? '?code=' + code : '');
+  // In-app browsers (Instagram, TikTok, Facebook) refuse custom-scheme links, so
+  // they get this https link that iOS hands to Safari. Built here from the id and
+  // code the server already holds; the page script reads nothing from the URL.
+  const safariLink = 'x-safari-https://huntz.ai/hunt/' + encodeURIComponent(huntId) + (code ? '?code=' + code : '');
   return `<section data-hunt-detail aria-labelledby="hunt-title">
   <img src="${escapeHtml(cover)}" alt="${escapeHtml(copy(detail.title))}" width="1200" height="800" style="display:block;width:100%;height:auto;max-height:360px;object-fit:cover;border-radius:18px;margin-bottom:24px">
   <h1 id="hunt-title" style="margin:0 0 16px;font:600 clamp(30px,4.4vw,46px)/1.08 'Playfair Display',serif;text-wrap:balance">${escapeHtml(copy(detail.title))}</h1>
   ${copy(detail.description) ? `<p style="font-size:17px;line-height:1.6;white-space:pre-line">${escapeHtml(copy(detail.description))}</p>` : ''}
   <dl style="display:grid;grid-template-columns:auto 1fr;gap:12px 24px;margin:24px 0;line-height:1.5">${facts.map(([label, value]) => `<dt style="color:#6E6759">${escapeHtml(label)}</dt><dd style="margin:0">${escapeHtml(copy(value))}</dd>`).join('')}</dl>
-  <a data-hunt-open hidden href="${escapeHtml(link)}" style="border-radius:999px;font-weight:700;color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none">Open in the Huntz app</a>
-  <script>(function(){if(/iPhone/i.test(navigator.userAgent)){var button=document.querySelector('[data-hunt-open]');if(button){button.hidden=false;button.style.display='inline-flex';}}})();</script>
+  <a data-hunt-open hidden href="${escapeHtml(link)}" style="${OPEN_BUTTON_STYLE}">Open in the Huntz app</a>
+  <a data-hunt-safari hidden href="${escapeHtml(safariLink)}" style="${OPEN_BUTTON_STYLE}">Open in your browser</a>
+  <script>${OPEN_SCRIPT}</script>
   </section>`;
 }
 
