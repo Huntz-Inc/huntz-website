@@ -192,13 +192,17 @@ const SCRIPT_RE = /<script>(\(function\(\)\{var ua=navigator\.userAgent;[\s\S]*?
 function runOpenScript(body, ua, { clipboard, execCopy = false } = {}) {
   const script = body.match(SCRIPT_RE)[1];
   const link = body.match(/data-hunt-inapp hidden data-hunt-link="([^"]*)"/)[1];
-  const scheme = { hidden: true, style: {} };
+  const scheme = { hidden: true, style: {}, attrs: { href: 'huntz:///hunt/x' }, listeners: {}, navigated: 0,
+    removeAttribute(n) { delete this.attrs[n]; }, setAttribute(n, v) { this.attrs[n] = v; },
+    addEventListener(t, f) { this.listeners[t] = f; },
+    click() { const e = { prevented: false, preventDefault() { this.prevented = true; } };
+      if (this.listeners.click) this.listeners.click(e); if (!e.prevented && this.attrs.href) this.navigated += 1; return e; } };
   const parts = {
     '[data-hunt-inapp-line]': { textContent: '' },
     '[data-hunt-copy]': { textContent: '', listeners: {}, addEventListener(t, f) { this.listeners[t] = f; } },
     '[data-hunt-link-text]': { hidden: true },
   };
-  const box = { hidden: true, querySelector: (sel) => parts[sel] || null, getAttribute: (n) => (n === 'data-hunt-link' ? link : null) };
+  const box = { hidden: true, className: '', scrolled: 0, scrollIntoView() { this.scrolled += 1; }, querySelector: (sel) => parts[sel] || null, getAttribute: (n) => (n === 'data-hunt-link' ? link : null) };
   const copied = [];
   const timers = [];
   const document = {
@@ -210,7 +214,7 @@ function runOpenScript(body, ua, { clipboard, execCopy = false } = {}) {
   const navigator = { userAgent: ua };
   if (clipboard) navigator.clipboard = { writeText: (v) => clipboard(v, copied) };
   vm.runInNewContext(script, { navigator, document, setTimeout: (f) => timers.push(f), clearTimeout() {} });
-  return { scheme: !scheme.hidden, block: !box.hidden, line: parts['[data-hunt-inapp-line]'].textContent,
+  return { schemeEl: scheme, boxEl: box, scheme: !scheme.hidden, block: !box.hidden, line: parts['[data-hunt-inapp-line]'].textContent,
     copy: parts['[data-hunt-copy]'], get linkText() { return !parts['[data-hunt-link-text]'].hidden; }, copied, timers, link };
 }
 
@@ -234,7 +238,7 @@ test('served HTML has no x-safari anchor and carries the hidden in-app block wit
   assert.doesNotMatch(coded.body, /zzrefzz|zzviazz|x-safari/);
 });
 
-test('in-app browsers get the instruction block and Copy link, and no scheme button', async () => {
+test('in-app browsers get the app button AND the instruction block and Copy link', async () => {
   const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt?code=7ZQK9M3H');
   assert.match(body, /Open this page in Safari to continue/);
   assert.match(body, /Or paste the link into Safari yourself\./);
@@ -242,8 +246,30 @@ test('in-app browsers get the instruction block and Copy link, and no scheme but
   for (const [ua, app, menu] of [[UA_INSTAGRAM_IOS, 'Instagram', 'Open in external browser'], [UA_TIKTOK_IOS, 'TikTok', 'Open in browser'],
     [UA_FACEBOOK_IOS, 'Facebook', 'Open in external browser']]) {
     const out = runOpenScript(body, ua);
-    assert.deepEqual([out.scheme, out.block, out.line], [false, true, line(app, menu)], app);
+    assert.deepEqual([out.scheme, out.block, out.line], [true, true, line(app, menu)], app);
   }
+});
+
+test('in-app: tapping Open in the Huntz app never navigates, scrolls to the card and highlights it for 2 seconds', async () => {
+  const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt?code=7ZQK9M3H');
+  const out = runOpenScript(body, UA_INSTAGRAM_IOS);
+  assert.equal(out.schemeEl.attrs.href, undefined, 'the scheme href is removed');
+  const event = out.schemeEl.click();
+  assert.equal(event.prevented, true);
+  assert.equal(out.schemeEl.navigated, 0);
+  assert.equal(out.boxEl.scrolled, 1);
+  assert.equal(out.boxEl.className, 'hunt-flash');
+  out.timers.at(-1)();
+  assert.equal(out.boxEl.className, '');
+  assert.match(body, /\[data-hunt-inapp\]\.hunt-flash\{/);
+});
+
+test('Safari keeps the scheme href and click behaviour untouched', async () => {
+  const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt?code=7ZQK9M3H');
+  const out = runOpenScript(body, UA_IPHONE_SAFARI);
+  assert.equal(out.schemeEl.attrs.href, 'huntz:///hunt/x');
+  assert.equal(out.schemeEl.click().prevented, false);
+  assert.equal(out.schemeEl.navigated, 1);
 });
 
 test('Copy link writes the exact invitation link, flips to Link copied, then back', async () => {
