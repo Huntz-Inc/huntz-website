@@ -376,16 +376,28 @@ function formatCadence(detail) {
 
 const OPEN_BUTTON_STYLE = 'border-radius:999px;font-weight:700;color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none';
 
-// Plain ES5 and ASCII; reads only navigator.userAgent (no URL, query, referrer or
-// storage). iPhone only. In Instagram, TikTok or Facebook's in-app browser the
-// custom-scheme button is left hidden and the browser button is shown with one
-// line of guidance; the detection patterns match build/in-app-notice.js (plus
-// Facebook/Messenger).
-const OPEN_SCRIPT = "(function(){var ua=navigator.userAgent;if(/iPhone/i.test(ua)){var app=/musical_ly|BytedanceWebview|TikTok|(?:^|[^a-z])trill(?![a-z])/i.test(ua)?'TikTok':/Instagram/i.test(ua)?'Instagram':/FBAN|FBAV|FB_IAB|Messenger/.test(ua)?'Facebook':'';var menu=app==='TikTok'?'Open in browser':'Open in external browser';" +
-  "var button=document.querySelector(app?'[data-hunt-safari]':'[data-hunt-open]');if(button){button.hidden=false;button.style.display='inline-flex';" +
-  "if(app){var note=document.createElement('p');note.setAttribute('data-hunt-safari-note','');note.style.cssText='margin:12px 0 0;font-size:15px;line-height:1.5;color:#6E6759';" +
-  "note.textContent=app+' opens links in its own browser, which cannot open apps. Tap Open in your browser, or use the \\u2022\\u2022\\u2022 menu and choose '+menu+', then tap Open in the Huntz app.';" +
-  "button.parentNode.insertBefore(note,button.nextSibling);}}}})();";
+// Plain ES5 and ASCII; reads only navigator.userAgent and the server-rendered
+// data-hunt-link constant (never the URL, query, referrer or storage). iPhone
+// only. In Instagram, TikTok or Facebook's in-app browser, which refuse
+// custom-scheme links and swallow the x-safari-https hand-off, the scheme button
+// stays hidden and an instruction block is shown instead, with a Copy link
+// button. Detection patterns match build/in-app-notice.js (plus Facebook/Messenger).
+const OPEN_SCRIPT = [
+  "(function(){var ua=navigator.userAgent;if(!/iPhone/i.test(ua))return;",
+  "var app=/musical_ly|BytedanceWebview|TikTok|(?:^|[^a-z])trill(?![a-z])/i.test(ua)?'TikTok':/Instagram/i.test(ua)?'Instagram':/FBAN|FBAV|FB_IAB|Messenger/.test(ua)?'Facebook':'';",
+  "if(!app){var button=document.querySelector('[data-hunt-open]');if(button){button.hidden=false;button.style.display='inline-flex';}return;}",
+  "var box=document.querySelector('[data-hunt-inapp]');if(!box)return;",
+  "var menu=app==='TikTok'?'Open in browser':'Open in external browser';",
+  "var line=box.querySelector('[data-hunt-inapp-line]');",
+  "line.textContent=app+' opens links in its own browser, which cannot open apps. Tap the \\u2022\\u2022\\u2022 menu at the top right and choose '+menu+', then tap Open in the Huntz app.';",
+  "box.hidden=false;",
+  "var copy=box.querySelector('[data-hunt-copy]');var text=box.querySelector('[data-hunt-link-text]');var link=box.getAttribute('data-hunt-link');var timer=0;copy.textContent='Copy link';",
+  "function done(){copy.textContent='Link copied';if(timer)clearTimeout(timer);timer=setTimeout(function(){copy.textContent='Copy link';},3000);}",
+  "function legacy(){var ok=false;try{var t=document.createElement('textarea');t.value=link;t.setAttribute('readonly','');t.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');document.body.removeChild(t);}catch(e){ok=false;}",
+  "if(ok){done();}else{copy.textContent='Copy link';text.hidden=false;}}",
+  "copy.addEventListener('click',function(){var c=navigator.clipboard;if(c&&c.writeText){try{c.writeText(link).then(done,legacy);}catch(e){legacy();}}else{legacy();}});",
+  "})();"
+].join('');
 
 function renderHuntBody(huntId, detail, apiOrigin, code) {
   const cover = buildCoverArtUrl(detail.coverArtUrl, apiOrigin) ||
@@ -398,17 +410,22 @@ function renderHuntBody(huntId, detail, apiOrigin, code) {
     ['Host', detail.creatorDisplayName],
   ].filter(([, value]) => value);
   const link = 'huntz:///hunt/' + encodeURIComponent(huntId) + (code ? '?code=' + code : '');
-  // In-app browsers (Instagram, TikTok, Facebook) refuse custom-scheme links, so
-  // they get this https link that iOS hands to Safari. Built here from the id and
-  // code the server already holds; the page script reads nothing from the URL.
-  const safariLink = 'x-safari-https://huntz.ai/hunt/' + encodeURIComponent(huntId) + (code ? '?code=' + code : '');
+  // The https invitation link the in-app Copy link button writes: a constant built
+  // here from the id and code the server already holds, never read from the URL.
+  const copyLink = 'https://huntz.ai/hunt/' + encodeURIComponent(huntId) + (code ? '?code=' + code : '');
   return `<section data-hunt-detail aria-labelledby="hunt-title">
   <img src="${escapeHtml(cover)}" alt="${escapeHtml(copy(detail.title))}" width="1200" height="800" style="display:block;width:100%;height:auto;max-height:360px;object-fit:cover;border-radius:18px;margin-bottom:24px">
   <h1 id="hunt-title" style="margin:0 0 16px;font:600 clamp(30px,4.4vw,46px)/1.08 'Playfair Display',serif;text-wrap:balance">${escapeHtml(copy(detail.title))}</h1>
   ${copy(detail.description) ? `<p style="font-size:17px;line-height:1.6;white-space:pre-line">${escapeHtml(copy(detail.description))}</p>` : ''}
   <dl style="display:grid;grid-template-columns:auto 1fr;gap:12px 24px;margin:24px 0;line-height:1.5">${facts.map(([label, value]) => `<dt style="color:#6E6759">${escapeHtml(label)}</dt><dd style="margin:0">${escapeHtml(copy(value))}</dd>`).join('')}</dl>
   <a data-hunt-open hidden href="${escapeHtml(link)}" style="${OPEN_BUTTON_STYLE}">Open in the Huntz app</a>
-  <a data-hunt-safari hidden href="${escapeHtml(safariLink)}" style="${OPEN_BUTTON_STYLE}">Open in your browser</a>
+  <div data-hunt-inapp hidden data-hunt-link="${escapeHtml(copyLink)}" style="margin-top:8px;padding:clamp(22px,3vw,30px);border:1px solid rgba(22,19,14,.14);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34))">
+    <div style="font:600 clamp(19px,2.3vw,25px)/1.28 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;margin-bottom:12px">Open this page in Safari to continue</div>
+    <p data-hunt-inapp-line style="margin:0 0 16px;font-size:16px;line-height:1.55"></p>
+    <button type="button" data-hunt-copy style="border:1px solid #C24E1F;border-radius:999px;font:700 16px/1 inherit;color:#C24E1F;background:transparent;padding:13px 22px;cursor:pointer"></button>
+    <p style="margin:12px 0 0;font-size:15px;line-height:1.5;color:#6E6759">Or paste the link into Safari yourself.</p>
+    <p data-hunt-link-text hidden style="margin:8px 0 0;font-size:15px;line-height:1.5;word-break:break-all;user-select:all;-webkit-user-select:all">${escapeHtml(copyLink)}</p>
+  </div>
   <script>${OPEN_SCRIPT}</script>
   </section>`;
 }

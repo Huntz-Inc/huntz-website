@@ -186,61 +186,98 @@ const UA_TIKTOK_IOS = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) Ap
 const UA_FACEBOOK_IOS = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/21F90 [FBAN/FBIOS;FBAV/465.0.0.38.109;FBBV/600000000;FBDV/iPhone14,5;FBMD/iPhone;FBSN/iOS;FBSV/17.5;FBSS/3;FBID/phone;FBLC/en_US;FBOP/5]';
 const UA_DESKTOP = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
 
-/** Runs the page's inline button script against a minimal DOM holding the two hidden anchors. */
-function runOpenScript(body, ua) {
-  const script = body.match(/<script>(\(function\(\)\{var ua=navigator\.userAgent;[\s\S]*?)<\/script>/)[1];
-  const anchors = {
-    '[data-hunt-open]': { hidden: true, style: {}, parentNode: null },
-    '[data-hunt-safari]': { hidden: true, style: {}, parentNode: null },
+const SCRIPT_RE = /<script>(\(function\(\)\{var ua=navigator\.userAgent;[\s\S]*?)<\/script>/;
+
+/** Runs the page's inline script against a minimal DOM holding the scheme button and the in-app block. */
+function runOpenScript(body, ua, { clipboard, execCopy = false } = {}) {
+  const script = body.match(SCRIPT_RE)[1];
+  const link = body.match(/data-hunt-inapp hidden data-hunt-link="([^"]*)"/)[1];
+  const scheme = { hidden: true, style: {} };
+  const parts = {
+    '[data-hunt-inapp-line]': { textContent: '' },
+    '[data-hunt-copy]': { textContent: '', listeners: {}, addEventListener(t, f) { this.listeners[t] = f; } },
+    '[data-hunt-link-text]': { hidden: true },
   };
-  const inserted = [];
-  const parent = { insertBefore: (node) => inserted.push(node) };
-  Object.values(anchors).forEach((a) => { a.parentNode = parent; });
+  const box = { hidden: true, querySelector: (sel) => parts[sel] || null, getAttribute: (n) => (n === 'data-hunt-link' ? link : null) };
+  const copied = [];
+  const timers = [];
   const document = {
-    querySelector: (sel) => anchors[sel] || null,
-    createElement: () => ({ style: {}, attrs: {}, setAttribute(k, v) { this.attrs[k] = v; } }),
+    body: { appendChild() {}, removeChild() {} },
+    querySelector: (sel) => (sel === '[data-hunt-open]' ? scheme : sel === '[data-hunt-inapp]' ? box : null),
+    createElement: () => ({ style: {}, setAttribute() {}, select() {}, set value(v) { copied.push(v); } }),
+    execCommand: () => execCopy,
   };
-  vm.runInNewContext(script, { navigator: { userAgent: ua }, document });
-  return { scheme: !anchors['[data-hunt-open]'].hidden, safari: !anchors['[data-hunt-safari]'].hidden,
-    note: inserted.length ? inserted[0].textContent : null, notes: inserted.length };
+  const navigator = { userAgent: ua };
+  if (clipboard) navigator.clipboard = { writeText: (v) => clipboard(v, copied) };
+  vm.runInNewContext(script, { navigator, document, setTimeout: (f) => timers.push(f), clearTimeout() {} });
+  return { scheme: !scheme.hidden, block: !box.hidden, line: parts['[data-hunt-inapp-line]'].textContent,
+    copy: parts['[data-hunt-copy]'], get linkText() { return !parts['[data-hunt-link-text]'].hidden; }, copied, timers, link };
 }
 
 test('iPhone only app button executes without reading query strings or navigating', async () => {
   const result = await render(hunt.handle, upstream(), '/hunt/public-hunt');
   assert.match(result.body, /data-hunt-open hidden href="huntz:\/\/\/hunt\/public-hunt"/);
-  const script = result.body.match(/<script>(\(function\(\)\{var ua=navigator\.userAgent;[\s\S]*?)<\/script>/)[1];
+  const script = result.body.match(SCRIPT_RE)[1];
   assert.doesNotMatch(script, /location|referrer|document\.cookie|Storage|URLSearchParams|[^\x00-\x7f]/);
   for (const ua of ['iPhone', 'iPad', 'Macintosh', 'Android']) {
     assert.equal(runOpenScript(result.body, ua).scheme, ua === 'iPhone', ua);
   }
 });
 
-test('served HTML carries both hidden anchors with the same id and code', async () => {
+test('served HTML has no x-safari anchor and carries the hidden in-app block with the link and code', async () => {
   const plain = await render(hunt.handle, upstream(), '/hunt/public-hunt');
-  assert.match(plain.body, /<a data-hunt-open hidden href="huntz:\/\/\/hunt\/public-hunt"/);
-  assert.match(plain.body, /<a data-hunt-safari hidden href="x-safari-https:\/\/huntz\.ai\/hunt\/public-hunt"[^>]*>Open in your browser<\/a>/);
+  assert.doesNotMatch(plain.body, /x-safari/);
+  assert.match(plain.body, /data-hunt-inapp hidden data-hunt-link="https:\/\/huntz\.ai\/hunt\/public-hunt"/);
   const coded = await render(hunt.handle, upstream(), '/hunt/public-hunt?code=7ZQK9M3H&ref=zzrefzz&via=zzviazz');
   assert.match(coded.body, /<a data-hunt-open hidden href="huntz:\/\/\/hunt\/public-hunt\?code=7ZQK9M3H"/);
-  assert.match(coded.body, /<a data-hunt-safari hidden href="x-safari-https:\/\/huntz\.ai\/hunt\/public-hunt\?code=7ZQK9M3H"/);
-  assert.doesNotMatch(coded.body, /zzrefzz|zzviazz/);
+  assert.match(coded.body, /data-hunt-inapp hidden data-hunt-link="https:\/\/huntz\.ai\/hunt\/public-hunt\?code=7ZQK9M3H"/);
+  assert.doesNotMatch(coded.body, /zzrefzz|zzviazz|x-safari/);
 });
 
-test('in-app browsers get only the browser button and a guidance line naming the app', async () => {
-  const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt');
-  const line = (app, menu) => app + ' opens links in its own browser, which cannot open apps. Tap Open in your browser, or use the \u2022\u2022\u2022 menu and choose ' + menu + ', then tap Open in the Huntz app.';
+test('in-app browsers get the instruction block and Copy link, and no scheme button', async () => {
+  const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt?code=7ZQK9M3H');
+  assert.match(body, /Open this page in Safari to continue/);
+  assert.match(body, /Or paste the link into Safari yourself\./);
+  const line = (app, menu) => app + ' opens links in its own browser, which cannot open apps. Tap the ••• menu at the top right and choose ' + menu + ', then tap Open in the Huntz app.';
   for (const [ua, app, menu] of [[UA_INSTAGRAM_IOS, 'Instagram', 'Open in external browser'], [UA_TIKTOK_IOS, 'TikTok', 'Open in browser'],
     [UA_FACEBOOK_IOS, 'Facebook', 'Open in external browser']]) {
     const out = runOpenScript(body, ua);
-    assert.deepEqual([out.scheme, out.safari, out.notes, out.note], [false, true, 1, line(app, menu)], app);
+    assert.deepEqual([out.scheme, out.block, out.line], [false, true, line(app, menu)], app);
   }
+});
+
+test('Copy link writes the exact invitation link, flips to Link copied, then back', async () => {
+  const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt?code=7ZQK9M3H');
+  const writes = [];
+  const out = runOpenScript(body, UA_INSTAGRAM_IOS, { clipboard: (v) => { writes.push(v); return Promise.resolve(); } });
+  assert.equal(out.copy.textContent, 'Copy link');
+  out.copy.listeners.click();
+  await new Promise((r) => setImmediate(r));
+  assert.deepEqual(writes, ['https://huntz.ai/hunt/public-hunt?code=7ZQK9M3H']);
+  assert.equal(out.copy.textContent, 'Link copied');
+  out.timers[0]();
+  assert.equal(out.copy.textContent, 'Copy link');
+});
+
+test('Copy link falls back to a hidden textarea, then to showing the link text', async () => {
+  const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt?code=7ZQK9M3H');
+  const viaExec = runOpenScript(body, UA_INSTAGRAM_IOS, { execCopy: true });
+  viaExec.copy.listeners.click();
+  assert.deepEqual(viaExec.copied, ['https://huntz.ai/hunt/public-hunt?code=7ZQK9M3H']);
+  assert.equal(viaExec.copy.textContent, 'Link copied');
+  const rejected = runOpenScript(body, UA_INSTAGRAM_IOS, { clipboard: () => Promise.reject(new Error('denied')), execCopy: false });
+  rejected.copy.listeners.click();
+  await new Promise((r) => setImmediate(r));
+  assert.equal(rejected.copy.textContent, 'Copy link');
+  assert.equal(rejected.linkText, true);
 });
 
 test('iPhone Safari shows only the scheme button; desktop shows neither', async () => {
   const { body } = await render(hunt.handle, upstream(), '/hunt/public-hunt');
   const safari = runOpenScript(body, UA_IPHONE_SAFARI);
-  assert.deepEqual([safari.scheme, safari.safari, safari.notes], [true, false, 0]);
+  assert.deepEqual([safari.scheme, safari.block], [true, false]);
   const desktop = runOpenScript(body, UA_DESKTOP);
-  assert.deepEqual([desktop.scheme, desktop.safari, desktop.notes], [false, false, 0]);
+  assert.deepEqual([desktop.scheme, desktop.block], [false, false]);
 });
 
 test('HTML, attribute and JSON-LD escaping protect every Host-authored value', async () => {
