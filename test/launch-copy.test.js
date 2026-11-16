@@ -221,7 +221,7 @@ test('upcoming: the whole card is one tap, and the placeholder Hunts are gone ev
   }
   // The interest plumbing stays, inert: the chip, its clear button and the merge field.
   assert.match(html, /clearInterest/);
-  assert.match(html, /&INTEREST=/);
+  assert.doesNotMatch(html, /&INTEREST=/);
 });
 
 test('upcoming: build/assemble.py retains dated outage cards with apex Universal Links', () => {

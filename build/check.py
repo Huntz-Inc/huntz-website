@@ -440,19 +440,19 @@ for path in ("/terms", "/privacy"):
     if "BACK TO HUNTZ" not in t:
         fail(f"{path}: legal page chrome changed")
 
-# ---- waitlist: still exactly one Mailchimp integration ----
-MC_ENDPOINT = "huntz.us18.list-manage.com/subscribe/post"
+# ---- waitlist: exactly one signup integration (Loops) ----
+MC_ENDPOINT = "app.loops.so/api/newsletter-form/"
 if home.count(MC_ENDPOINT) != 1:
-    fail(f"/: expected 1 Mailchimp endpoint, found {home.count(MC_ENDPOINT)}")
+    fail(f"/: expected 1 waitlist endpoint, found {home.count(MC_ENDPOINT)}")
 # 3 since the App Store launch switch (2026-09-25) added the relocated
 # Android form; see the aria-label count above.
 n_email = home.count('type="email"')
 if n_email != 3:
     fail(f"/: expected the 3 existing waitlist email inputs, found {n_email}")
 if "b_b7144d02c740628b3280ff55f_3ee28a30af" not in home:
-    fail("/: Mailchimp honeypot field missing")
-if "INTEREST" not in home:
-    fail("/: Mailchimp interest capture missing")
+    fail("/: honeypot field missing")
+if "list-manage" in home or "mailchimp" in home.lower():
+    fail("/: a Mailchimp reference remains")
 for f in [ROOT / v for v in PAGES.values()]:
     t = f.read_text()
     if f.name != "index.html" and MC_ENDPOINT in t:
