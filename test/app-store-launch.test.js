@@ -489,12 +489,12 @@ test('live: the waitlist form survives exactly once, relocated under the closing
   assert.doesNotMatch(html, /<section id="waitlist"/);
   assert.match(html, /<\/section>\n\n<footer data-screen-label="Footer"/, 'the footer follows the closing section directly');
 
-  // Same backend as before: no second Mailchimp integration was introduced.
+  // Same backend as before: no second signup integration was introduced.
   // (The generic "list-manage.com/subscribe/post?u=..." pattern also matches
   // the WAITLIST_ENDPOINT doc comment above the field, so this checks the
   // real, fully-qualified audience endpoint specifically: the same string
   // build/check.py's MC_ENDPOINT check uses.)
-  assert.equal((html.match(/huntz\.us18\.list-manage\.com\/subscribe\/post/g) || []).length, 1);
+  assert.equal((html.match(/app\.loops\.so\/api\/newsletter-form\//g) || []).length, 1);
   assert.match(html, /WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af'/);
 });
 

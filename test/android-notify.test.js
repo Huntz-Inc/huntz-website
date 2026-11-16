@@ -127,14 +127,20 @@ test('form: the heading, the email field, NOTIFY ME and the no-spam line are all
   assert.match(FORM_BLOCK, /YOU'RE IN\. WE'LL EMAIL YOU WHEN ANDROID LAUNCHES\./);
 });
 
-test('form: the Mailchimp wiring is untouched: the same form handler and state, the same one #waitlist id, the same endpoint and honeypot', () => {
+test('form: the same form handler and state, the same one #waitlist id, the Loops endpoint and honeypot', () => {
   assert.match(FORM_BLOCK, /<form onSubmit="\{\{ submitHero \}\}" style="display:flex;flex-wrap:wrap;gap:10px;max-width:520px">/);
   assert.match(FORM_BLOCK, /<input type="email" required="" aria-label="Email address" placeholder="you@email\.com"/);
   assert.match(FORM_BLOCK, /<button type="submit" disabled="\{\{ busy1 \}\}"/);
   assert.match(FORM_BLOCK, /<sc-if value="\{\{ err1 \}\}">/);
   assert.match(FORM_BLOCK, /<sc-if value="\{\{ heroIdle \}\}"[\s\S]*<sc-if value="\{\{ sub1 \}\}"/);
   assert.equal((html.match(/id="waitlist"/g) || []).length, 2, 'the switched-off hero form and this one: only one renders at a time');
-  assert.equal((html.match(/huntz\.us18\.list-manage\.com\/subscribe\/post\?u=b7144d02c740628b3280ff55f&id=3ee28a30af/g) || []).length, 1);
+  assert.equal((html.match(/https:\/\/app\.loops\.so\/api\/newsletter-form\/cmwilpplp044x0jylopv2w9nf/g) || []).length, 1);
+  assert.doesNotMatch(html, /list-manage|mailchimp/i);
+  assert.match(html, /'Content-Type': 'application\/x-www-form-urlencoded'/);
+  assert.match(html, /body: 'email=' \+ encodeURIComponent\(v\) \+ '&userGroup=android-notify&source=website'/);
+  assert.match(html, /r\.status === 429/);
+  assert.match(html, /Too many tries\. Give it a minute and try again\./);
+  assert.match(html, /\/already\/i\.test\(String\(j\.message/);
   assert.match(html, /WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af'/);
   assert.equal((html.match(/type="email"/g) || []).length, 3, 'the same three email inputs as before');
 });

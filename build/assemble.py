@@ -226,12 +226,10 @@ html = html.replace(old, "state = { sub1: false, sub2: false, busy1: false, busy
 old = """  submitHero = (e) => { e.preventDefault(); const i = e.target.querySelector('input'); if (i && i.value.indexOf('@') > 0) this.setState({ sub1: true }); };
   submitFinal = (e) => { e.preventDefault(); const i = e.target.querySelector('input'); if (i && i.value.indexOf('@') > 0) this.setState({ sub2: true }); };"""
 assert old in html
-html = html.replace(old, """  // Waitlist backend. Paste the Mailchimp embedded-form action URL here
-  // (https://xxx.usN.list-manage.com/subscribe/post?u=...&id=...), or any
-  // endpoint accepting JSON POST {email, interest} (e.g. Formspree).
-  // Empty = local confirmation only, no email is stored anywhere.
-  WAITLIST_ENDPOINT = 'https://huntz.us18.list-manage.com/subscribe/post?u=b7144d02c740628b3280ff55f&id=3ee28a30af&f_id=000baee6f0';
-  // Mailchimp's bot-trap field from the embedded form; must be sent empty.
+html = html.replace(old, """  // Waitlist backend: the Loops newsletter-form endpoint (JSON replies, CORS
+  // enabled for browser POSTs). Empty = local confirmation only.
+  WAITLIST_ENDPOINT = 'https://app.loops.so/api/newsletter-form/cmwilpplp044x0jylopv2w9nf';
+  // Client-side bot trap: a generic honeypot name, never sent to the endpoint.
   WAITLIST_HONEYPOT = 'b_b7144d02c740628b3280ff55f_3ee28a30af';
   emailOk(v) { return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(v); }
   submit(e, n) {
@@ -242,36 +240,25 @@ html = html.replace(old, """  // Waitlist backend. Paste the Mailchimp embedded-
     if (!this.WAITLIST_ENDPOINT) { this.setState({ ['sub' + n]: true, ['err' + n]: '' }); return; }
     this.setState({ ['busy' + n]: true, ['err' + n]: '' });
     const FALLBACK = "Couldn't join right now. Try again, or email team@huntz.ai.";
-    // Mailchimp sends back its own readable reason ("This email address looks
-    // fake or invalid.") prefixed with a code and sometimes wrapped in markup, so
-    // show the sentence, not our generic line, when there is one.
-    const clean = m => {
-      if (!m) return FALLBACK;
-      const t = String(m).replace(/^\d+\s*-\s*/, '').replace(/<[^>]*>/g, '').trim();
-      return t.length > 4 && t.length < 200 ? t : FALLBACK;
-    };
+    const RATE = "Too many tries. Give it a minute and try again.";
     const done = (ok, msg) => this.setState(ok
       ? { ['sub' + n]: true, ['busy' + n]: false }
-      : { ['busy' + n]: false, ['err' + n]: clean(msg) });
-    const ep = this.WAITLIST_ENDPOINT;
-    if (ep.indexOf('list-manage.com') > -1) {
-      const cb = '__hzMc' + Date.now();
-      const s = document.createElement('script');
-      // "already subscribed" is a success from the visitor's point of view.
-      window[cb] = res => {
-        delete window[cb]; s.remove();
-        const msg = (res && res.msg) || '';
-        done(!!res && (res.result === 'success' || /already/i.test(msg)), msg);
-      };
-      s.src = ep.replace('/post?', '/post-json?') + '&EMAIL=' + encodeURIComponent(v)
-        + (this.state.interest ? '&INTEREST=' + encodeURIComponent(this.state.interest) : '')
-        + (this.WAITLIST_HONEYPOT ? '&' + this.WAITLIST_HONEYPOT + '=' : '')
-        + '&c=' + cb;
-      s.onerror = () => { delete window[cb]; s.remove(); done(false, ''); };
-      document.head.appendChild(s);
-    } else {
-      fetch(ep, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ email: v, interest: this.state.interest || '' }) }).then(r => done(r.ok)).catch(() => done(false));
-    }
+      : { ['busy' + n]: false, ['err' + n]: msg || FALLBACK });
+    // Honeypot: a bot that fills the hidden trap field gets a fake success and no request.
+    const trap = e.target.querySelector('input[name="' + this.WAITLIST_HONEYPOT + '"]');
+    if (trap && trap.value) { done(true); return; }
+    fetch(this.WAITLIST_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'email=' + encodeURIComponent(v) + '&userGroup=android-notify&source=website'
+    }).then(r => {
+      if (r.status === 429) { done(false, RATE); return null; }
+      return r.json().catch(() => ({})).then(j => {
+        // "Email already on list" is a success from the visitor's point of view.
+        if ((r.ok && j && j.success === true) || (j && /already/i.test(String(j.message || '')))) done(true);
+        else done(false);
+      });
+    }).catch(() => done(false));
   }
   submitHero = (e) => this.submit(e, 1);
   submitFinal = (e) => this.submit(e, 2);
