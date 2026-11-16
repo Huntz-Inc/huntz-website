@@ -1554,9 +1554,9 @@ ORG_LD = {
     "url": SITE_URL + "/",
     "logo": SITE_URL + "/icon-512.png",
     "email": "team@huntz.ai",
-    "address": {"@type": "PostalAddress", "streetAddress": "269 24th Street",
-                "addressLocality": "Oakland", "addressRegion": "CA",
-                "postalCode": "94612", "addressCountry": "US"},
+    "address": {"@type": "PostalAddress", "streetAddress": "1177 Market Street",
+                "addressLocality": "San Francisco", "addressRegion": "CA",
+                "postalCode": "94103", "addressCountry": "US"},
 }
 SITE_LD = {"@context": "https://schema.org", "@type": "WebSite",
            "name": "Huntz", "url": SITE_URL + "/"}
@@ -1999,10 +1999,10 @@ content_tpl = apply_content_app_store_switch((BUILD / "content-page.html").read_
 CONTENT_LIVE_COPY = {
     "about": {
         "meta": (
-            "Huntz is the marketplace for accountability: stake-backed challenges with rules published up front. "
-            "Built in Oakland by Huntz, Inc. Pre-launch, waitlist open.",
-            "Huntz is the marketplace for accountability: stake-backed challenges with rules published up front. "
-            "Built in Oakland by Huntz, Inc. Available now on the App Store.",
+            "Huntz is the marketplace for accountability: stake-backed challenges with rules posted first. "
+            "Built in San Francisco by Huntz, Inc. Pre-launch, waitlist open.",
+            "Huntz is the marketplace for accountability: stake-backed challenges with rules posted first. "
+            "Built in San Francisco by Huntz, Inc. Available now on the App Store.",
         ),
         "body": [(
             '<p style="margin:0 0 15px;font:400 15.5px/1.75 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
@@ -2029,9 +2029,9 @@ CONTENT_LIVE_COPY = {
     "contact": {
         "meta": (
             "Reach the Huntz team. Questions about accountability challenges, the waitlist, privacy, or "
-            "partnerships: team@huntz.ai. Based in Oakland, California.",
+            "partnerships: team@huntz.ai. Based in San Francisco, California.",
             "Reach the Huntz team. Questions about accountability challenges, the app, privacy, or partnerships: "
-            "team@huntz.ai. Based in Oakland, California.",
+            "team@huntz.ai. Based in San Francisco, California.",
         ),
         "body": [(
             '<li style="position:relative;font:400 15.5px/1.7 \'Figtree\',Arial,Helvetica,sans-serif;color:#4A453C;'
