@@ -143,7 +143,7 @@ if "IN PRE-LAUNCH" in home:
     fail("/: removed hero pre-launch disclaimer has reappeared")
 # Launch copy mix (2026-10-09, founder-approved; build/assemble.py 2h): the
 # home page's visible copy keeps to the founder's rules (no em or en dash, no
-# exclamation mark, the minimum stake is $20), and its four new pieces are on
+# exclamation mark, the minimum stake is $25), and its four new pieces are on
 # the page. test/launch-copy.test.js pins the wording; this keeps a Python-only
 # build run honest too.
 home_text = re.sub(r"<[^>]+>", " ", re.sub(r"<(script|style)[^>]*>.*?</\1>", "", home, flags=re.S))

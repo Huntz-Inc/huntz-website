@@ -19,7 +19,7 @@ function copy(value) {
 function minimumStake(hunt) {
   const minor = hunt?.stakeRange?.minMinor;
   if (typeof minor !== 'string' || !/^\d{1,12}$/.test(minor)) return null;
-  return Math.max(2000, Number(minor)) / 100;
+  return Math.max(2500, Number(minor)) / 100;
 }
 
 function stakeLabel(hunt) {
