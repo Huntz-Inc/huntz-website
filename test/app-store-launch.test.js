@@ -634,7 +634,7 @@ test('live: about.html\'s in-copy sentence points at the app, and its meta descr
   const t = fs.readFileSync(path.join(ROOT, 'about.html'), 'utf8');
   assert.match(t, new RegExp(`Self-service tools for creators to launch Hunts independently are planned for later\\. The <a href="${escapeRe(APP_STORE_URL)}"[^>]*>app</a> is the way in\\.`));
   assert.doesNotMatch(t, /waitlist<\/a> is the way in\./);
-  assert.match(t, /<meta name="description" content="[^"]*Built in Oakland by Huntz, Inc\. Available now on the App Store\.">/);
+  assert.match(t, /<meta name="description" content="[^"]*Built in San Francisco by Huntz, Inc\. Available now on the App Store\.">/);
   assert.doesNotMatch(t, /Pre-launch, waitlist open/);
 });
 
@@ -656,7 +656,7 @@ test('live: contact.html\'s troubleshooting bullet and meta description say "the
   const t = fs.readFileSync(path.join(ROOT, 'contact.html'), 'utf8');
   assert.match(t, /Problems with the app or this website: tell us what broke and on what device\./);
   assert.doesNotMatch(t, /Problems with the waitlist or this website/);
-  assert.match(t, /<meta name="description" content="Reach the Huntz team\. Questions about accountability challenges, the app, privacy, or partnerships: team@huntz\.ai\. Based in Oakland, California\.">/);
+  assert.match(t, /<meta name="description" content="Reach the Huntz team\. Questions about accountability challenges, the app, privacy, or partnerships: team@huntz\.ai\. Based in San Francisco, California\.">/);
 });
 
 test('live: accountability-challenges.html\'s meta description says the app is available', () => {
@@ -674,11 +674,11 @@ test('live: accountability-challenges.html\'s meta description says the app is a
 // build/in-app-notice.js, was added to every page with an App Store button;
 // test/in-app-notice.test.js covers it. 2026-11-01: re-pinned when the PostHog
 // analytics script, build/analytics.js, was added to every public page;
-// test/analytics.test.js covers it.)
+// test/analytics.test.js covers it. 2026-11-15: re-pinned for the company address change to San Francisco.)
 test('live: about.html is byte-for-byte the committed launched page (sha256 pin)', () => {
   const bytes = fs.readFileSync(path.join(ROOT, 'about.html'));
   const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  assert.equal(hash, 'bcb8826cf12980934c5844310ec99cbb5d4eb3108dbf9eb56910bf5aa036e7c7',
+  assert.equal(hash, '3aa4144010fce8ceea3eec323ab44ff82989d87274ea25cf42c9a65fd335336e',
     'about.html changed: the launched (APP_STORE_URL set) state must stay byte-for-byte identical to the committed page');
 });
 
@@ -734,7 +734,7 @@ test('live: apply_content_app_store_switch() is wired to all three page shells (
 
 test('live: about.json gets a launch-state in-copy sentence and meta description', () => {
   assert.match(assemblePy, />app<\/a> is the way in\.<\/p>/, 'about: expected "...the app is the way in." sentence not found');
-  assert.match(assemblePy, /Built in Oakland by Huntz, Inc\. Available now on the App Store\./);
+  assert.match(assemblePy, /Built in San Francisco by Huntz, Inc\. Available now on the App Store\./);
 });
 
 test('live: accountability-challenges.json gets a launch-state meta description', () => {
