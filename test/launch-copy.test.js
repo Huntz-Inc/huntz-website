@@ -75,9 +75,9 @@ test('hero: the headline reads "Make quitting cost something.", word by word, on
   assert.doesNotMatch(HERO, /Put your money|goals are/);
 });
 
-test('hero: the sub reads the approved sentence, $20 minimum, no dash', () => {
-  assert.match(HERO, />Pick a goal\. Put \$20 to \$500 on the line\. Prove it daily\. Finish and get it all back, plus a cut of what the quitters lost\.<\/p>/);
-  assert.doesNotMatch(HERO, /\$50(?!\d)|100% back|forfeited|of your own money|Post proof every day|Stake \$20/);
+test('hero: the sub reads the approved sentence, $25 minimum, no dash', () => {
+  assert.match(HERO, />Pick a goal\. Put \$25 to \$500 on the line\. Prove it daily\. Finish and get it all back, plus a cut of what the quitters lost\.<\/p>/);
+  assert.doesNotMatch(HERO, /\$50(?!\d)|100% back|forfeited|of your own money|Post proof every day|Stake \$25/);
 });
 
 test('hero: the eyebrow keeps the colon main settled on, not a dash and not a middle dot', () => {
@@ -197,7 +197,7 @@ test('upcoming: the rail carries exactly the Hunts open on Discover, in order, e
     assert.match(plate, new RegExp(`opacity:\\.17;line-height:1">${nn}</span>`), `${h.title}: faded numeral`);
     assert.match(plate, new RegExp(`<div style="font:600 clamp\\(22px,2\\.2vw,30px\\)/1\\.15 'Playfair Display'[^"]*">${escapeRe(h.title)}</div>`), `${h.title}: title`);
     const rows = [...plate.matchAll(/<span style="opacity:\.85">([A-Z]+)<\/span><span style="font-weight:700">([^<]+)<\/span>/g)].map((m) => [m[1], m[2]]);
-    assert.deepEqual(rows, [['CADENCE', '1 CHECK-IN A DAY'], ['LENGTH', h.length], ['STAKE', 'FROM $20'], ['STARTS', 'OCT 12']], `${h.title}: rows`);
+    assert.deepEqual(rows, [['CADENCE', '1 CHECK-IN A DAY'], ['LENGTH', h.length], ['STAKE', 'FROM $25'], ['STARTS', 'OCT 12']], `${h.title}: rows`);
     assert.match(plate, new RegExp(
       `<a data-hunt-link="" href="https://huntz\\.ai/hunt/${h.id}" aria-label="I want this hunt: ${escapeRe(h.title)}" `
       + 'style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid currentColor;'
@@ -309,7 +309,7 @@ test('copy rules: document and social titles use the card copy, with the hero su
   assert.match(head, /<meta name="twitter:title" content="Huntz: Become someone who finishes\.">/);
   assert.doesNotMatch(head, /Put your money where your goals are/, 'the retired brand line');
   assert.ok(textOf(visible).includes('Become someone who finishes.'), 'the title is the closing line the page carries');
-  const sub = 'Pick a goal. Put $20 to $500 on the line. Prove it daily. Finish and get it all back, plus a cut of what the quitters lost.';
+  const sub = 'Pick a goal. Put $25 to $500 on the line. Prove it daily. Finish and get it all back, plus a cut of what the quitters lost.';
   assert.ok(HERO.includes(`>${sub}</p>`), 'the sentence under test is the hero sub');
   assert.match(head, new RegExp(`<meta property="og:description" content="${escapeRe(sub)}">`));
   assert.match(head, new RegExp(`<meta name="twitter:description" content="${escapeRe(sub)}">`));

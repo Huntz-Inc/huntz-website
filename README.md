@@ -420,7 +420,7 @@ Changes currently applied on top of the design:
 - Upcoming cards list open public Hunts from Discover and each
   "I want this hunt" links to the apex Universal Link.
 - Launch copy mix (2026-10-09, founder-approved): the hero reads "You don't
-  need motivation. You need consequences." over "Pick a goal. Put $20 to $500
+  need motivation. You need consequences." over "Pick a goal. Put $25 to $500
   on the line. Prove it daily. ..." (the share card's og and twitter
   descriptions repeat that sentence), a "Sound familiar?" block follows the
   marquee strip (a headline in the mechanic's style over three cards, "THE
@@ -472,7 +472,7 @@ routes would otherwise take precedence over the live rewrites.
 
 `api/hunt.js` serves `/hunt/<id>`. A resolved detail renders the cover, title,
 description, length, cadence, start date in the Hunt's time zone, minimum stake
-(at least $20), and Host. An iPhone-only button uses `huntz:///hunt/<id>` as
+(at least $25), and Host. An iPhone-only button uses `huntz:///hunt/<id>` as
 accepted by the mobile app. A valid Hunt code may accompany that button.
 Inside Instagram's, TikTok's or Facebook's in-app browser, which refuse custom-scheme
 links, the button is still shown but its href is removed and a tap never navigates: it

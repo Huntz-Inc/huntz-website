@@ -1153,7 +1153,7 @@ def apply_content_app_store_switch(tpl: str) -> str:
 # the example card, the FAQ, the Android notify form, the footer. Copy rules
 # for this pass, enforced by test/launch-copy.test.js: sentence case, no em or
 # en dashes, no exclamation marks, "service fee" never "join fee", no provider
-# or platform names, the minimum stake is $20, never "free".
+# or platform names, the minimum stake is $25, never "free".
 
 # (LC-1) Hero. The headline keeps the design's word-by-word rise (one span per
 # word, the same 80 ms stagger) and its accent treatment on the last word
@@ -1188,7 +1188,7 @@ html = html.replace(HERO_H1_OLD, HERO_H1_NEW)
 
 HERO_SUB_OLD = ("Stake $50–$500 of your own money on your own goal. Post proof every day. "
                 "Finish and you get 100% back, plus a share of the stakes forfeited by everyone who quit.")
-HERO_SUB_NEW = ("Pick a goal. Put $20 to $500 on the line. Prove it daily. "
+HERO_SUB_NEW = ("Pick a goal. Put $25 to $500 on the line. Prove it daily. "
                 "Finish and get it all back, plus a cut of what the quitters lost.")
 assert html.count(HERO_SUB_OLD) == 1, "hero sub not found"
 html = html.replace(HERO_SUB_OLD, HERO_SUB_NEW)
@@ -1280,9 +1280,9 @@ LIVE_HUNTS = [
 ]
 assert 1 <= len(LIVE_HUNTS) <= 5
 HUNT_LINK = "https://huntz.ai/hunt/{id}"
-# The API carries stakeRange.minMinor as a minor-unit string ("2000"); every
+# The API carries stakeRange.minMinor as a minor-unit string ("2500"); every
 # listed Hunt opens at the platform minimum, so the plates say so directly.
-HUNT_STAKE = "FROM $20"
+HUNT_STAKE = "FROM $25"
 HUNT_CADENCE = {"day": "1 CHECK-IN A DAY", "week": "1 CHECK-IN A WEEK"}
 MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 

@@ -13,7 +13,7 @@ const item = {
   id: 'public-hunt', title: 'Read with Jordan', description: 'Read and reflect daily.',
   creatorDisplayName: 'Jordan', startAt: '2026-10-20T07:00:00Z', timeZone: 'America/Los_Angeles',
   enrollmentStatus: 'OPEN', visibility: 'PUBLIC', duration: { windowCount: 21, windowUnitLabel: 'day' },
-  summaryLabel: 'Reflection each day', stakeRange: { minMinor: '2000', maxMinor: '50000' },
+  summaryLabel: 'Reflection each day', stakeRange: { minMinor: '2500', maxMinor: '50000' },
   coverArtUrl: '/v1/hunts/public-hunt/cover-art?v=asset-1',
   participantCount: 978654321, poolTotalMinor: '876543219',
 };
@@ -92,7 +92,7 @@ test('live homepage uses the same card design, shows every listed Hunt and uses 
   const content = rail(result.body);
   assert.equal((content.match(/data-plate=""/g) || []).length, 7);
   assert.equal((content.match(/href="https:\/\/huntz.ai\/hunt\/hunt-/g) || []).length, 7);
-  for (const value of ['REFLECTION EACH DAY', '21 DAYS', 'FROM $20', 'OCT 20']) assert.ok(content.includes(value));
+  for (const value of ['REFLECTION EACH DAY', '21 DAYS', 'FROM $25', 'OCT 20']) assert.ok(content.includes(value));
   assert.equal(result.headers['Cache-Control'], CACHE_CONTROL);
   assert.doesNotMatch(content, /978654321|876543219|participantCount|poolTotalMinor/);
   assert.equal(result.body.split('<!-- HUNT_RAIL_START -->')[0], homeHtml.split('<!-- HUNT_RAIL_START -->')[0]);
@@ -128,7 +128,7 @@ test('card copy is escaped, template expressions stay literal, and replacement d
   assert.doesNotMatch(output, /<img|\{\{|\u2014|daily!|FROM \$10/);
   assert.match(output, /&lt;img src=x onerror=alert\(1\)&gt;/);
   assert.match(output, /\$&amp;/);
-  assert.match(output, /FROM \$20/);
+  assert.match(output, /FROM \$25/);
   assert.equal(home.escapeTemplateText('{{x}}').replace(/&#8203;/g, '\u200b').includes('{{'), false);
 });
 
@@ -154,11 +154,11 @@ test('PUBLIC open detail confirmed in Discover is crawlable with canonical, OG, 
   assert.match(result.body, /name="robots" content="index, follow"/);
   assert.match(result.body, /rel="canonical" href="https:\/\/huntz.ai\/hunt\/public-hunt"/);
   assert.match(result.body, /name="description" content="Read and reflect daily\."/);
-  for (const value of ['21 days', 'Reflection each day', 'October 20, 2026', 'From $20', 'Jordan']) assert.ok(result.body.includes(value));
+  for (const value of ['21 days', 'Reflection each day', 'October 20, 2026', 'From $25', 'Jordan']) assert.ok(result.body.includes(value));
   assert.doesNotMatch(result.body + calls.join(''), /SECRET_REF|SECRET_VIA|[?&](?:ref|via)=|978654321|876543219/);
   const schema = JSON.parse(result.body.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
   assert.equal(schema['@type'], 'Event'); assert.equal(schema.organizer.name, 'Jordan');
-  assert.equal(schema.startDate, item.startAt); assert.equal(schema.offers.price, '20.00');
+  assert.equal(schema.startDate, item.startAt); assert.equal(schema.offers.price, '25.00');
   assert.equal(schema.image, 'https://api.huntz.ai' + item.coverArtUrl);
   assert.equal(result.headers['Cache-Control'], CACHE_CONTROL);
 });
@@ -331,9 +331,9 @@ test('a mismatched Hunt id or whitespace title cannot replace the fallback', asy
   }
 });
 
-test('minimum stakes use API minor units, enforce $20 and reject malformed money', () => {
+test('minimum stakes use API minor units, enforce $25 and reject malformed money', () => {
   assert.equal(stakeLabel({ stakeRange: { minMinor: '3550' } }), 'From $35.50');
-  assert.equal(stakeLabel({ stakeRange: { minMinor: '1000' } }), 'From $20');
+  assert.equal(stakeLabel({ stakeRange: { minMinor: '1000' } }), 'From $25');
   for (const minMinor of ['NaN', '-100', '20.00', '<script>', null]) {
     assert.equal(stakeLabel({ stakeRange: { minMinor } }), null);
   }
