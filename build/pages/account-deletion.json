@@ -1,0 +1,96 @@
+{
+ "title_tag": "Delete your Huntz account | Huntz",
+ "meta_description": "Request deletion of your Huntz account and data from the app or by email, without signing in. What is removed, what is kept, and what happens with an active stake.",
+ "h1": "Delete your Huntz account.",
+ "eyebrow": "ACCOUNT DELETION",
+ "blocks": [
+  {
+   "type": "p",
+   "text": "This page is for people who use the Huntz mobile app, published by Huntz, Inc. You can ask us to delete your account and the personal data tied to it. You do not need to be signed in to the app to make the request."
+  },
+  {
+   "type": "h2",
+   "text": "Request deletion from the app"
+  },
+  {
+   "type": "p",
+   "text": "If you can still open Huntz, this is the fastest route."
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Open Huntz and tap the Profile tab.",
+    "Under Account, tap Email & sign-in.",
+    "Under Account management, tap Delete account.",
+    "Read what will be removed and kept, then confirm. You may be asked to sign in again so we know it is you."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "Request deletion by email"
+  },
+  {
+   "type": "p",
+   "text": "If you cannot sign in, or you have already removed the app, email us instead."
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Send a message to team@huntz.ai from the email address on your Huntz account.",
+    "Use the subject line Delete my account.",
+    "We reply to that address to confirm the request before anything is deleted. Replying to that confirmation is the last step."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "What we remove"
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Your profile: name, handle, bio, profile photo and date of birth.",
+    "Your sign-in, and every device signed in to Huntz.",
+    "Notification settings and the device tokens used to send you push notifications.",
+    "Connected accounts and the access tokens we held for them.",
+    "Invitations you sent that nobody has used."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "What we keep, and for how long"
+  },
+  {
+   "type": "p",
+   "text": "Some records have to outlive an account. Deleting your account does not remove information we are legally required to keep, or need in order to handle fraud, disputes and our obligations to other Hunters. What we keep is no longer tied to your name or contact details."
+  },
+  {
+   "type": "ul",
+   "items": [
+    "Records of money movements, such as stakes, service fees, refunds and payouts, for as long as the law requires.",
+    "Proof you submitted and any review or dispute decisions, for the periods set out in the privacy policy.",
+    "Past support conversations, without your contact details, for the period set out in the privacy policy.",
+    "Anything else the law requires us to keep, for as long as it requires."
+   ]
+  },
+  {
+   "type": "p",
+   "text": "The {a:/privacy|privacy policy} has the detail on each type of record and how long it is kept."
+  },
+  {
+   "type": "h2",
+   "text": "If you have an active stake"
+  },
+  {
+   "type": "p",
+   "text": "Other Hunters are counting on every active Hunt to settle correctly, so we cannot delete an account while it has money staked in a Hunt that is still running or still being settled. The app shows what is holding the request up. Once the Hunt settles, the deletion can go ahead. Your stake is never refunded or forfeited early because you asked to delete your account."
+  },
+  {
+   "type": "h2",
+   "text": "Questions"
+  },
+  {
+   "type": "p",
+   "text": "Write to team@huntz.ai and the team will answer. Huntz, Inc. is based at 1177 Market Street, San Francisco, California 94103, United States."
+  }
+ ]
+}

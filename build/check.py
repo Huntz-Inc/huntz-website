@@ -23,6 +23,7 @@ PAGES = {
     "/terms": "terms.html",
     "/privacy": "privacy.html",
     "/about": "about.html",
+    "/account-deletion": "account-deletion.html",
     "/contact": "contact.html",
     "/faq": "faq.html",
     "/how-it-works": "how-it-works.html",
@@ -407,6 +408,12 @@ for path, fname in NAV_PAGES.items():
     # An article has no navigation entry of its own, so the nav marks the
     # section it lives in; the breadcrumb is what marks the article itself.
     expected = "/blog" if path in ARTICLES else ("/" if path == "/" else path)
+    # The account-deletion page is linked from the app and the store listing
+    # rather than the primary nav, so no nav entry is current on it.
+    if path == "/account-deletion":
+        if marked:
+            fail(f"{path}: aria-current marks {sorted(set(marked))}, expected none")
+        continue
     if not marked:
         fail(f"{path}: nothing marked aria-current=\"page\"")
     if set(marked) != {expected}:

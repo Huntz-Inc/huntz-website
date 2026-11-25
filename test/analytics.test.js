@@ -28,6 +28,7 @@ const hunt = require('../api/hunt');
 const CARRIERS = [
   'index.html',
   'about.html',
+  'account-deletion.html',
   'accountability-challenges.html',
   'blog.html',
   'blog/best-accountability-apps-2026.html',
