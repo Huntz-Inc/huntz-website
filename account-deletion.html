@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delete your Huntz account | Huntz</title>
+<meta name="description" content="Request deletion of your Huntz account and data from the app or by email, without signing in. What is removed, what is kept, and what happens with an active stake.">
+<link rel="canonical" href="https://www.huntz.ai/account-deletion">
+<meta property="og:site_name" content="Huntz">
+<meta property="og:title" content="Delete your Huntz account | Huntz">
+<meta property="og:description" content="Request deletion of your Huntz account and data from the app or by email, without signing in. What is removed, what is kept, and what happens with an active stake.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.huntz.ai/account-deletion">
+<meta property="og:image" content="https://www.huntz.ai/og-image.jpg?v=2">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="apple-itunes-app" content="app-id=6802558635">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="/favicon-48x48.png" type="image/png" sizes="48x48">
+<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
+<link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Huntz","item":"https://www.huntz.ai/"},{"@type":"ListItem","position":2,"name":"Delete your Huntz account.","item":"https://www.huntz.ai/account-deletion"}]}</script>
+<link rel="stylesheet" href="/assets/fonts.601bc53b.css">
+<style>
+html{ overflow-x:hidden; overflow-x:clip; overscroll-behavior-x:none }
+body{ margin:0; background:#F1EBE0; color:#16130E; overflow-x:hidden; overflow-x:clip;
+      font-family:'Figtree',Arial,Helvetica,sans-serif; -webkit-font-smoothing:antialiased }
+body::before{ content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background-image:radial-gradient(120% 85% at 50% -10%,#FBF8F2 0%,#F3EEE5 42%,#EBE4D7 100%) }
+a{ color:#16130E } a:hover{ color:#C24E1F }
+::selection{ background:#C24E1F; color:#F3EFE7 }
+a:focus-visible,button:focus-visible{ outline:2px solid #C24E1F; outline-offset:3px }
+
+/* Navigation. The drawer is the only navigation below 641px, so the desktop bar
+   and its CTA come off and the menu button comes on at exactly that width. */
+[data-hz-menu-btn]{ display:none }
+#hz-menu[hidden]{ display:none !important }
+#hz-menu{ display:block }
+@media (max-width:640px){
+  [data-hz-menu-btn]{ display:inline-flex !important }
+  [data-hz-desknav]{ display:none !important }
+}
+/* About and Contact would push the bar into a second line on small laptops. */
+@media (max-width:899px){ [data-hz-wide]{ display:none !important } }
+[data-hz-menu-btn]:focus-visible,#hz-menu a:focus-visible,#hz-menu button:focus-visible{
+  outline:2px solid #C24E1F; outline-offset:2px }
+[data-hz-navlink]:hover{ color:#16130E }
+[data-hz-drawerlink]:hover{ color:#C24E1F }
+/* Two balanced columns of comfortable tap targets instead of a ragged wrap. */
+@media (max-width:640px){
+  [data-hz-footernav]{ display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr));
+                        gap:0 18px !important; margin-left:0 !important }
+  /* The legal pair is wrapped so it can sit right on desktop; the wrapper
+     carries an inline display:flex, which only !important can unseat. */
+  [data-hz-footernav] > span{ display:contents !important }
+  [data-hz-footernav] a{ display:flex; align-items:center; min-height:44px; margin-left:0 !important }
+}
+
+@media print{ header,[data-cta],#hz-menu{ display:none !important } body::before{ display:none } body{ background:#fff } }
+</style>
+<script>
+(function () {
+  'use strict';
+
+  // ---- guards: where and for whom this may run ----
+  var HOSTS = ['huntz.ai', 'www.huntz.ai'];
+  if (HOSTS.indexOf(location.hostname) < 0) return;
+
+  function signalOn(v) { return v === true || v === 1 || v === '1' || v === 'yes' || v === 'true'; }
+  // PostHog's respect_dnt is set below as well; this earlier check means a
+  // visitor who asks not to be tracked also never loads the PostHog script.
+  if (signalOn(navigator.doNotTrack) || signalOn(window.doNotTrack) ||
+      signalOn(navigator.msDoNotTrack) || signalOn(navigator.globalPrivacyControl)) return;
+
+  // Only valid while this script runs: api/hunt.js stamps the Hunt id on the
+  // tag it serves for a resolved /hunt/<id> page. Every other page has none.
+  var self = document.currentScript;
+  var huntId = self && self.getAttribute ? self.getAttribute('data-hz-hunt-id') : null;
+
+  // Invitation, sign-in, pairing and payout routes keep secrets in their query
+  // string. Applied to every string in every event, so the current URL, the
+  // referrer and the person properties are all covered.
+  var PRIVATE_URL = /^https?:\/\/[^\/?#]+\/(?:hunt|auth|mailbox|payouts)(?:[\/?#]|$)/;
+  function clean(v, depth) {
+    if (typeof v === 'string') return PRIVATE_URL.test(v) ? v.replace(/[?#][\s\S]*$/, '') : v;
+    if (!v || typeof v !== 'object' || depth > 3) return v;
+    for (var k in v) {
+      if (Object.prototype.hasOwnProperty.call(v, k)) v[k] = clean(v[k], depth + 1);
+    }
+    return v;
+  }
+  function scrub(event) { return clean(event, 0); }
+
+  // ---- PostHog: the official loader stub (posthog.com/docs/libraries/js), unchanged ----
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+
+  try {
+    posthog.init('phc_A4buFSjkR5ephS7noLfcGKSM7fx67vKGNE7a4p5iTrnb', {
+      api_host: 'https://us.i.posthog.com',
+      defaults: '2026-08-30',            // pin behaviour: array.js is always the latest build
+      capture_pageview: true,            // one $pageview per page load (a static, multi-page site)
+      capture_pageleave: true,
+      autocapture: false,                // explicit events only
+      persistence: 'localStorage+cookie',// one anonymous id per browser, so new and returning visitors can be told apart
+      cross_subdomain_cookie: false,     // cookie on the page host only (www.huntz.ai), never on .huntz.ai, so it is not sent to api. or ops.
+      person_profiles: 'always',         // every visitor gets a person, so people who clicked Download can be browsed
+      respect_dnt: true,
+      // The landing URL is stored in the visitor's cookie and storage. These three
+      // are the invitation parameters, so their values are replaced with a mask there.
+      mask_personal_data_properties: true,
+      custom_personal_data_properties: ['ref', 'via', 'code'],
+      disable_session_recording: true,
+      advanced_disable_flags: true,      // no /flags call, and no remote config: nothing is switched on from the PostHog dashboard
+      before_send: scrub
+    });
+  } catch (e) { return; }
+
+  // ---- events ----
+  function track(name, props) {
+    try {
+      if (window.posthog && typeof window.posthog.capture === 'function') {
+        // sendBeacon + send_instantly: a click on the App Store link leaves the
+        // page at once, and an ordinary queued request would be dropped.
+        window.posthog.capture(name, props, { transport: 'sendBeacon', send_instantly: true });
+      }
+    } catch (e) { /* analytics must never break the page */ }
+  }
+
+  var APP_STORE = /^https:\/\/apps\.apple\.com\//;
+  var WAITLIST_CTA = 'android_notify';
+  var WAITLIST_FORM = 'android_notify';
+  // CTAs that also write person properties, so the people who clicked can be browsed.
+  var PERSON_CTA = { download_app: 1, join_waitlist: 1, android_notify: 1 };
+
+  // Same-site links keep their path and fragment, everything else keeps origin
+  // and path; the query is always dropped. Non-web schemes (mailto:, huntz:) are ignored.
+  function hrefOf(a) {
+    try {
+      var u = new URL(a.getAttribute('href') || '', location.href);
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+      return u.origin === location.origin ? u.pathname + u.hash : u.origin + u.pathname;
+    } catch (e) { return null; }
+  }
+
+  function locationOf(a) {
+    if (a.closest('[aria-modal="true"]')) return 'drawer';
+    if (a.closest('footer, [data-hz-footernav]')) return 'footer';
+    if (a.closest('#hz-nav, header, [data-hz-desknav]')) return 'nav';
+    if (a.closest('#hunts')) return 'hunts';
+    if (a.closest('#hz-hero')) return 'hero';
+    if (a.closest('#cta')) return 'final';
+    if (a.closest('aside[data-cta]')) return 'plate';
+    return 'content';
+  }
+
+  function ctaOf(a, href) {
+    if (a.hasAttribute('data-hunt-link')) return 'hunt_card';
+    if (APP_STORE.test(href)) return 'download_app';
+    if (/#waitlist$/.test(href)) return WAITLIST_CTA;
+    if (a.closest('[aria-modal="true"], footer, [data-hz-footernav], #hz-nav, header, [data-hz-desknav]')) return 'nav';
+    return null;
+  }
+
+  document.addEventListener('click', function (e) {
+    try {
+      var t = e.target;
+      if (t && t.nodeType !== 1) t = t.parentElement;
+      var a = t && t.closest ? t.closest('a[href]') : null;
+      if (!a) return;
+      var href = hrefOf(a);
+      if (!href) return;
+      var cta = ctaOf(a, href);
+      if (!cta) return;
+      var where = locationOf(a);
+      var props = { cta: cta, location: where, href: href };
+      if (PERSON_CTA[cta]) {
+        var set = {}, once = {};
+        set['clicked_' + cta] = true;
+        set['last_' + cta + '_click_location'] = where;
+        once['first_' + cta + '_click_at'] = new Date().toISOString();
+        props.$set = set;
+        props.$set_once = once;
+      }
+      track('website_cta_clicked', props);
+    } catch (err) { /* ignore */ }
+  }, true);
+
+  // The email form submits (Android notify, or the waitlist before launch). The address is never sent.
+  document.addEventListener('submit', function (e) {
+    try {
+      var f = e.target;
+      if (!f || !f.querySelector || f.id === 'hz-contact') return;
+      if (f.querySelector('input[type=email]')) track('website_waitlist_submitted', { form: WAITLIST_FORM });
+    } catch (err) { /* ignore */ }
+  }, true);
+
+  // The contact form validates in script and answers by revealing its success
+  // panel, so that reveal is the signal: it counts messages that were sent, not attempts.
+  function watchContact() {
+    try {
+      var done = document.getElementById('hz-contact-done');
+      if (!done || !window.MutationObserver) return;
+      new MutationObserver(function () {
+        if (!done.hidden) track('website_contact_submitted', { form: 'contact' });
+      }).observe(done, { attributes: true, attributeFilter: ['hidden'] });
+    } catch (err) { /* ignore */ }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchContact);
+  else watchContact();
+
+  // api/hunt.js marks a resolved /hunt/<id> page; the id was already validated there.
+  if (huntId && /^[A-Za-z0-9._~-]{1,128}$/.test(huntId)) {
+    track('website_hunt_viewed', { huntId: huntId, path: '/hunt/' + huntId });
+  }
+})();
+</script>
+</head>
+<body>
+
+<header style="position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px clamp(20px,4vw,44px);background:rgba(243,239,231,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(22,19,14,.12)">
+  <a href="/" style="font:800 20px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;text-decoration:none;color:#16130E">HUNTZ<span style="color:#C24E1F">.</span></a>
+  <nav data-hz-desknav aria-label="Primary" style="display:flex;align-items:center;gap:clamp(14px,2.5vw,26px)">
+    <a href="/how-it-works" data-hz-navlink style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;text-decoration:none;padding:7px 0;border-bottom:2px solid transparent;color:#6E6759">HOW IT WORKS</a>
+    <a href="/accountability-challenges" data-hz-navlink style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;text-decoration:none;padding:7px 0;border-bottom:2px solid transparent;color:#6E6759">CHALLENGES</a>
+    <a href="/faq" data-hz-navlink style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;text-decoration:none;padding:7px 0;border-bottom:2px solid transparent;color:#6E6759">FAQ</a>
+    <a href="/blog" data-hz-navlink data-hz-wide style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;text-decoration:none;padding:7px 0;border-bottom:2px solid transparent;color:#6E6759">BLOG</a>
+    <a href="/about" data-hz-navlink data-hz-wide style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;text-decoration:none;padding:7px 0;border-bottom:2px solid transparent;color:#6E6759">ABOUT</a>
+    <a href="/contact" data-hz-navlink data-hz-wide style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.14em;text-decoration:none;padding:7px 0;border-bottom:2px solid transparent;color:#6E6759">CONTACT</a>
+  </nav>
+  <a data-hz-desknav href="https://apps.apple.com/app/id6802558635" style="display:inline-flex;align-items:center;gap:10px;border-radius:999px;font:700 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:11px 18px;text-decoration:none;white-space:nowrap"><svg aria-hidden="true" viewBox="0 0 384 512" width="15px" height="15px" style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg><span>Download app</span></a>
+  <button type="button" data-hz-menu-btn aria-controls="hz-menu" aria-expanded="false" aria-label="Menu" style="align-items:center;justify-content:center;flex-direction:column;gap:5px;width:44px;height:44px;margin:-5px 0;padding:0;border:0;background:transparent;cursor:pointer;color:#16130E"><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span><span aria-hidden="true" style="display:block;width:22px;height:2px;background:currentColor"></span></button>
+</header>
+
+<div id="hz-menu" hidden tabindex="-1" role="dialog" aria-modal="true" aria-label="Site menu" style="position:fixed;inset:0;z-index:90;outline:0">
+  <div data-hz-scrim style="position:absolute;inset:0;background:rgba(22,19,14,.5)"></div>
+  <nav data-hz-panel aria-label="Site" style="position:absolute;top:0;left:0;right:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#F3EFE7;border-bottom:1px solid rgba(22,19,14,.14);padding:0 clamp(20px,5vw,44px) 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;height:64px">
+      <span style="font:800 20px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:-.02em;color:#16130E">HUNTZ<span style="color:#C24E1F">.</span></span>
+      <button type="button" data-hz-menu-close aria-label="Close menu" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:0;background:transparent;color:#16130E;font:400 21px/1 'Figtree',Arial,Helvetica,sans-serif;cursor:pointer">&#10005;</button>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      <a href="/" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">HOME</a>
+      <a href="/how-it-works" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">HOW IT WORKS</a>
+      <a href="/accountability-challenges" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">CHALLENGES</a>
+      <a href="/faq" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">FAQ</a>
+      <a href="/blog" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">BLOG</a>
+      <a href="/about" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">ABOUT</a>
+      <a href="/contact" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">CONTACT</a>
+      <a href="/terms" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">TERMS</a>
+      <a href="/privacy" data-hz-drawerlink style="display:flex;align-items:center;min-height:52px;font:600 12.5px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.13em;text-decoration:none;border-bottom:1px solid rgba(22,19,14,.10);padding-left:0;color:#16130E">PRIVACY</a>
+    </div>
+    <a href="https://apps.apple.com/app/id6802558635" style="display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;margin-top:20px;background:#C24E1F;color:#F3EFE7;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none"><svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px" style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg><span>Download app</span></a>
+  </nav>
+</div>
+
+<main style="position:relative;max-width:820px;margin:0 auto;padding:clamp(36px,6vh,64px) clamp(20px,5vw,44px) 40px">
+  <div style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#6E6759;margin-bottom:16px">ACCOUNT DELETION</div>
+  <h1 style="margin:0 0 22px;font:600 clamp(32px,4.6vw,54px)/1.05 'Playfair Display','Times New Roman',serif;letter-spacing:-.014em;color:#16130E;text-wrap:balance">Delete your Huntz account.</h1>
+<p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">This page is for people who use the Huntz mobile app, published by Huntz, Inc. You can ask us to delete your account and the personal data tied to it. You do not need to be signed in to the app to make the request.</p>
+<h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">Request deletion from the app</h2>
+<p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">If you can still open Huntz, this is the fastest route.</p>
+<ul style="margin:0 0 18px;padding-left:20px;display:flex;flex-direction:column;gap:7px;list-style:none"><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Open Huntz and tap the Profile tab.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Under Account, tap Email &amp; sign-in.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Under Account management, tap Delete account.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Read what will be removed and kept, then confirm. You may be asked to sign in again so we know it is you.</li></ul>
+<h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">Request deletion by email</h2>
+<p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">If you cannot sign in, or you have already removed the app, email us instead.</p>
+<ul style="margin:0 0 18px;padding-left:20px;display:flex;flex-direction:column;gap:7px;list-style:none"><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Send a message to <a href="mailto:team@huntz.ai" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">team@huntz.ai</a> from the email address on your Huntz account.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Use the subject line Delete my account.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>We reply to that address to confirm the request before anything is deleted. Replying to that confirmation is the last step.</li></ul>
+<h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">What we remove</h2>
+<ul style="margin:0 0 18px;padding-left:20px;display:flex;flex-direction:column;gap:7px;list-style:none"><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Your profile: name, handle, bio, profile photo and date of birth.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Your sign-in, and every device signed in to Huntz.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Notification settings and the device tokens used to send you push notifications.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Connected accounts and the access tokens we held for them.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Invitations you sent that nobody has used.</li></ul>
+<h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">What we keep, and for how long</h2>
+<p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">Some records have to outlive an account. Deleting your account does not remove information we are legally required to keep, or need in order to handle fraud, disputes and our obligations to other Hunters. What we keep is no longer tied to your name or contact details.</p>
+<ul style="margin:0 0 18px;padding-left:20px;display:flex;flex-direction:column;gap:7px;list-style:none"><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Records of money movements, such as stakes, service fees, refunds and payouts, for as long as the law requires.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Proof you submitted and any review or dispute decisions, for the periods set out in the privacy policy.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Past support conversations, without your contact details, for the period set out in the privacy policy.</li><li style="position:relative;font:400 15.5px/1.7 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty"><span style="position:absolute;left:-20px;top:.62em;width:5px;height:5px;border-radius:50%;background:#C24E1F;opacity:.55"></span>Anything else the law requires us to keep, for as long as it requires.</li></ul>
+<p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">The <a href="/privacy" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">privacy policy</a> has the detail on each type of record and how long it is kept.</p>
+<h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">If you have an active stake</h2>
+<p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">Other Hunters are counting on every active Hunt to settle correctly, so we cannot delete an account while it has money staked in a Hunt that is still running or still being settled. The app shows what is holding the request up. Once the Hunt settles, the deletion can go ahead. Your stake is never refunded or forfeited early because you asked to delete your account.</p>
+<h2 style="margin:38px 0 12px;font:600 clamp(23px,2.5vw,30px)/1.2 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E;text-wrap:balance">Questions</h2>
+<p style="margin:0 0 15px;font:400 15.5px/1.75 'Figtree',Arial,Helvetica,sans-serif;color:#4A453C;text-wrap:pretty">Write to <a href="mailto:team@huntz.ai" style="color:#C24E1F;text-decoration:none;border-bottom:1px solid rgba(194,78,31,.4)">team@huntz.ai</a> and the team will answer. Huntz, Inc. is based at 1177 Market Street, San Francisco, California 94103, United States.</p>
+</main>
+
+<aside data-cta style="max-width:820px;margin:0 auto;padding:0 clamp(20px,5vw,44px) 110px">
+  <div style="padding:clamp(22px,3vw,30px);border:1px solid rgba(22,19,14,.14);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34))">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px 28px">
+      <div style="flex:1 1 300px">
+        <div style="font:600 clamp(20px,2.4vw,27px)/1.25 'Playfair Display','Times New Roman',serif;letter-spacing:-.012em;color:#16130E">Huntz is on the App Store<span style="color:#C24E1F">.</span></div>
+        <div style="margin-top:14px"><a href="/#waitlist" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.06em;color:#6E6759;text-decoration:underline">Not on iPhone? Get notified for Android.</a></div>
+      </div>
+      <a href="https://apps.apple.com/app/id6802558635" style="display:inline-flex;align-items:center;gap:10px;flex:0 0 auto;border-radius:999px;font:700 12px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;color:#F3EFE7;background:#C24E1F;padding:14px 22px;text-decoration:none"><svg aria-hidden="true" viewBox="0 0 384 512" width="18px" height="18px" style="flex:0 0 auto" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg><span>Download app</span></a>
+    </div>
+  </div>
+  <nav data-hz-footernav aria-label="Footer" style="display:flex;flex-wrap:wrap;gap:10px 22px;align-items:baseline;margin-top:26px;padding-top:22px;border-top:1px solid rgba(22,19,14,.14)">
+    <a href="/" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;color:#6E6759">HOME</a>
+    <a href="/how-it-works" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;color:#6E6759">HOW IT WORKS</a>
+    <a href="/accountability-challenges" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;color:#6E6759">CHALLENGES</a>
+    <a href="/faq" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;color:#6E6759">FAQ</a>
+    <a href="/blog" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;color:#6E6759">BLOG</a>
+    <a href="/about" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;color:#6E6759">ABOUT</a>
+    <a href="/contact" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;color:#6E6759">CONTACT</a>
+    <span style="margin-left:auto;display:flex;gap:22px"><a href="/terms" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;color:#6E6759">TERMS</a><a href="/privacy" style="font:600 11px 'Figtree',Arial,Helvetica,sans-serif;letter-spacing:.12em;text-decoration:none;color:#6E6759">PRIVACY</a></span>
+  </nav>
+</aside>
+
+<script>
+(function () {
+  var open = false, opener = null, savedY = 0, obs = null;
+  function panel() { var m = document.getElementById('hz-menu'); return m && m.querySelector('[data-hz-panel]'); }
+  function sync() {
+    var b = document.querySelectorAll('[data-hz-menu-btn]');
+    for (var i = 0; i < b.length; i++) b[i].setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function focusable() {
+    var p = panel();
+    if (!p) return [];
+    return Array.prototype.filter.call(
+      p.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])'),
+      function (el) { return el.getClientRects().length > 0; });
+  }
+  function openMenu(trigger) {
+    var m = document.getElementById('hz-menu');
+    if (!m || open) return;
+    opener = trigger || document.activeElement;
+    open = true;
+    m.hidden = false;
+    // iOS ignores overflow:hidden on a scrolled document, so the body is pinned
+    // at its current offset and released to the same offset on close.
+    savedY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = -savedY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    sync();
+    m.focus({ preventScroll: true });
+    if (window.MutationObserver) {
+      obs = new MutationObserver(sync);
+      obs.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+  function closeMenu(restoreFocus) {
+    var m = document.getElementById('hz-menu');
+    if (!m || !open) return;
+    open = false;
+    m.hidden = true;
+    if (obs) { obs.disconnect(); obs = null; }
+    document.documentElement.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedY);
+    sync();
+    if (restoreFocus !== false && opener && opener.isConnected) opener.focus({ preventScroll: true });
+    opener = null;
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var btn = t.closest('[data-hz-menu-btn]');
+    if (btn) { e.preventDefault(); open ? closeMenu() : openMenu(btn); return; }
+    if (!open) return;
+    if (t.closest('[data-hz-menu-close]') || t.closest('[data-hz-scrim]')) { e.preventDefault(); closeMenu(); return; }
+    // Selecting a destination closes the sheet; focus follows the navigation,
+    // so it is not pulled back to the button that is about to disappear.
+    if (t.closest('#hz-menu a[href]')) closeMenu(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!open) return;
+    if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); closeMenu(); return; }
+    if (e.key !== 'Tab') return;
+    var f = focusable();
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !panel().contains(document.activeElement))) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  });
+  // A phone rotated to landscape, or a window dragged wider, must not leave the
+  // sheet open over a desktop layout whose menu button is no longer rendered.
+  addEventListener('resize', function () { if (open && innerWidth > 640) closeMenu(false); });
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+
+  var COPY_URL = 'https://huntz.ai';
+  var STORE_PREFIX = 'https://apps.apple.com/';
+  var BULLETS = '\u2022\u2022\u2022';
+
+  // One entry per supported app. The words that are menu labels are set in bold
+  // so the three steps can be read at a glance; the text itself is unchanged.
+  var APPS = {
+    tiktok: {
+      body: 'TikTok can block the App Store. Tap the ' + BULLETS + ' menu at the top right, ' +
+        'choose Open in browser, then tap Download.',
+      bold: [BULLETS, 'Open in browser', 'Download']
+    },
+    instagram: {
+      body: 'Instagram can block the App Store. Tap the ' + BULLETS + ' menu at the top right, ' +
+        'choose Open in external browser, then tap Download.',
+      bold: [BULLETS, 'Open in external browser', 'Download']
+    }
+  };
+  var TEXT = {
+    headline: 'Having trouble downloading Huntz?',
+    region: 'Download help',
+    copy: 'Copy link',
+    copied: 'Link copied. Paste it into your browser.',
+    manual: 'Press and hold the link, then tap Copy.',
+    dismiss: 'Dismiss'
+  };
+
+  // The tokens each app puts in its in-app browser's user agent. TikTok:
+  // "musical_ly" (its original name, still in the iOS "musical_ly_<version>"
+  // token and in Android's "AppName/musical_ly"), "BytedanceWebview" (the
+  // wrapper's own marker), "TikTok" and "trill" (the Android build's name,
+  // "trill_<build>"; matched only as a whole word, so "Trillian" is not
+  // TikTok). Instagram: "Instagram" ("Instagram <version> (iPhone...)").
+  // The class before "trill" stands in for a look-behind, which older iOS
+  // webviews reject at parse time.
+  var TIKTOK = /musical_ly|BytedanceWebview|TikTok|(?:^|[^a-z])trill(?![a-z])/i;
+  var INSTAGRAM = /Instagram/i;
+
+  function detect(ua) {
+    ua = String(ua || '');
+    if (TIKTOK.test(ua)) return 'tiktok';
+    if (INSTAGRAM.test(ua)) return 'instagram';
+    return null;
+  }
+
+  var INK = '#16130E', BODY = '#4A453C', CLAY = '#C24E1F';
+  var SANS = "'Figtree',Arial,Helvetica,sans-serif";
+  var SERIF = "'Playfair Display','Times New Roman',serif";
+
+  function el(tag, css, text) {
+    var n = document.createElement(tag);
+    if (css) n.style.cssText = css;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  // The body sentence with its menu labels in bold, as text nodes and <strong>
+  // elements, never as parsed HTML.
+  function fillBody(p, app) {
+    var rest = app.body;
+    while (rest) {
+      var at = -1, hit = '';
+      for (var i = 0; i < app.bold.length; i++) {
+        var k = rest.indexOf(app.bold[i]);
+        if (k !== -1 && (at === -1 || k < at)) { at = k; hit = app.bold[i]; }
+      }
+      if (at === -1) { p.appendChild(document.createTextNode(rest)); return; }
+      if (at > 0) p.appendChild(document.createTextNode(rest.slice(0, at)));
+      p.appendChild(el('strong', 'font-weight:700;color:' + INK, hit));
+      rest = rest.slice(at + hit.length);
+    }
+  }
+
+  function copyText(text, done, failed) {
+    function legacy() {
+      var ok = false;
+      try {
+        var t = document.createElement('textarea');
+        t.value = text;
+        t.setAttribute('readonly', '');
+        // 16px so iOS does not zoom the page when the field takes focus.
+        t.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';
+        document.body.appendChild(t);
+        t.focus();
+        t.select();
+        t.setSelectionRange(0, text.length);
+        ok = !!document.execCommand('copy');
+        document.body.removeChild(t);
+      } catch (e) { ok = false; }
+      if (ok) done(); else failed();
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, legacy);
+        return;
+      }
+    } catch (e) { /* fall through to the older path */ }
+    legacy();
+  }
+
+  function run() {
+    var app = detect(navigator.userAgent);
+    if (!app || !document.body) return;
+    if (document.querySelector('[data-hz-inapp-notice]')) return;
+    var copy = APPS[app];
+
+    var box = el('div',
+      'position:relative;box-sizing:border-box;width:calc(100% - 24px);max-width:560px;margin:12px auto;' +
+      'padding:18px;border:1px solid rgba(22,19,14,.14);' +
+      'border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.34)),#F3EFE7;' +
+      'color:' + INK + ';text-align:left;transition:box-shadow .3s ease');
+    box.setAttribute('data-hz-inapp-notice', app);
+    box.setAttribute('role', 'region');
+    box.setAttribute('aria-label', TEXT.region);
+
+    // The site's own clay rule (as on the /hunt page) is the accent.
+    box.appendChild(el('div', 'width:44px;height:2px;margin:0 0 12px;background:' + CLAY)).setAttribute('aria-hidden', 'true');
+
+    box.appendChild(el('div',
+      'font:600 19px/1.25 ' + SERIF + ';letter-spacing:-.012em;color:' + INK + ';margin:0 0 8px;padding-right:34px',
+      TEXT.headline));
+
+    var para = el('p', 'margin:0 0 14px;font:400 14.5px/1.55 ' + SANS + ';color:' + BODY);
+    para.setAttribute('data-hz-inapp-body', '');
+    fillBody(para, copy);
+    box.appendChild(para);
+
+    var row = el('div', 'display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px');
+    var copyBtn = el('button',
+      'min-height:44px;padding:0 20px;border:1.5px solid ' + INK + ';border-radius:999px;background:transparent;' +
+      'color:' + INK + ';font:700 12.5px ' + SANS + ';letter-spacing:.08em;cursor:pointer',
+      TEXT.copy);
+    copyBtn.setAttribute('type', 'button');
+    copyBtn.setAttribute('data-hz-inapp-copy', '');
+    var status = el('span', 'font:500 13px/1.4 ' + SANS + ';color:' + BODY);
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    row.appendChild(copyBtn);
+    row.appendChild(status);
+    box.appendChild(row);
+
+    var close = el('button',
+      'position:absolute;top:4px;right:4px;width:44px;height:44px;padding:0;border:0;background:transparent;' +
+      'color:' + INK + ';font:400 19px/1 ' + SANS + ';cursor:pointer',
+      '\u2715');
+    close.setAttribute('type', 'button');
+    close.setAttribute('aria-label', TEXT.dismiss);
+    close.setAttribute('data-hz-inapp-dismiss', '');
+    box.appendChild(close);
+
+    copyBtn.addEventListener('click', function () {
+      copyText(COPY_URL, function () {
+        status.textContent = TEXT.copied;
+      }, function () {
+        // No clipboard access in this webview: show the link, selected, so a
+        // press and hold offers the system's own Copy.
+        status.textContent = TEXT.manual;
+        if (box.querySelector('[data-hz-inapp-link]')) return;
+        var f = el('input',
+          'box-sizing:border-box;width:100%;margin-top:10px;padding:10px 12px;border:1px solid rgba(22,19,14,.3);' +
+          'border-radius:10px;background:#fff;color:' + INK + ';font:500 16px ' + SANS);
+        f.setAttribute('type', 'text');
+        f.setAttribute('readonly', '');
+        f.setAttribute('aria-label', TEXT.copy);
+        f.setAttribute('data-hz-inapp-link', '');
+        f.value = COPY_URL;
+        box.appendChild(f);
+        try { f.focus(); f.select(); f.setSelectionRange(0, COPY_URL.length); } catch (e) { /* the field is still shown */ }
+      });
+    });
+
+    // The home page's bar is fixed, so the card starts below it; the other
+    // pages' bar is sticky and in the flow, so the card simply follows it.
+    var bars = document.getElementsByTagName('header');
+    var bar = bars && bars[0] && bars[0].parentNode === document.body ? bars[0] : null;
+    document.body.insertBefore(box, bar ? bar.nextSibling : document.body.firstChild);
+
+    // The bar that stays on screen as the page scrolls, if any, and how it sits.
+    function pinned() {
+      var b = document.getElementById('hz-nav') || bar;
+      var cs = b && window.getComputedStyle ? window.getComputedStyle(b) : null;
+      return cs && (cs.position === 'fixed' || cs.position === 'sticky') ? { el: b, fixed: cs.position === 'fixed' } : null;
+    }
+    function fit() {
+      var p = pinned();
+      box.style.marginTop = (12 + (p && p.fixed ? p.el.offsetHeight : 0)) + 'px';
+    }
+    fit();
+    // The home page draws its bar after this script has run.
+    window.addEventListener('load', fit);
+    setTimeout(fit, 120);
+    setTimeout(fit, 600);
+
+    // A tap on any App Store link still goes to the link, untouched. If the
+    // webview swallows it, the card is brought into view so the tap has an
+    // answer. Deferred a beat so the menu sheet, which closes on the same tap
+    // and restores its own scroll position, is done first.
+    function onClick(e) {
+      var n = e && e.target;
+      while (n && n.parentNode) {
+        if (n.tagName === 'A') {
+          var href = n.getAttribute('href');
+          if (href && href.indexOf(STORE_PREFIX) === 0) setTimeout(reveal, 80);
+          return;
+        }
+        n = n.parentNode;
+      }
+    }
+    function reveal() {
+      if (!box.parentNode) return;
+      var r = box.getBoundingClientRect();
+      var p = pinned();
+      var top = (p ? p.el.offsetHeight : 0) + 8;
+      if (r.top < top || r.bottom > (window.innerHeight || 0)) {
+        window.scrollTo(0, Math.max(0, r.top + (window.pageYOffset || 0) - top - 4));
+      }
+      box.style.boxShadow = '0 0 0 3px rgba(194,78,31,.45)';
+      setTimeout(function () { box.style.boxShadow = ''; }, 1400);
+    }
+    document.addEventListener('click', onClick);
+
+    close.addEventListener('click', function () {
+      document.removeEventListener('click', onClick);
+      if (box.parentNode) box.parentNode.removeChild(box);
+    });
+  }
+
+  run();
+})();
+</script>
+</body>
+</html>
